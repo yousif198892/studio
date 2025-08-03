@@ -17,6 +17,7 @@ import { Logo } from "./logo";
 import { register } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { useEffect } from "react";
+import { redirect } from "next/navigation";
 
 const initialState = {
   message: "",
@@ -31,6 +32,7 @@ export function RegisterForm() {
   useEffect(() => {
     if (studentState.message && Object.keys(studentState.errors).length === 0) {
       toast({ title: "Success!", description: studentState.message });
+      // Consider redirecting here if needed
     } else if (studentState.message) {
       const errorMessage = studentState.errors?.supervisorId?.[0] || studentState.message;
       toast({ title: "Error", description: errorMessage, variant: "destructive" });
@@ -40,6 +42,7 @@ export function RegisterForm() {
    useEffect(() => {
     if (supervisorState.message && Object.keys(supervisorState.errors).length === 0) {
       toast({ title: "Success!", description: supervisorState.message });
+      // This part is now handled by the redirect in the action
     } else if (supervisorState.message) {
       toast({ title: "Error", description: supervisorState.message, variant: "destructive" });
     }

@@ -101,8 +101,8 @@ const registerSchema = z
 
 
 export async function register(prevState: any, formData: FormData) {
-    const role = formData.get("role");
-    const supervisorId = formData.get("supervisorId");
+    const role = formData.get("role") as "student" | "supervisor";
+    const supervisorId = formData.get("supervisorId") as string;
 
     const data = {
         name: formData.get("name"),
@@ -123,6 +123,14 @@ export async function register(prevState: any, formData: FormData) {
 
     const { name, email } = validatedFields.data;
 
+    // Check if user already exists
+    if (mockUsers.find(u => u.email === email)) {
+        return {
+            errors: { email: ["User with this email already exists."] },
+            message: "Registration failed.",
+        };
+    }
+    
     // In a real app, you would save the new user to your database
     const newUser = {
         id: `user${Date.now()}`,
@@ -132,20 +140,13 @@ export async function register(prevState: any, formData: FormData) {
         avatar: "https://placehold.co/100x100.png",
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
-
-    // Check if user already exists
-    if (mockUsers.find(u => u.email === email)) {
-        return {
-            errors: { email: ["User with this email already exists."] },
-            message: "Registration failed.",
-        };
-    }
     
     console.log("New user to be saved:", newUser);
-    // mockUsers.push(newUser); // This won't persist across requests on the server
+    mockUsers.push(newUser);
 
-    revalidatePath("/register");
-    return { message: "Registration successful!", errors: {} };
+    // No revalidation needed as we're redirecting
+    // revalidatePath("/register");
+    redirect("/login");
 }
 
 
