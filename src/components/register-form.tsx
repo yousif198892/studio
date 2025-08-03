@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useFormState } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,8 +14,36 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Logo } from "./logo";
+import { register } from "@/lib/actions";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+
+const initialState = {
+  message: "",
+  errors: {},
+};
 
 export function RegisterForm() {
+  const [studentState, studentFormAction] = useFormState(register, initialState);
+  const [supervisorState, supervisorFormAction] = useFormState(register, initialState);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    if (studentState.message && Object.keys(studentState.errors).length === 0) {
+      toast({ title: "Success!", description: studentState.message });
+    } else if (studentState.message) {
+      toast({ title: "Error", description: studentState.message, variant: "destructive" });
+    }
+  }, [studentState, toast]);
+
+   useEffect(() => {
+    if (supervisorState.message && Object.keys(supervisorState.errors).length === 0) {
+      toast({ title: "Success!", description: supervisorState.message });
+    } else if (supervisorState.message) {
+      toast({ title: "Error", description: supervisorState.message, variant: "destructive" });
+    }
+  }, [supervisorState, toast]);
+
   return (
     <Card className="mx-auto max-w-sm w-full">
       <CardHeader className="text-center">
@@ -33,56 +62,64 @@ export function RegisterForm() {
             <TabsTrigger value="supervisor">Supervisor</TabsTrigger>
           </TabsList>
           <TabsContent value="student">
-            <div className="grid gap-4 mt-4">
-              <div className="grid gap-2">
-                <Label htmlFor="student-name">Full Name</Label>
-                <Input id="student-name" placeholder="Max Robinson" required />
+            <form action={studentFormAction}>
+              <input type="hidden" name="role" value="student" />
+              <div className="grid gap-4 mt-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="student-name">Full Name</Label>
+                  <Input id="student-name" name="name" placeholder="Max Robinson" required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="student-email">Email</Label>
+                  <Input
+                    id="student-email"
+                    type="email"
+                    name="email"
+                    placeholder="m@example.com"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="student-password">Password</Label>
+                  <Input id="student-password" name="password" type="password" />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="supervisor-id">Supervisor ID</Label>
+                  <Input id="supervisor-id" name="supervisorId" placeholder="Enter your supervisor's ID" />
+                </div>
+                <Button type="submit" className="w-full mt-2">
+                  Create an account
+                </Button>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="student-email">Email</Label>
-                <Input
-                  id="student-email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="student-password">Password</Label>
-                <Input id="student-password" type="password" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="supervisor-id">Supervisor ID</Label>
-                <Input id="supervisor-id" placeholder="Enter your supervisor's ID" />
-              </div>
-              <Button type="submit" className="w-full mt-2">
-                Create an account
-              </Button>
-            </div>
+            </form>
           </TabsContent>
           <TabsContent value="supervisor">
-            <div className="grid gap-4 mt-4">
-              <div className="grid gap-2">
-                <Label htmlFor="supervisor-name">Full Name</Label>
-                <Input id="supervisor-name" placeholder="Dr. Jane Smith" required />
+            <form action={supervisorFormAction}>
+                <input type="hidden" name="role" value="supervisor" />
+              <div className="grid gap-4 mt-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="supervisor-name">Full Name</Label>
+                  <Input id="supervisor-name" name="name" placeholder="Dr. Jane Smith" required />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="supervisor-email">Email</Label>
+                  <Input
+                    id="supervisor-email"
+                    type="email"
+                    name="email"
+                    placeholder="j.smith@example.com"
+                    required
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="supervisor-password">Password</Label>
+                  <Input id="supervisor-password" name="password" type="password" />
+                </div>
+                <Button type="submit" className="w-full mt-2">
+                  Create a supervisor account
+                </Button>
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="supervisor-email">Email</Label>
-                <Input
-                  id="supervisor-email"
-                  type="email"
-                  placeholder="j.smith@example.com"
-                  required
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="supervisor-password">Password</Label>
-                <Input id="supervisor-password" type="password" />
-              </div>
-              <Button type="submit" className="w-full mt-2">
-                Create a supervisor account
-              </Button>
-            </div>
+            </form>
           </TabsContent>
         </Tabs>
         <div className="my-4 flex items-center">
