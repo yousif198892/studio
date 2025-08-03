@@ -19,7 +19,7 @@ export function LanguageSetter() {
     // This effect runs whenever the language changes.
     // It updates the HTML element attributes and localStorage.
     document.documentElement.lang = language;
-    document.documentElement.dir = language === "ar" ? "rtl" : "ltr";
+    document.documentElement.dir = "ltr"; // Always set to LTR
     localStorage.setItem("language", language);
   }, [language]);
 
