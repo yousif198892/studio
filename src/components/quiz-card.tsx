@@ -19,15 +19,15 @@ type QuizCardProps = {
 export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
-
-  const shuffledOptions = useMemo(() => {
-    return [...word.options].sort(() => Math.random() - 0.5);
-  }, [word]);
+  const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
 
   useEffect(() => {
+    // Shuffling options on the client-side to avoid hydration mismatch
+    setShuffledOptions([...word.options].sort(() => Math.random() - 0.5));
     setSelectedOption(null);
     setIsAnswered(false);
   }, [word]);
+
 
   const handleOptionClick = (option: string) => {
     if (isAnswered) return;
