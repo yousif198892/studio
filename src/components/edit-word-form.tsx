@@ -14,7 +14,12 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Word } from "@/lib/data";
 import Image from "next/image";
 
-const initialState = {
+const initialState: {
+    message: string,
+    errors?: any,
+    success: boolean,
+    updatedWord?: Partial<Word> & { id: string }
+} = {
   message: "",
   errors: {},
   success: false,
@@ -45,11 +50,32 @@ export function EditWordForm({ word }: { word: Word }) {
   const router = useRouter();
 
   useEffect(() => {
-    if (state.success) {
+    if (state.success && state.updatedWord) {
       toast({
         title: "Success!",
         description: state.message,
       });
+
+      // Update localStorage
+      try {
+        const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+        const updatedWords = storedWords.map(w => {
+            if (w.id === state.updatedWord?.id) {
+                // Merge existing word with updated fields
+                return {
+                    ...w,
+                    word: state.updatedWord.word || w.word,
+                    definition: state.updatedWord.definition || w.definition,
+                    imageUrl: state.updatedWord.imageUrl || w.imageUrl,
+                };
+            }
+            return w;
+        });
+        localStorage.setItem('userWords', JSON.stringify(updatedWords));
+      } catch (e) {
+          console.error("Failed to update word in localStorage", e);
+      }
+
       router.push(`/dashboard/words?userId=${userId}`);
     } else if (state.message && !state.success) {
       toast({

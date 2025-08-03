@@ -46,13 +46,13 @@ export async function addWord(prevState: any, formData: FormData) {
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${imageFile.type};base64,${base64}`;
 
-    const aiResult = await generateWordOptions({
+    const {output} = await generateWordOptions({
       word,
       definition,
       explanatoryImage: dataUri,
     });
     
-    if (!aiResult.options) {
+    if (!output?.options) {
         throw new Error("AI did not return valid options.");
     }
 
@@ -61,7 +61,7 @@ export async function addWord(prevState: any, formData: FormData) {
         word,
         definition,
         imageUrl: dataUri, 
-        options: [...aiResult.options, word],
+        options: [...output.options, word],
         correctOption: word,
         supervisorId: userId,
         nextReview: new Date(),
@@ -111,24 +111,19 @@ export async function updateWord(prevState: any, formData: FormData) {
       dataUri = `data:${imageFile.type};base64,${base64}`;
     }
 
-    // This is where you would update the word in your actual database.
-    // For this prototype, we'll return a success message.
-    // The client will handle updating localStorage.
-    // In a real app, you'd revalidate the path/tag here.
-
     return { 
       success: true, 
       message: "Word updated successfully!",
-      updatedWord: { // Sending back the updated data for the client
+      updatedWord: {
         id: wordId,
         word,
         definition,
-        imageUrl: dataUri, // Will be undefined if no new image was uploaded
+        imageUrl: dataUri,
       }
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to update word: ${errorMessage}`, errors: {}, success: false };
+    return { message: `Failed to update word: ${errorMessage}`, success: false };
   }
 }
 
