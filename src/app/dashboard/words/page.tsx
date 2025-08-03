@@ -22,6 +22,17 @@ import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 
 export default function WordsPage() {
   const searchParams = useSearchParams();
@@ -44,6 +55,17 @@ export default function WordsPage() {
     
     setWords(uniqueWords);
   }, [userId]);
+
+  const handleDelete = (wordId: string) => {
+    // Remove from component state
+    const updatedWords = words.filter(w => w.id !== wordId);
+    setWords(updatedWords);
+
+    // Remove from localStorage
+    const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+    const updatedStoredWords = storedWords.filter(w => w.id !== wordId);
+    localStorage.setItem('userWords', JSON.stringify(updatedStoredWords));
+  }
 
 
   return (
@@ -95,12 +117,31 @@ export default function WordsPage() {
                   <TableCell>{word.definition}</TableCell>
                   <TableCell>
                     <div className="flex gap-2 justify-end">
-                        <Button variant="outline" size="icon">
+                        <Button variant="outline" size="icon" asChild>
+                          <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
                             <Pencil className="h-4 w-4" />
+                          </Link>
                         </Button>
-                         <Button variant="destructive" size="icon">
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="icon">
+                                <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the word
+                                "{word.word}" from your list.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(word.id)}>Continue</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                     </div>
                   </TableCell>
                 </TableRow>
