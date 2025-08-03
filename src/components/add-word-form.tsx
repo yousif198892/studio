@@ -1,24 +1,28 @@
 
 "use client";
 
-import { useFormStatus, useFormState } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { addWord } from "@/lib/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Word, Unit, getUnitsBySupervisor } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
-const initialState = {
+const initialState: {
+  message: string,
+  errors?: any,
+  success: boolean,
+  newWord?: Word,
+} = {
   message: "",
   errors: {},
   success: false,
-  newWord: null,
 };
 
 function SubmitButton() {
@@ -39,7 +43,7 @@ function SubmitButton() {
 }
 
 export function AddWordForm() {
-  const [state, formAction] = useFormState(addWord, initialState);
+  const [state, formAction] = useActionState(addWord, initialState);
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "sup1";
@@ -67,7 +71,6 @@ export function AddWordForm() {
         const existingWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
         const newWord: Word = {
           ...state.newWord,
-          // Ensure nextReview is a Date object if it's a string
           nextReview: new Date(state.newWord.nextReview)
         };
         const updatedWords = [...existingWords, newWord];
