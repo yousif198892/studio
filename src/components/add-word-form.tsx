@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useFormStatus } from "react-dom";
@@ -10,7 +11,6 @@ import { useActionState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { redirect } from "next/navigation";
 
 const initialState = {
   message: "",
@@ -42,12 +42,7 @@ export function AddWordForm() {
   const userId = searchParams.get("userId");
 
   useEffect(() => {
-    if (state?.success) {
-        toast({
-            title: "Success!",
-            description: "Word added successfully.",
-        });
-    } else if (state?.message) {
+    if (state?.message && !state.success) {
       toast({
         title: "Error",
         description: state.message,

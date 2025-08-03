@@ -45,8 +45,6 @@ export async function addWord(prevState: any, formData: FormData) {
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${imageFile.type};base64,${base64}`;
 
-    console.log(`Generating options for "${word}"...`);
-
     const aiResult = await generateWordOptions({
       word,
       definition,
@@ -56,8 +54,6 @@ export async function addWord(prevState: any, formData: FormData) {
     if (!aiResult || !aiResult.options) {
         throw new Error("AI did not return valid options.");
     }
-    
-    console.log("AI Result:", aiResult.options);
 
     const newWord = {
         id: `word${Date.now()}`,
@@ -71,17 +67,16 @@ export async function addWord(prevState: any, formData: FormData) {
         strength: 0,
     };
 
-    console.log("New word to be saved:", newWord);
     mockWords.push(newWord);
 
     revalidatePath(`/dashboard/words`);
     
-
   } catch (error) {
     console.error("Error adding word:", error);
     return { message: "Failed to add word. AI generation error.", errors: {}, success: false };
   }
 
+  // Redirect on success
   redirect(`/dashboard/words?userId=${validatedFields.data.userId}`);
 }
 
