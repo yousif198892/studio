@@ -31,10 +31,10 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Logging in...
+          جارٍ تسجيل الدخول...
         </>
       ) : (
-        "Login"
+        "تسجيل الدخول"
       )}
     </Button>
   );
@@ -48,7 +48,7 @@ export function LoginForm() {
     useEffect(() => {
         if (state?.message && Object.keys(state.errors || {}).length > 0) {
           toast({
-            title: "Error",
+            title: "خطأ",
             description: state.message,
             variant: "destructive",
           });
@@ -62,15 +62,15 @@ export function LoginForm() {
         <div className="flex justify-center mb-4">
             <Logo />
         </div>
-        <CardTitle className="text-2xl font-headline">Welcome Back!</CardTitle>
+        <CardTitle className="text-2xl font-headline">مرحبًا بعودتك!</CardTitle>
         <CardDescription>
-          Enter your email below to login to your account
+          أدخل بريدك الإلكتروني أدناه لتسجيل الدخول إلى حسابك
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">البريد الإلكتروني</Label>
             <Input
               id="email"
               type="email"
@@ -84,12 +84,12 @@ export function LoginForm() {
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">كلمة المرور</Label>
               <Link
                 href="#"
-                className="ml-auto inline-block text-sm underline"
+                className="mr-auto inline-block text-sm underline"
               >
-                Forgot your password?
+                هل نسيت كلمة المرور؟
               </Link>
             </div>
             <Input id="password" name="password" type="password" required />
@@ -99,13 +99,13 @@ export function LoginForm() {
           </div>
           <SubmitButton />
           <Button variant="outline" className="w-full">
-            Login with Google
+            تسجيل الدخول باستخدام جوجل
           </Button>
         </form>
         <div className="mt-4 text-center text-sm">
-          Don&apos;t have an account?{" "}
+          ليس لديك حساب؟{" "}
           <Link href="/register" className="underline">
-            Sign up
+            التسجيل
           </Link>
         </div>
       </CardContent>

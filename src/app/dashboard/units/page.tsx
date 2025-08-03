@@ -68,21 +68,21 @@ export default function UnitsPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">My Units</h1>
-            <p className="text-muted-foreground">Manage your vocabulary units.</p>
+            <h1 className="text-3xl font-bold font-headline">وحداتي</h1>
+            <p className="text-muted-foreground">إدارة وحدات المفردات الخاصة بك.</p>
             <div className="grid md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>All Units</CardTitle>
-                            <CardDescription>A list of all your vocabulary units.</CardDescription>
+                            <CardTitle>جميع الوحدات</CardTitle>
+                            <CardDescription>قائمة بجميع وحدات المفردات الخاصة بك.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>Unit Name</TableHead>
-                                        <TableHead><span className="sr-only">Actions</span></TableHead>
+                                        <TableHead>اسم الوحدة</TableHead>
+                                        <TableHead><span className="sr-only">الإجراءات</span></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -98,15 +98,15 @@ export default function UnitsPage() {
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                                        <AlertDialogTitle>هل أنت متأكد تمامًا؟</AlertDialogTitle>
                                                         <AlertDialogDescription>
-                                                            This action cannot be undone. This will permanently delete the unit "{unit.name}".
-                                                            Any words in this unit will need to be reassigned.
+                                                            لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف الوحدة بشكل دائم "{unit.name}".
+                                                            سوف تحتاج إلى إعادة تعيين أي كلمات في هذه الوحدة.
                                                         </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(unit.id)}>Continue</AlertDialogAction>
+                                                        <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(unit.id)}>متابعة</AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
                                                 </AlertDialog>
@@ -121,8 +121,8 @@ export default function UnitsPage() {
                 <div>
                     <Card>
                         <CardHeader>
-                            <CardTitle>Add New Unit</CardTitle>
-                             <CardDescription>Create a new unit to categorize your words.</CardDescription>
+                            <CardTitle>إضافة وحدة جديدة</CardTitle>
+                             <CardDescription>أنشئ وحدة جديدة لتصنيف كلماتك.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <AddUnitForm onUnitAdded={handleUnitAdded} />

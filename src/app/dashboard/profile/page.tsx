@@ -29,13 +29,13 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">My Profile</h1>
+      <h1 className="text-3xl font-bold font-headline">ملفي الشخصي</h1>
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
+            <CardTitle>المعلومات الشخصية</CardTitle>
             <CardDescription>
-              Update your personal details here.
+              قم بتحديث تفاصيلك الشخصية هنا.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -45,36 +45,36 @@ export default function ProfilePage() {
                 <AvatarFallback>AJ</AvatarFallback>
               </Avatar>
               <div className="grid gap-1.5">
-                <Label htmlFor="picture">Profile Picture</Label>
+                <Label htmlFor="picture">الصورة الشخصية</Label>
                 <Input id="picture" type="file" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">Full Name</Label>
+              <Label htmlFor="name">الاسم الكامل</Label>
               <Input id="name" defaultValue="Alex Johnson" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">البريد الإلكتروني</Label>
               <Input id="email" type="email" defaultValue="alex@example.com" disabled />
             </div>
           </CardContent>
           <CardFooter>
-            <Button>Save Changes</Button>
+            <Button>حفظ التغييرات</Button>
           </CardFooter>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Preferences</CardTitle>
+            <CardTitle>التفضيلات</CardTitle>
             <CardDescription>
-              Customize your learning experience.
+              خصص تجربتك التعليمية.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
+              <Label htmlFor="timezone">المنطقة الزمنية</Label>
               <Select defaultValue="America/New_York">
                 <SelectTrigger>
-                  <SelectValue placeholder="Select timezone" />
+                  <SelectValue placeholder="اختر المنطقة الزمنية" />
                 </SelectTrigger>
                 <SelectContent>
                   {timezones.map((tz) => (
@@ -86,48 +86,47 @@ export default function ProfilePage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="font-size">Font Size</Label>
+              <Label htmlFor="font-size">حجم الخط</Label>
               <Select defaultValue="base">
                 <SelectTrigger>
-                  <SelectValue placeholder="Select font size" />
+                  <SelectValue placeholder="اختر حجم الخط" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sm">Small</SelectItem>
-                  <SelectItem value="base">Default</SelectItem>
-                  <SelectItem value="lg">Large</SelectItem>
+                  <SelectItem value="sm">صغير</SelectItem>
+                  <SelectItem value="base">افتراضي</SelectItem>
+                  <SelectItem value="lg">كبير</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
           <CardFooter>
-            <Button>Save Preferences</Button>
+            <Button>حفظ التفضيلات</Button>
           </CardFooter>
         </Card>
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>Account Management</CardTitle>
+            <CardTitle>إدارة الحساب</CardTitle>
             <CardDescription>
-              Manage your account settings and data.
+              قم بإدارة إعدادات حسابك وبياناتك.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="font-semibold">Reset Password</h3>
+              <h3 className="font-semibold">إعادة تعيين كلمة المرور</h3>
               <p className="text-sm text-muted-foreground">
-                An email will be sent to you with instructions to reset your
-                password.
+                سيتم إرسال بريد إلكتروني إليك يحتوي على تعليمات لإعادة تعيين كلمة المرور الخاصة بك.
               </p>
             </div>
              <div>
-              <h3 className="font-semibold text-destructive">Delete Account</h3>
+              <h3 className="font-semibold text-destructive">حذف الحساب</h3>
               <p className="text-sm text-muted-foreground">
-                Permanently delete your account and all associated data. This action cannot be undone.
+                حذف حسابك وجميع البيانات المرتبطة به بشكل دائم. لا يمكن التراجع عن هذا الإجراء.
               </p>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline">Reset Password</Button>
-            <Button variant="destructive">Delete My Account</Button>
+            <Button variant="outline">إعادة تعيين كلمة المرور</Button>
+            <Button variant="destructive">حذف حسابي</Button>
           </CardFooter>
         </Card>
       </div>

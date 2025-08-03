@@ -8,10 +8,10 @@ import { mockUsers, mockWords, Word, Unit, mockUnits, getUnitsBySupervisor } fro
 import { redirect } from "next/navigation";
 
 const addWordSchema = z.object({
-  word: z.string().min(1, "Word is required."),
-  definition: z.string().min(1, "Definition is required."),
-  userId: z.string().min(1, "User ID is required."),
-  unitId: z.string().min(1, "Please select a unit."),
+  word: z.string().min(1, "الكلمة مطلوبة."),
+  definition: z.string().min(1, "التعريف مطلوب."),
+  userId: z.string().min(1, "معرف المستخدم مطلوب."),
+  unitId: z.string().min(1, "يرجى تحديد وحدة."),
   image: z.any(),
 });
 
@@ -27,7 +27,7 @@ export async function addWord(prevState: any, formData: FormData) {
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
+      message: "فشل التحقق.",
       success: false,
     };
   }
@@ -37,8 +37,8 @@ export async function addWord(prevState: any, formData: FormData) {
 
   if (!imageFile || imageFile.size === 0) {
     return {
-      errors: { image: ["Image is required."] },
-      message: "Validation failed.",
+      errors: { image: ["الصورة مطلوبة."] },
+      message: "فشل التحقق.",
       success: false,
     };
   }
@@ -55,7 +55,7 @@ export async function addWord(prevState: any, formData: FormData) {
     });
     
     if (!aiResponse?.options) {
-        throw new Error("AI did not return valid options.");
+        throw new Error("لم يرجع الذكاء الاصطناعي خيارات صالحة.");
     }
 
     const newWord: Word = {
@@ -71,21 +71,21 @@ export async function addWord(prevState: any, formData: FormData) {
         strength: 0,
     };
 
-    return { success: true, message: "Word created!", newWord: newWord };
+    return { success: true, message: "تم إنشاء الكلمة!", newWord: newWord };
 
   } catch (error) {
-    console.error("Error adding word:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to add word. AI generation error: ${errorMessage}`, errors: {}, success: false };
+    console.error("خطأ في إضافة كلمة:", error);
+    const errorMessage = error instanceof Error ? error.message : "حدث خطأ غير معروف.";
+    return { message: `فشل إضافة الكلمة. خطأ في إنشاء الذكاء الاصطناعي: ${errorMessage}`, errors: {}, success: false };
   }
 }
 
 
 const updateWordSchema = z.object({
-  word: z.string().min(1, "Word is required."),
-  definition: z.string().min(1, "Definition is required."),
-  userId: z.string().min(1, "User ID is required."),
-  wordId: z.string().min(1, "Word ID is required."),
+  word: z.string().min(1, "الكلمة مطلوبة."),
+  definition: z.string().min(1, "التعريف مطلوب."),
+  userId: z.string().min(1, "معرف المستخدم مطلوب."),
+  wordId: z.string().min(1, "معرف الكلمة مطلوب."),
   unitId: z.string().optional(),
 });
 
@@ -101,7 +101,7 @@ export async function updateWord(prevState: any, formData: FormData) {
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
+      message: "فشل التحقق.",
       success: false,
     };
   }
@@ -118,7 +118,7 @@ export async function updateWord(prevState: any, formData: FormData) {
 
     return { 
       success: true, 
-      message: "Word updated successfully!",
+      message: "تم تحديث الكلمة بنجاح!",
       updatedWord: {
         id: wordId,
         word,
@@ -128,17 +128,17 @@ export async function updateWord(prevState: any, formData: FormData) {
       }
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to update word: ${errorMessage}`, success: false };
+    const errorMessage = error instanceof Error ? error.message : "حدث خطأ غير معروف.";
+    return { message: `فشل تحديث الكلمة: ${errorMessage}`, success: false };
   }
 }
 
 
 const registerSchema = z
   .object({
-    name: z.string().min(1, 'Name is required.'),
-    email: z.string().email('Invalid email address.'),
-    password: z.string().min(6, 'Password must be at least 6 characters.'),
+    name: z.string().min(1, 'الاسم مطلوب.'),
+    email: z.string().email('عنوان البريد الإلكتروني غير صالح.'),
+    password: z.string().min(6, 'يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.'),
     role: z.enum(['student', 'supervisor']),
     supervisorId: z.string().optional().or(z.literal('')),
   })
@@ -147,7 +147,7 @@ const registerSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['supervisorId'],
-        message: 'Supervisor ID is required for students.',
+        message: 'معرف المشرف مطلوب للطلاب.',
       });
     }
     if (data.role === 'student') {
@@ -156,7 +156,7 @@ const registerSchema = z
              ctx.addIssue({
                 code: z.ZodIssueCode.custom,
                 path: ['supervisorId'],
-                message: 'Invalid Supervisor ID.',
+                message: 'معرف المشرف غير صالح.',
             });
         }
     }
@@ -169,8 +169,8 @@ export async function register(prevState: any, formData: FormData) {
     const email = formData.get("email") as string;
     if (mockUsers.find(u => u.email === email)) {
         return {
-            errors: { email: ["User with this email already exists."] },
-            message: "Registration failed.",
+            errors: { email: ["مستخدم بهذا البريد الإلكتروني موجود بالفعل."] },
+            message: "فشل التسجيل.",
         };
     }
 
@@ -190,7 +190,7 @@ export async function register(prevState: any, formData: FormData) {
     if (!validatedFields.success) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
-            message: "Validation failed.",
+            message: "فشل التحقق.",
         };
     }
 
@@ -213,8 +213,8 @@ export async function register(prevState: any, formData: FormData) {
 
 
 const loginSchema = z.object({
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(1, "Password is required."),
+  email: z.string().email("عنوان البريد الإلكتروني غير صالح."),
+  password: z.string().min(1, "كلمة المرور مطلوبة."),
 });
 
 export async function login(prevState: any, formData: FormData) {
@@ -226,7 +226,7 @@ export async function login(prevState: any, formData: FormData) {
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
+      message: "فشل التحقق.",
     };
   }
 
@@ -237,7 +237,7 @@ export async function login(prevState: any, formData: FormData) {
   if (!user || user.password !== password) {
     return {
       errors: {},
-      message: "Invalid email or password.",
+      message: "بريد إلكتروني أو كلمة مرور غير صالحة.",
     };
   }
   
@@ -245,8 +245,8 @@ export async function login(prevState: any, formData: FormData) {
 }
 
 const addUnitSchema = z.object({
-  unitName: z.string().min(1, "Unit name is required."),
-  userId: z.string().min(1, "User ID is required."),
+  unitName: z.string().min(1, "اسم الوحدة مطلوب."),
+  userId: z.string().min(1, "معرف المستخدم مطلوب."),
 });
 
 export async function addUnit(prevState: any, formData: FormData) {
@@ -258,7 +258,7 @@ export async function addUnit(prevState: any, formData: FormData) {
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
+      message: "فشل التحقق.",
       success: false,
     };
   }
@@ -272,8 +272,8 @@ export async function addUnit(prevState: any, formData: FormData) {
 
   if (existingUnit) {
       return {
-          errors: { unitName: ["A unit with this name already exists."] },
-          message: "Unit already exists.",
+          errors: { unitName: ["وحدة بهذا الاسم موجودة بالفعل."] },
+          message: "الوحدة موجودة بالفعل.",
           success: false,
       }
   }
@@ -284,5 +284,5 @@ export async function addUnit(prevState: any, formData: FormData) {
     supervisorId: userId,
   };
   
-  return { success: true, message: "Unit created!", newUnit };
+  return { success: true, message: "تم إنشاء الوحدة!", newUnit };
 }

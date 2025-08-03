@@ -71,19 +71,19 @@ export default function WordsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold font-headline">My Words</h1>
-          <p className="text-muted-foreground">Manage your vocabulary list.</p>
+          <h1 className="text-3xl font-bold font-headline">كلماتي</h1>
+          <p className="text-muted-foreground">إدارة قائمة المفردات الخاصة بك.</p>
         </div>
         <Button asChild>
-            <Link href={`/dashboard/add-word?userId=${userId}`}>Add New Word</Link>
+            <Link href={`/dashboard/add-word?userId=${userId}`}>إضافة كلمة جديدة</Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Vocabulary List</CardTitle>
+          <CardTitle>قائمة المفردات</CardTitle>
           <CardDescription>
-            A complete list of all words you have added.
+            قائمة كاملة بجميع الكلمات التي أضفتها.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -91,13 +91,13 @@ export default function WordsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="hidden w-[100px] sm:table-cell">
-                  Image
+                  صورة
                 </TableHead>
-                <TableHead>Word</TableHead>
-                <TableHead>Definition</TableHead>
-                <TableHead>Unit</TableHead>
+                <TableHead>الكلمة</TableHead>
+                <TableHead>التعريف</TableHead>
+                <TableHead>الوحدة</TableHead>
                 <TableHead>
-                  <span className="sr-only">Actions</span>
+                  <span className="sr-only">الإجراءات</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -106,7 +106,7 @@ export default function WordsPage() {
                 <TableRow key={word.id}>
                   <TableCell className="hidden sm:table-cell">
                     <Image
-                      alt="Word image"
+                      alt="صورة الكلمة"
                       className="aspect-square rounded-md object-cover"
                       height="64"
                       src={word.imageUrl}
@@ -131,15 +131,15 @@ export default function WordsPage() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                              <AlertDialogTitle>هل أنت متأكد تمامًا؟</AlertDialogTitle>
                               <AlertDialogDescription>
-                                This action cannot be undone. This will permanently delete the word
-                                "{word.word}" from your list.
+                                لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف الكلمة بشكل دائم
+                                "{word.word}" من قائمتك.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(word.id)}>Continue</AlertDialogAction>
+                              <AlertDialogCancel>إلغاء</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(word.id)}>متابعة</AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>

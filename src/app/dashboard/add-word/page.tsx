@@ -19,15 +19,15 @@ export default function AddWordPage({
   }
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Add New Word</h1>
+      <h1 className="text-3xl font-bold font-headline">إضافة كلمة جديدة</h1>
       <p className="text-muted-foreground">
-        Create a new vocabulary card for your students. The AI will generate distractor options automatically.
+        أنشئ بطاقة مفردات جديدة لطلابك. سيقوم الذكاء الاصطناعي بإنشاء خيارات مضللة تلقائيًا.
       </p>
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>New Vocabulary Card</CardTitle>
+          <CardTitle>بطاقة مفردات جديدة</CardTitle>
           <CardDescription>
-            Fill in the details for the new word.
+            املأ تفاصيل الكلمة الجديدة.
           </CardDescription>
         </CardHeader>
         <CardContent>

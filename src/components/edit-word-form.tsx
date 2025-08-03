@@ -34,10 +34,10 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Saving Changes...
+          جارٍ حفظ التغييرات...
         </>
       ) : (
-        "Save Changes"
+        "حفظ التغييرات"
       )}
     </Button>
   );
@@ -62,7 +62,7 @@ export function EditWordForm({ word }: { word: Word }) {
   useEffect(() => {
     if (state.success && state.updatedWord) {
       toast({
-        title: "Success!",
+        title: "نجاح!",
         description: state.message,
       });
 
@@ -90,7 +90,7 @@ export function EditWordForm({ word }: { word: Word }) {
       router.push(`/dashboard/words?userId=${userId}`);
     } else if (state.message && !state.success) {
       toast({
-        title: "Error",
+        title: "خطأ",
         description: state.message,
         variant: "destructive",
       });
@@ -102,19 +102,19 @@ export function EditWordForm({ word }: { word: Word }) {
       <input type="hidden" name="wordId" value={word.id} />
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
-        <Label htmlFor="word">Word</Label>
-        <Input id="word" name="word" defaultValue={word.word} placeholder="e.g., Ephemeral" required />
+        <Label htmlFor="word">الكلمة</Label>
+        <Input id="word" name="word" defaultValue={word.word} placeholder="مثال: سريع الزوال" required />
         {state?.errors?.word && (
           <p className="text-sm text-destructive">{state.errors.word[0]}</p>
         )}
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="definition">Definition</Label>
+        <Label htmlFor="definition">التعريف</Label>
         <Textarea
           id="definition"
           name="definition"
           defaultValue={word.definition}
-          placeholder="e.g., Lasting for a very short time."
+          placeholder="مثال: يدوم لفترة قصيرة جدًا."
           required
         />
         {state?.errors?.definition && (
@@ -122,10 +122,10 @@ export function EditWordForm({ word }: { word: Word }) {
         )}
       </div>
        <div className="grid gap-2">
-            <Label htmlFor="unitId">Unit</Label>
+            <Label htmlFor="unitId">الوحدة</Label>
             <Select name="unitId" defaultValue={word.unitId}>
                 <SelectTrigger>
-                    <SelectValue placeholder="Select a unit" />
+                    <SelectValue placeholder="اختر وحدة" />
                 </SelectTrigger>
                 <SelectContent>
                     {units.map(unit => (
@@ -138,11 +138,11 @@ export function EditWordForm({ word }: { word: Word }) {
             )}
        </div>
       <div className="grid gap-2">
-        <Label htmlFor="image">Explanatory Image</Label>
-        <p className="text-sm text-muted-foreground">Current Image:</p>
+        <Label htmlFor="image">صورة توضيحية</Label>
+        <p className="text-sm text-muted-foreground">الصورة الحالية:</p>
         <Image src={word.imageUrl} alt="Current image" width={100} height={100} className="rounded-md" />
         <Input id="image" name="image" type="file" accept="image/*" />
-        <p className="text-xs text-muted-foreground">Leave blank to keep the current image.</p>
+        <p className="text-xs text-muted-foreground">اتركه فارغًا للاحتفاظ بالصورة الحالية.</p>
          {state?.errors?.image && (
           <p className="text-sm text-destructive">{state.errors.image[0]}</p>
         )}

@@ -29,7 +29,7 @@ function StudentSubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" className="w-full mt-2" disabled={pending}>
-            {pending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</>) : "Create an account"}
+            {pending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> جارٍ إنشاء الحساب...</>) : "إنشاء حساب"}
         </Button>
     )
 }
@@ -38,7 +38,7 @@ function SupervisorSubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" className="w-full mt-2" disabled={pending}>
-             {pending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</>) : "Create a supervisor account"}
+             {pending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> جارٍ إنشاء الحساب...</>) : "إنشاء حساب مشرف"}
         </Button>
     )
 }
@@ -51,23 +51,23 @@ export function RegisterForm() {
 
   useEffect(() => {
     if (studentState.message && Object.keys(studentState.errors || {}).length === 0) {
-      toast({ title: "Success!", description: studentState.message });
+      toast({ title: "نجاح!", description: studentState.message });
       // Redirect is now handled in the server action
     } else if (studentState.message || (studentState.errors && Object.keys(studentState.errors).length > 0)) {
       const firstError = Object.values(studentState.errors || {}).flat()[0];
       const message = firstError || studentState.message;
-      toast({ title: "Error", description: message, variant: "destructive" });
+      toast({ title: "خطأ", description: message, variant: "destructive" });
     }
   }, [studentState, toast]);
 
    useEffect(() => {
     if (supervisorState.message && Object.keys(supervisorState.errors || {}).length === 0) {
-      toast({ title: "Success!", description: supervisorState.message });
+      toast({ title: "نجاح!", description: supervisorState.message });
        // Redirect is now handled in the server action
     } else if (supervisorState.message || (supervisorState.errors && Object.keys(supervisorState.errors).length > 0)) {
        const firstError = Object.values(supervisorState.errors || {}).flat()[0];
        const message = firstError || supervisorState.message;
-      toast({ title: "Error", description: message, variant: "destructive" });
+      toast({ title: "خطأ", description: message, variant: "destructive" });
     }
   }, [supervisorState, toast]);
 
@@ -77,28 +77,28 @@ export function RegisterForm() {
         <div className="flex justify-center mb-4">
             <Logo />
         </div>
-        <CardTitle className="text-2xl font-headline">Join LinguaLeap</CardTitle>
+        <CardTitle className="text-2xl font-headline">انضم إلى LinguaLeap</CardTitle>
         <CardDescription>
-          Create your account to start your learning journey.
+          أنشئ حسابك لبدء رحلتك التعليمية.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="student">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="student">Student</TabsTrigger>
-            <TabsTrigger value="supervisor">Supervisor</TabsTrigger>
+            <TabsTrigger value="student">طالب</TabsTrigger>
+            <TabsTrigger value="supervisor">مشرف</TabsTrigger>
           </TabsList>
           <TabsContent value="student">
             <form action={studentFormAction}>
               <input type="hidden" name="role" value="student" />
               <div className="grid gap-4 mt-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="student-name">Full Name</Label>
-                  <Input id="student-name" name="name" placeholder="Max Robinson" required />
+                  <Label htmlFor="student-name">الاسم الكامل</Label>
+                  <Input id="student-name" name="name" placeholder="ماكس روبنسون" required />
                   {studentState.errors?.name && <p className="text-sm text-destructive">{studentState.errors.name[0]}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="student-email">Email</Label>
+                  <Label htmlFor="student-email">البريد الإلكتروني</Label>
                   <Input
                     id="student-email"
                     type="email"
@@ -109,13 +109,13 @@ export function RegisterForm() {
                   {studentState.errors?.email && <p className="text-sm text-destructive">{studentState.errors.email[0]}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="student-password">Password</Label>
+                  <Label htmlFor="student-password">كلمة المرور</Label>
                   <Input id="student-password" name="password" type="password" required/>
                   {studentState.errors?.password && <p className="text-sm text-destructive">{studentState.errors.password[0]}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="supervisor-id">Supervisor ID</Label>
-                  <Input id="supervisor-id" name="supervisorId" placeholder="Enter your supervisor's ID" />
+                  <Label htmlFor="supervisor-id">معرف المشرف</Label>
+                  <Input id="supervisor-id" name="supervisorId" placeholder="أدخل معرف المشرف الخاص بك" />
                   {studentState.errors?.supervisorId && <p className="text-sm text-destructive">{studentState.errors.supervisorId[0]}</p>}
                 </div>
                 <StudentSubmitButton />
@@ -127,12 +127,12 @@ export function RegisterForm() {
                 <input type="hidden" name="role" value="supervisor" />
               <div className="grid gap-4 mt-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="supervisor-name">Full Name</Label>
-                  <Input id="supervisor-name" name="name" placeholder="Dr. Jane Smith" required />
+                  <Label htmlFor="supervisor-name">الاسم الكامل</Label>
+                  <Input id="supervisor-name" name="name" placeholder="د. جين سميث" required />
                   {supervisorState.errors?.name && <p className="text-sm text-destructive">{supervisorState.errors.name[0]}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="supervisor-email">Email</Label>
+                  <Label htmlFor="supervisor-email">البريد الإلكتروني</Label>
                   <Input
                     id="supervisor-email"
                     type="email"
@@ -143,7 +143,7 @@ export function RegisterForm() {
                   {supervisorState.errors?.email && <p className="text-sm text-destructive">{supervisorState.errors.email[0]}</p>}
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="supervisor-password">Password</Label>
+                  <Label htmlFor="supervisor-password">كلمة المرور</Label>
                   <Input id="supervisor-password" name="password" type="password" required/>
                   {supervisorState.errors?.password && <p className="text-sm text-destructive">{supervisorState.errors.password[0]}</p>}
                 </div>
@@ -154,16 +154,16 @@ export function RegisterForm() {
         </Tabs>
         <div className="my-4 flex items-center">
             <div className="flex-grow border-t border-muted-foreground"></div>
-            <span className="mx-4 text-xs uppercase text-muted-foreground">Or continue with</span>
+            <span className="mx-4 text-xs uppercase text-muted-foreground">أو تابع مع</span>
             <div className="flex-grow border-t border-muted-foreground"></div>
         </div>
         <Button variant="outline" className="w-full">
-          Sign up with Google
+          التسجيل باستخدام جوجل
         </Button>
         <div className="mt-4 text-center text-sm">
-          Already have an account?{" "}
+          هل لديك حساب بالفعل؟{" "}
           <Link href="/login" className="underline">
-            Sign in
+            تسجيل الدخول
           </Link>
         </div>
       </CardContent>

@@ -31,24 +31,24 @@ export default function EditWordPage() {
   }, [wordId, userId]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div>جار التحميل...</div>;
   }
 
   if (!word) {
-    return <div>Word not found.</div>;
+    return <div>لم يتم العثور على الكلمة.</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Edit Word</h1>
+      <h1 className="text-3xl font-bold font-headline">تعديل الكلمة</h1>
       <p className="text-muted-foreground">
-        Update the details for your vocabulary card.
+        قم بتحديث تفاصيل بطاقة المفردات الخاصة بك.
       </p>
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>Editing: {word.word}</CardTitle>
+          <CardTitle>تعديل: {word.word}</CardTitle>
           <CardDescription>
-            Modify the fields below and save your changes.
+            قم بتعديل الحقول أدناه واحفظ تغييراتك.
           </CardDescription>
         </CardHeader>
         <CardContent>

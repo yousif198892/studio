@@ -33,32 +33,32 @@ export default function Dashboard({
 
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold font-headline">Welcome, {user.name}!</h1>
-        <p className="text-muted-foreground">Here's a summary of your learning progress. Keep up the great work!</p>
+        <h1 className="text-3xl font-bold font-headline">مرحبًا، {user.name}!</h1>
+        <p className="text-muted-foreground">إليك ملخص لتقدمك في التعلم. استمر في العمل الرائع!</p>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Words to Review
+                كلمات للمراجعة
               </CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{wordsToReview}</div>
               <p className="text-xs text-muted-foreground">
-                Ready for your next session
+                جاهز لجلستك التالية
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Words Learned</CardTitle>
+              <CardTitle className="text-sm font-medium">الكلمات المكتسبة</CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{wordsLearned}</div>
               <p className="text-xs text-muted-foreground">
-                Total vocabulary words acquired
+                إجمالي كلمات المفردات المكتسبة
               </p>
             </CardContent>
           </Card>
@@ -71,12 +71,12 @@ export default function Dashboard({
     const students = getStudentsBySupervisorId(user.id);
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">Supervisor Dashboard</h1>
-            <p className="text-muted-foreground">Welcome, {user.name}.</p>
+            <h1 className="text-3xl font-bold font-headline">لوحة تحكم المشرف</h1>
+            <p className="text-muted-foreground">مرحبًا، {user.name}.</p>
             <Card>
                 <CardHeader>
-                    <CardTitle>Your Supervisor ID</CardTitle>
-                    <CardDescription>Share this ID with your students so they can connect with you.</CardDescription>
+                    <CardTitle>معرف المشرف الخاص بك</CardTitle>
+                    <CardDescription>شارك هذا المعرف مع طلابك حتى يتمكنوا من الاتصال بك.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center gap-4">
                     <KeyRound className="h-8 w-8 text-primary"/>
@@ -85,18 +85,18 @@ export default function Dashboard({
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>My Students</CardTitle>
-                    <CardDescription>A list of students under your supervision.</CardDescription>
+                    <CardTitle>طلابي</CardTitle>
+                    <CardDescription>قائمة الطلاب تحت إشرافك.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
                             <TableHead className="hidden w-[100px] sm:table-cell">
-                                <span className="sr-only">Image</span>
+                                <span className="sr-only">صورة</span>
                             </TableHead>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
+                            <TableHead>الاسم</TableHead>
+                            <TableHead>البريد الإلكتروني</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -104,7 +104,7 @@ export default function Dashboard({
                                 <TableRow key={student.id}>
                                     <TableCell className="hidden sm:table-cell">
                                         <Image
-                                        alt="Student avatar"
+                                        alt="الصورة الرمزية للطالب"
                                         className="aspect-square rounded-full object-cover"
                                         height="64"
                                         src={student.avatar}
@@ -123,5 +123,5 @@ export default function Dashboard({
     )
   }
 
-  return <div>Loading...</div>
+  return <div>جار التحميل...</div>
 }

@@ -16,8 +16,8 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { getUserById, mockUsers } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Dashboard | LinguaLeap",
-  description: "Your personal learning dashboard.",
+  title: "لوحة التحكم | LinguaLeap",
+  description: "لوحة التحكم التعليمية الشخصية الخاصة بك.",
 };
 
 export default async function DashboardLayout({
@@ -37,7 +37,7 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen flex-row-reverse">
         <DashboardSidebar user={user} />
         <div className="flex-1 flex flex-col">
           <DashboardHeader />

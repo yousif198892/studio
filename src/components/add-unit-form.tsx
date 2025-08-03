@@ -31,10 +31,10 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Adding Unit...
+          جارٍ إضافة الوحدة...
         </>
       ) : (
-        "Add Unit"
+        "إضافة وحدة"
       )}
     </Button>
   );
@@ -50,7 +50,7 @@ export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void
   useEffect(() => {
     if (state.success && state.newUnit) {
       toast({
-        title: "Success!",
+        title: "نجاح!",
         description: state.message,
       });
       
@@ -61,7 +61,7 @@ export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void
       
     } else if (state.message && !state.success && state.errors) {
       toast({
-        title: "Error",
+        title: "خطأ",
         description: state.message,
         variant: "destructive",
       });
@@ -72,8 +72,8 @@ export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
-        <Label htmlFor="unitName">Unit Name</Label>
-        <Input id="unitName" name="unitName" placeholder="e.g., Chapter 1 Verbs" required />
+        <Label htmlFor="unitName">اسم الوحدة</Label>
+        <Input id="unitName" name="unitName" placeholder="مثال: الفصل الأول الأفعال" required />
         {state?.errors?.unitName && (
           <p className="text-sm text-destructive">{state.errors.unitName[0]}</p>
         )}

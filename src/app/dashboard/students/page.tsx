@@ -28,22 +28,22 @@ export default function StudentsPage({
 
   return (
     <div className="space-y-6">
-        <h1 className="text-3xl font-bold font-headline">My Students</h1>
-        <p className="text-muted-foreground">Welcome, {user?.name}. Here are your students.</p>
+        <h1 className="text-3xl font-bold font-headline">طلابي</h1>
+        <p className="text-muted-foreground">مرحبًا، {user?.name}. إليك طلابك.</p>
         <Card>
             <CardHeader>
-                <CardTitle>All Students</CardTitle>
-                <CardDescription>A list of students under your supervision.</CardDescription>
+                <CardTitle>جميع الطلاب</CardTitle>
+                <CardDescription>قائمة الطلاب تحت إشرافك.</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
                         <TableHead className="hidden w-[100px] sm:table-cell">
-                            <span className="sr-only">Image</span>
+                            <span className="sr-only">صورة</span>
                         </TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Email</TableHead>
+                        <TableHead>الاسم</TableHead>
+                        <TableHead>البريد الإلكتروني</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -51,7 +51,7 @@ export default function StudentsPage({
                             <TableRow key={student.id}>
                                 <TableCell className="hidden sm:table-cell">
                                     <Image
-                                    alt="Student avatar"
+                                    alt="الصورة الرمزية للطالب"
                                     className="aspect-square rounded-full object-cover"
                                     height="64"
                                     src={student.avatar}

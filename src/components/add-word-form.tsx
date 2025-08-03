@@ -33,10 +33,10 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Adding Word...
+          جار إضافة الكلمة...
         </>
       ) : (
-        "Add Word"
+        "إضافة كلمة"
       )}
     </Button>
   );
@@ -62,7 +62,7 @@ export function AddWordForm() {
   useEffect(() => {
     if (state.success && state.newWord) {
       toast({
-        title: "Success!",
+        title: "نجاح!",
         description: state.message,
       });
 
@@ -83,7 +83,7 @@ export function AddWordForm() {
       router.push(`/dashboard/words?userId=${userId}`);
     } else if (state.message && !state.success) {
       toast({
-        title: "Error",
+        title: "خطأ",
         description: state.message,
         variant: "destructive",
       });
@@ -94,18 +94,18 @@ export function AddWordForm() {
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
-        <Label htmlFor="word">Word</Label>
-        <Input id="word" name="word" placeholder="e.g., Ephemeral" required />
+        <Label htmlFor="word">الكلمة</Label>
+        <Input id="word" name="word" placeholder="مثال: سريع الزوال" required />
         {state?.errors?.word && (
           <p className="text-sm text-destructive">{state.errors.word[0]}</p>
         )}
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="definition">Definition</Label>
+        <Label htmlFor="definition">التعريف</Label>
         <Textarea
           id="definition"
           name="definition"
-          placeholder="e.g., Lasting for a very short time."
+          placeholder="مثال: يدوم لفترة قصيرة جدًا."
           required
         />
         {state?.errors?.definition && (
@@ -113,10 +113,10 @@ export function AddWordForm() {
         )}
       </div>
        <div className="grid gap-2">
-            <Label htmlFor="unitId">Unit</Label>
+            <Label htmlFor="unitId">الوحدة</Label>
             <Select name="unitId">
                 <SelectTrigger>
-                    <SelectValue placeholder="Select a unit" />
+                    <SelectValue placeholder="اختر وحدة" />
                 </SelectTrigger>
                 <SelectContent>
                     {units.map(unit => (
@@ -129,7 +129,7 @@ export function AddWordForm() {
             )}
        </div>
       <div className="grid gap-2">
-        <Label htmlFor="image">Explanatory Image</Label>
+        <Label htmlFor="image">صورة توضيحية</Label>
         <Input id="image" name="image" type="file" accept="image/*" required />
          {state?.errors?.image && (
           <p className="text-sm text-destructive">{state.errors.image[0]}</p>

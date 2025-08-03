@@ -38,7 +38,7 @@ export default function LearnPage() {
     <div className="flex flex-col items-center justify-center min-h-full p-4">
       {currentWord ? (
         <div key={currentWord.id} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
-           <h1 className="text-3xl font-bold font-headline mb-4 text-center">Learning Session</h1>
+           <h1 className="text-3xl font-bold font-headline mb-4 text-center">جلسة تعلم</h1>
           <QuizCard
             word={currentWord}
             onCorrect={handleCorrect}
@@ -49,13 +49,13 @@ export default function LearnPage() {
       ) : (
         <Card className="w-full max-w-lg text-center">
             <CardHeader>
-                <CardTitle className="font-headline text-2xl">All Done for Now!</CardTitle>
+                <CardTitle className="font-headline text-2xl">لقد انتهيت من كل شيء في الوقت الحالي!</CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground">You've reviewed all your due words. Great job!</p>
-                <p className="text-muted-foreground mt-2">Come back later for your next session.</p>
+                <p className="text-muted-foreground">لقد راجعت كل كلماتك المستحقة. عمل رائع!</p>
+                <p className="text-muted-foreground mt-2">عد لاحقًا لجلستك التالية.</p>
                 <Button onClick={handleNextWord} className="mt-6">
-                    Start a New Session Anyway
+                    ابدأ جلسة جديدة على أي حال
                     <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
             </CardContent>

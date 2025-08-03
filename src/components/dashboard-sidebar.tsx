@@ -85,7 +85,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   );
 
   return (
-    <Sidebar className="border-r" side="left">
+    <Sidebar className="border-l" side="right">
       <SidebarHeader>
         <div className="flex items-center gap-2 p-2">
             <Logo />
@@ -99,7 +99,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
               <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname === item.href.split('?')[0]}
-                  className="w-full"
+                  className="w-full justify-start"
                 >
                   {item.icon}
                   <span>{item.label}</span>
