@@ -38,43 +38,43 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const menuItems = [
     {
       href: `/dashboard?userId=${user.id}`,
-      label: "Dashboard",
+      label: "لوحة التحكم",
       icon: <Home />,
       roles: ["student", "supervisor"],
     },
     {
       href: `/learn?userId=${user.id}`,
-      label: "Learn",
+      label: "تعلم",
       icon: <BookOpen />,
       roles: ["student"],
     },
     {
         href: `/dashboard/words?userId=${user.id}`,
-        label: "My Words",
+        label: "كلماتي",
         icon: <BookOpen />,
         roles: ["supervisor"],
     },
     {
       href: `/dashboard/add-word?userId=${user.id}`,
-      label: "Add Word",
+      label: "إضافة كلمة",
       icon: <PlusCircle />,
       roles: ["supervisor"],
     },
      {
         href: `/dashboard/units?userId=${user.id}`,
-        label: "My Units",
+        label: "وحداتي",
         icon: <Layers />,
         roles: ["supervisor"],
     },
     {
         href: `/dashboard/students?userId=${user.id}`,
-        label: "My Students",
+        label: "طلابي",
         icon: <Users />,
         roles: ["supervisor"],
     },
     {
       href: `/dashboard/profile?userId=${user.id}`,
-      label: "Profile",
+      label: "الملف الشخصي",
       icon: <Settings />,
       roles: ["student", "supervisor"],
     },
@@ -85,7 +85,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   );
 
   return (
-    <Sidebar className="border-r">
+    <Sidebar className="border-r" side="right">
       <SidebarHeader>
         <div className="flex items-center gap-2 p-2">
             <Logo />
@@ -99,10 +99,10 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
               <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname === item.href.split('?')[0]}
-                  className="w-full"
+                  className="w-full flex-row-reverse"
                 >
-                  {item.icon}
                   <span>{item.label}</span>
+                  {item.icon}
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
@@ -111,21 +111,21 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       </SidebarContent>
       <SidebarFooter className="p-2 border-t">
         <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
-          <Avatar>
-            <AvatarImage src={user?.avatar} alt="User" />
-            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 overflow-hidden">
-            <p className="font-semibold text-sm truncate">{user?.name}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {user?.email}
-            </p>
-          </div>
           <Link href="/login">
             <Button variant="ghost" size="icon">
                 <LogOut className="h-4 w-4" />
             </Button>
           </Link>
+          <div className="flex-1 overflow-hidden text-right">
+            <p className="font-semibold text-sm truncate">{user?.name}</p>
+            <p className="text-xs text-muted-foreground truncate">
+              {user?.email}
+            </p>
+          </div>
+           <Avatar>
+            <AvatarImage src={user?.avatar} alt="User" />
+            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+          </Avatar>
         </div>
       </SidebarFooter>
     </Sidebar>
