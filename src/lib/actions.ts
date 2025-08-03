@@ -53,6 +53,10 @@ export async function addWord(prevState: any, formData: FormData) {
       explanatoryImage: dataUri,
     });
     
+    if (!aiResult || !aiResult.options) {
+        throw new Error("AI did not return valid options.");
+    }
+    
     console.log("AI Result:", aiResult.options);
 
     const newWord = {
