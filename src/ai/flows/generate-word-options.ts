@@ -60,6 +60,8 @@ const generateWordOptionsFlow = ai.defineFlow(
     outputSchema: GenerateWordOptionsOutputSchema,
   },
   async input => {
+    // The prompt's {{media}} helper expects the URL to be passed in directly.
+    // The input schema ensures `explanatoryImage` is a valid data URI string.
     const {output} = await prompt(input);
     return output!;
   }
