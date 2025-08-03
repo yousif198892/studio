@@ -31,12 +31,6 @@ const GenerateWordOptionsOutputSchema = z.object({
 });
 export type GenerateWordOptionsOutput = z.infer<typeof GenerateWordOptionsOutputSchema>;
 
-export async function generateWordOptions(
-  input: GenerateWordOptionsInput
-): Promise<GenerateWordOptionsOutput> {
-  return generateWordOptionsFlow(input);
-}
-
 const prompt = ai.definePrompt({
   name: 'generateWordOptionsPrompt',
   input: {schema: GenerateWordOptionsInputSchema},
@@ -53,16 +47,12 @@ const prompt = ai.definePrompt({
   Generate three incorrect options.`,
 });
 
-const generateWordOptionsFlow = ai.defineFlow(
-  {
-    name: 'generateWordOptionsFlow',
-    inputSchema: GenerateWordOptionsInputSchema,
-    outputSchema: GenerateWordOptionsOutputSchema,
-  },
-  async input => {
-    // The prompt's {{media}} helper expects the URL to be passed in directly.
-    // The input schema ensures `explanatoryImage` is a valid data URI string.
-    const {output} = await prompt(input);
-    return output!;
+export async function generateWordOptions(
+  input: GenerateWordOptionsInput
+): Promise<GenerateWordOptionsOutput> {
+  const {output} = await prompt(input);
+  if (!output) {
+    throw new Error('AI failed to generate word options.');
   }
-);
+  return output;
+}
