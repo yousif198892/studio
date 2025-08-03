@@ -4,13 +4,14 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, mockWords } from "./data";
+import { mockUsers, mockWords, Word } from "./data";
 import { redirect } from "next/navigation";
 
 const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
+  image: z.any(),
 });
 
 export async function addWord(prevState: any, formData: FormData) {
@@ -18,6 +19,7 @@ export async function addWord(prevState: any, formData: FormData) {
     word: formData.get("word"),
     definition: formData.get("definition"),
     userId: formData.get("userId"),
+    image: formData.get("image"),
   });
 
   if (!validatedFields.success) {
@@ -44,26 +46,25 @@ export async function addWord(prevState: any, formData: FormData) {
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${imageFile.type};base64,${base64}`;
 
-    const { options } = await generateWordOptions({
+    const aiResult = await generateWordOptions({
       word,
       definition,
       explanatoryImage: dataUri,
     });
     
-    if (!options) {
+    if (!aiResult.options) {
         throw new Error("AI did not return valid options.");
     }
 
-    const newWord = {
+    const newWord: Word = {
         id: `word${Date.now()}`,
         word,
         definition,
         imageUrl: dataUri, 
-        options: [...options, word],
+        options: [...aiResult.options, word],
         correctOption: word,
         supervisorId: userId,
-        // Make nextReview a string to be JSON serializable
-        nextReview: new Date().toISOString(),
+        nextReview: new Date(),
         strength: 0,
     };
 
@@ -75,6 +76,62 @@ export async function addWord(prevState: any, formData: FormData) {
     return { message: `Failed to add word. AI generation error: ${errorMessage}`, errors: {}, success: false };
   }
 }
+
+
+const updateWordSchema = z.object({
+  word: z.string().min(1, "Word is required."),
+  definition: z.string().min(1, "Definition is required."),
+  userId: z.string().min(1, "User ID is required."),
+  wordId: z.string().min(1, "Word ID is required."),
+});
+
+export async function updateWord(prevState: any, formData: FormData) {
+  const validatedFields = updateWordSchema.safeParse({
+    word: formData.get("word"),
+    definition: formData.get("definition"),
+    userId: formData.get("userId"),
+    wordId: formData.get("wordId"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Validation failed.",
+      success: false,
+    };
+  }
+   const { word, definition, wordId } = validatedFields.data;
+  const imageFile = formData.get("image") as File | null;
+
+  try {
+    let dataUri: string | undefined = undefined;
+    if (imageFile && imageFile.size > 0) {
+      const buffer = await imageFile.arrayBuffer();
+      const base64 = Buffer.from(buffer).toString("base64");
+      dataUri = `data:${imageFile.type};base64,${base64}`;
+    }
+
+    // This is where you would update the word in your actual database.
+    // For this prototype, we'll return a success message.
+    // The client will handle updating localStorage.
+    // In a real app, you'd revalidate the path/tag here.
+
+    return { 
+      success: true, 
+      message: "Word updated successfully!",
+      updatedWord: { // Sending back the updated data for the client
+        id: wordId,
+        word,
+        definition,
+        imageUrl: dataUri, // Will be undefined if no new image was uploaded
+      }
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    return { message: `Failed to update word: ${errorMessage}`, errors: {}, success: false };
+  }
+}
+
 
 const registerSchema = z
   .object({

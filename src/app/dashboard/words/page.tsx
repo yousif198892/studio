@@ -50,7 +50,7 @@ export default function WordsPage() {
       .map(w => ({...w, nextReview: new Date(w.nextReview)}));
 
     // Combine and remove duplicates, giving preference to user-added words
-    const combined = [...initialWords, ...userAddedWords];
+    const combined = [...userAddedWords, ...initialWords];
     const uniqueWords = Array.from(new Map(combined.map(item => [item['id'], item])).values());
     
     setWords(uniqueWords);

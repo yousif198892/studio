@@ -1,23 +1,23 @@
 
 "use client";
 
-import { useFormStatus, useFormState } from "react-dom";
-import { addWord } from "@/lib/actions";
+import { useFormStatus } from "react-dom";
+import { updateWord } from "@/lib/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Word } from "@/lib/data";
+import Image from "next/image";
 
 const initialState = {
   message: "",
   errors: {},
   success: false,
-  newWord: null,
 };
 
 function SubmitButton() {
@@ -28,46 +28,28 @@ function SubmitButton() {
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Adding Word...
+          Saving Changes...
         </>
       ) : (
-        "Add Word"
+        "Save Changes"
       )}
     </Button>
   );
 }
 
-export function AddWordForm() {
-  const [state, formAction] = useFormState(addWord, initialState);
+export function EditWordForm({ word }: { word: Word }) {
+  const [state, formAction] = useActionState(updateWord, initialState);
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   const router = useRouter();
-  const formRef = useRef<HTMLFormElement>(null);
-
 
   useEffect(() => {
-    if (state.success && state.newWord) {
+    if (state.success) {
       toast({
         title: "Success!",
         description: state.message,
       });
-
-      // Save to localStorage
-      try {
-        const existingWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-        const newWord: Word = {
-          ...state.newWord,
-          // Ensure nextReview is a Date object if it's a string
-          nextReview: new Date(state.newWord.nextReview)
-        };
-        const updatedWords = [...existingWords, newWord];
-        localStorage.setItem('userWords', JSON.stringify(updatedWords));
-      } catch (e) {
-        console.error("Could not save to localStorage", e);
-      }
-
-      formRef.current?.reset();
       router.push(`/dashboard/words?userId=${userId}`);
     } else if (state.message && !state.success) {
       toast({
@@ -79,11 +61,12 @@ export function AddWordForm() {
   }, [state, toast, router, userId]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form action={formAction} className="space-y-4">
+      <input type="hidden" name="wordId" value={word.id} />
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
         <Label htmlFor="word">Word</Label>
-        <Input id="word" name="word" placeholder="e.g., Ephemeral" required />
+        <Input id="word" name="word" defaultValue={word.word} placeholder="e.g., Ephemeral" required />
         {state?.errors?.word && (
           <p className="text-sm text-destructive">{state.errors.word[0]}</p>
         )}
@@ -93,6 +76,7 @@ export function AddWordForm() {
         <Textarea
           id="definition"
           name="definition"
+          defaultValue={word.definition}
           placeholder="e.g., Lasting for a very short time."
           required
         />
@@ -102,7 +86,10 @@ export function AddWordForm() {
       </div>
       <div className="grid gap-2">
         <Label htmlFor="image">Explanatory Image</Label>
-        <Input id="image" name="image" type="file" accept="image/*" required />
+        <p className="text-sm text-muted-foreground">Current Image:</p>
+        <Image src={word.imageUrl} alt="Current image" width={100} height={100} className="rounded-md" />
+        <Input id="image" name="image" type="file" accept="image/*" />
+        <p className="text-xs text-muted-foreground">Leave blank to keep the current image.</p>
          {state?.errors?.image && (
           <p className="text-sm text-destructive">{state.errors.image[0]}</p>
         )}
