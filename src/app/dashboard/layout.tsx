@@ -1,14 +1,13 @@
 
 "use client";
 
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { getUserById, mockUsers } from "@/lib/data";
+import { getUserById, mockUsers, User } from "@/lib/data";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ClientOnly } from "@/components/client-only";
@@ -19,23 +18,24 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
-  // In a real app, you'd get the user from a session
-  // For now, we'll get it from search params for demo purposes
-  const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
-  
-  const user = getUserById(userId);
+  const [user, setUser] = useState<User | null>(null);
 
-  // Note: In a real app with server-side auth, this check might be different.
-  // Since we are relying on client-side params for this demo, we handle missing user on the client.
-  if (!user) {
-    // Can't redirect from server component if user depends on client-side searchParams.
-    // A client-side redirect or a "not found" message is more appropriate here.
-    if (typeof window !== 'undefined') {
-       redirect("/login");
+  useEffect(() => {
+    const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+    const foundUser = getUserById(userId);
+    if (foundUser) {
+      setUser(foundUser);
+    } else {
+      // In a real app with proper auth, you might redirect to /login
+      // For this demo, we'll handle it client-side.
+      redirect("/login");
     }
-    return null; // Or return a loading spinner
-  }
+  }, [searchParams]);
 
+  if (!user) {
+    return null; // Or return a loading spinner while user is being determined
+  }
+  
   return (
     <ClientOnly>
       <SidebarProvider>
