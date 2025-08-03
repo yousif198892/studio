@@ -40,7 +40,6 @@ export async function addWord(prevState: any, formData: FormData) {
   }
 
   try {
-    // Convert image to data URI to pass to GenAI flow
     const buffer = await imageFile.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${imageFile.type};base64,${base64}`;
@@ -69,14 +68,12 @@ export async function addWord(prevState: any, formData: FormData) {
 
     mockWords.push(newWord);
 
-    revalidatePath(`/dashboard/words`);
-    
   } catch (error) {
     console.error("Error adding word:", error);
     return { message: "Failed to add word. AI generation error.", errors: {}, success: false };
   }
 
-  // Redirect on success
+  revalidatePath(`/dashboard/words`);
   redirect(`/dashboard/words?userId=${validatedFields.data.userId}`);
 }
 
