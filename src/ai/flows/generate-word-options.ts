@@ -18,7 +18,7 @@ const GenerateWordOptionsInputSchema = z.object({
   explanatoryImage: z
     .string()
     .describe(
-      'A URL or data URI of an image that visually explains the word, as a data URI that must include a MIME type and use Base64 encoding. Expected format: \'data:<mimetype>;base64,<encoded_data>\'.' /* Changed from URL to data URI */
+      "A data URI of an image that visually explains the word. It must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
 });
 export type GenerateWordOptionsInput = z.infer<typeof GenerateWordOptionsInputSchema>;
@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   Definition: {{{definition}}}
   Image: {{media url=explanatoryImage}}
 
-  Options:`,
+  Generate three incorrect options.`,
 });
 
 const generateWordOptionsFlow = ai.defineFlow(
@@ -60,23 +60,7 @@ const generateWordOptionsFlow = ai.defineFlow(
     outputSchema: GenerateWordOptionsOutputSchema,
   },
   async input => {
-    // The AI model can't handle the full data URI.
-    // Let's modify the prompt to just use the description and word.
-    const modifiedInput = {
-      ...input,
-      // Create a prompt that doesn't rely on the image.
-      prompt: `You are an AI assistant helping teachers create vocabulary quizzes.
-
-      Given a vocabulary word and its definition, your task is to generate three incorrect, but contextually relevant, answer options.
-      These options should be plausible enough to challenge students, but definitively wrong.
-    
-      Word: ${input.word}
-      Definition: ${input.definition}
-    
-      Options:`,
-    };
-
-    const {output} = await prompt(modifiedInput);
+    const {output} = await prompt(input);
     return output!;
   }
 );
