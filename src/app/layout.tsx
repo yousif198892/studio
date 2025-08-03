@@ -30,13 +30,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr" suppressHydrationWarning>
+    <html lang="en" dir="ltr">
       <body
         className={cn(
           "min-h-screen bg-background font-body antialiased",
           ptSans.variable,
           belleza.variable
         )}
+        suppressHydrationWarning
       >
         <LanguageProvider>
           <LanguageSetter />
