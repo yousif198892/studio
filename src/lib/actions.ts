@@ -154,8 +154,10 @@ export async function register(prevState: any, formData: FormData) {
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
     
+    // This won't persist across requests in dev server, but it's here for completeness.
     mockUsers.push(newUser); 
     
+    // Redirect to the dashboard as the new user.
     redirect(`/dashboard?userId=${newUser.id}`);
 }
 

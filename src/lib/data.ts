@@ -58,6 +58,16 @@ export const mockUsers: User[] = [
     timezone: "America/Los_Angeles",
     fontSize: "base",
   },
+  {
+    id: "sup2",
+    name: "Yousif",
+    email: "warriorwithinyousif@gmail.com",
+    password: "password123",
+    role: "supervisor",
+    avatar: "https://placehold.co/100x100.png",
+    timezone: "America/New_York",
+    fontSize: "base",
+  }
 ];
 
 export const mockWords: Word[] = [
