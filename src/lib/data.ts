@@ -84,7 +84,7 @@ export const mockUnits: Unit[] = [
     { id: "unit3", name: "Unit 3: Adjectives", supervisorId: "sup1" },
 ]
 
-export const mockWords: Word[] = [
+export let mockWords: Word[] = [
     {
         id: "word1",
         word: "Ephemeral",
@@ -156,7 +156,10 @@ export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
      if (typeof window !== 'undefined') {
         const storedUnits: Unit[] = JSON.parse(localStorage.getItem('userUnits') || '[]');
         const userAddedUnits = storedUnits.filter(u => u.supervisorId === supervisorId);
-        const combined = [...userAddedUnits, ...baseUnits];
+        
+        // This is where the fix is: use a Map to ensure all units are unique by their ID.
+        // It correctly merges the base units and the user-added units from localStorage.
+        const combined = [...baseUnits, ...userAddedUnits];
         const uniqueUnits = Array.from(new Map(combined.map(item => [item.id, item])).values());
         return uniqueUnits;
     }
