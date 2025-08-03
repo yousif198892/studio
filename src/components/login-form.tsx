@@ -12,8 +12,50 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
+import { useFormState, useFormStatus } from "react-dom";
+import { login } from "@/lib/actions";
+import { useToast } from "@/hooks/use-toast";
+import { useEffect } from "react";
+import { Loader2 } from "lucide-react";
+
+const initialState = {
+  message: "",
+  errors: {},
+};
+
+function SubmitButton() {
+  const { pending } = useFormStatus();
+
+  return (
+    <Button type="submit" disabled={pending} className="w-full">
+      {pending ? (
+        <>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Logging in...
+        </>
+      ) : (
+        "Login"
+      )}
+    </Button>
+  );
+}
+
 
 export function LoginForm() {
+    const [state, formAction] = useFormState(login, initialState);
+    const { toast } = useToast();
+
+    useEffect(() => {
+        if (state?.message) {
+          toast({
+            title: "Error",
+            description: state.message,
+            variant: "destructive",
+          });
+        }
+    }, [state, toast]);
+
+
   return (
     <Card className="mx-auto max-w-sm w-full">
       <CardHeader className="text-center">
@@ -26,15 +68,19 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-4">
+        <form action={formAction} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
+              name="email"
               placeholder="m@example.com"
               required
             />
+            {state.errors?.email && (
+              <p className="text-sm text-destructive">{state.errors.email[0]}</p>
+            )}
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
@@ -46,15 +92,16 @@ export function LoginForm() {
                 Forgot your password?
               </Link>
             </div>
-            <Input id="password" type="password" required />
+            <Input id="password" name="password" type="password" required />
+            {state.errors?.password && (
+                <p className="text-sm text-destructive">{state.errors.password[0]}</p>
+            )}
           </div>
-          <Button type="submit" className="w-full">
-            Login
-          </Button>
+          <SubmitButton />
           <Button variant="outline" className="w-full">
             Login with Google
           </Button>
-        </div>
+        </form>
         <div className="mt-4 text-center text-sm">
           Don&apos;t have an account?{" "}
           <Link href="/register" className="underline">

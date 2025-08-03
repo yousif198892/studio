@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
 import { mockUsers } from "./data";
+import { redirect } from "next/navigation";
 
 const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
@@ -101,12 +102,14 @@ const registerSchema = z
 
 export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role");
+    const supervisorId = formData.get("supervisorId");
+
     const data = {
         name: formData.get("name"),
         email: formData.get("email"),
         password: formData.get("password"),
         role: role,
-        supervisorId: role === 'student' ? formData.get("supervisorId") : undefined,
+        ...(role === 'student' && { supervisorId: supervisorId }),
     };
 
     const validatedFields = registerSchema.safeParse(data);
@@ -118,7 +121,7 @@ export async function register(prevState: any, formData: FormData) {
         };
     }
 
-    const { name, email, supervisorId } = validatedFields.data;
+    const { name, email } = validatedFields.data;
 
     // In a real app, you would save the new user to your database
     const newUser = {
@@ -127,7 +130,7 @@ export async function register(prevState: any, formData: FormData) {
         email,
         role,
         avatar: "https://placehold.co/100x100.png",
-        supervisorId: role === "student" ? supervisorId : undefined,
+        supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
 
     // Check if user already exists
@@ -143,4 +146,39 @@ export async function register(prevState: any, formData: FormData) {
 
     revalidatePath("/register");
     return { message: "Registration successful!", errors: {} };
+}
+
+
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address."),
+  password: z.string().min(1, "Password is required."),
+});
+
+export async function login(prevState: any, formData: FormData) {
+  const validatedFields = loginSchema.safeParse({
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Validation failed.",
+    };
+  }
+
+  const { email } = validatedFields.data;
+
+  const user = mockUsers.find((u) => u.email === email);
+
+  if (!user) {
+    return {
+      errors: {},
+      message: "Invalid email or password.",
+    };
+  }
+
+  // In a real app, you would verify the password and create a session.
+  // For now, we'll just redirect.
+  redirect("/dashboard");
 }
