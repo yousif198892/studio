@@ -40,14 +40,18 @@ export default function UnitsPage() {
     const userId = searchParams.get("userId") || "sup1";
     const [units, setUnits] = useState<Unit[]>([]);
     const { t } = useLanguage();
+    const [isClient, setIsClient] = useState(false)
 
     useEffect(() => {
-        // This now runs only on the client, preventing hydration errors
-        if (userId) {
+        setIsClient(true)
+    }, [])
+
+    useEffect(() => {
+        if (isClient && userId) {
             const supervisorUnits = getUnitsBySupervisor(userId);
             setUnits(supervisorUnits);
         }
-    }, [userId]);
+    }, [userId, isClient]);
 
     const handleUnitAdded = (newUnit: Unit) => {
       setUnits(prev => {
@@ -65,6 +69,10 @@ export default function UnitsPage() {
         const storedUnits: Unit[] = JSON.parse(localStorage.getItem('userUnits') || '[]');
         const updatedStoredUnits = storedUnits.filter(u => u.id !== unitId);
         localStorage.setItem('userUnits', JSON.stringify(updatedStoredUnits));
+    }
+
+    if (!isClient) {
+        return <div>{t('dashboard.loading')}</div>
     }
 
 
