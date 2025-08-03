@@ -1,3 +1,4 @@
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -88,7 +89,7 @@ const registerSchema = z
     supervisorId: z.string().optional(),
   })
   .superRefine((data, ctx) => {
-    if (data.role === 'student' && !data.supervisorId) {
+    if (data.role === 'student' && (!data.supervisorId || data.supervisorId.trim() === '')) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ['supervisorId'],
@@ -99,13 +100,16 @@ const registerSchema = z
 
 
 export async function register(prevState: any, formData: FormData) {
-    const validatedFields = registerSchema.safeParse({
+    const role = formData.get("role");
+    const data = {
         name: formData.get("name"),
         email: formData.get("email"),
         password: formData.get("password"),
-        role: formData.get("role"),
-        supervisorId: formData.get("supervisorId"),
-    });
+        role: role,
+        supervisorId: role === 'student' ? formData.get("supervisorId") : undefined,
+    };
+
+    const validatedFields = registerSchema.safeParse(data);
 
     if (!validatedFields.success) {
         return {
@@ -114,7 +118,7 @@ export async function register(prevState: any, formData: FormData) {
         };
     }
 
-    const { name, email, role, supervisorId } = validatedFields.data;
+    const { name, email, supervisorId } = validatedFields.data;
 
     // In a real app, you would save the new user to your database
     const newUser = {
