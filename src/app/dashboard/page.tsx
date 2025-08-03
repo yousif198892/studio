@@ -6,7 +6,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getStudentsBySupervisorId, getWordsForStudent, getUserById, mockUsers } from "@/lib/data";
-import { BookOpen, Target, Users } from "lucide-react";
+import { BookOpen, Target, Users, KeyRound } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -16,6 +16,7 @@ import {
     TableRow,
   } from "@/components/ui/table"
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 export default function Dashboard({
   searchParams,
@@ -71,7 +72,17 @@ export default function Dashboard({
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold font-headline">Supervisor Dashboard</h1>
-            <p className="text-muted-foreground">Welcome, {user.name}. Here are your students.</p>
+            <p className="text-muted-foreground">Welcome, {user.name}.</p>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Your Supervisor ID</CardTitle>
+                    <CardDescription>Share this ID with your students so they can connect with you.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex items-center gap-4">
+                    <KeyRound className="h-8 w-8 text-primary"/>
+                    <Badge variant="outline" className="text-lg py-2 px-4">{user.id}</Badge>
+                </CardContent>
+            </Card>
             <Card>
                 <CardHeader>
                     <CardTitle>My Students</CardTitle>
