@@ -216,13 +216,8 @@ export async function register(prevState: any, formData: FormData) {
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
     
-    // The mockUsers array is updated here, but this is only in memory for this server action's scope.
-    // To make it visible on the client on the next page, we would ideally write to a persistent store.
-    // For this demo, we'll continue with the redirect and rely on client-side state.
-    
-    mockUsers.push(newUser);
-    
-    redirect(`/dashboard?userId=${newUser.id}`);
+    const userParam = encodeURIComponent(JSON.stringify(newUser));
+    redirect(`/welcome?user=${userParam}`);
 }
 
 

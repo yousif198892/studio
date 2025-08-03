@@ -123,9 +123,27 @@ export let mockWords: Word[] = [
     }
 ];
 
+const getAllUsers = (): User[] => {
+    if (typeof window !== 'undefined') {
+        const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+        const allUsers = [...mockUsers, ...storedUsers];
+        return Array.from(new Map(allUsers.map(user => [user.id, user])).values());
+    }
+    return mockUsers;
+}
+
+
 // Helper functions to simulate data fetching
-export const getUserById = (id: string): User | undefined => mockUsers.find(u => u.id === id);
-export const getStudentsBySupervisorId = (supervisorId: string): User[] => mockUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
+export const getUserById = (id: string): User | undefined => {
+    const allUsers = getAllUsers();
+    return allUsers.find(u => u.id === id);
+}
+
+export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
+    const allUsers = getAllUsers();
+    return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
+}
+
 export const getWordsForStudent = (studentId: string): Word[] => {
     const student = getUserById(studentId);
     if (!student || !student.supervisorId) return [];
