@@ -48,13 +48,13 @@ export async function addWord(prevState: any, formData: FormData) {
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${imageFile.type};base64,${base64}`;
 
-    const { output } = await generateWordOptions({
+    const aiResponse = await generateWordOptions({
       word,
       definition,
       explanatoryImage: dataUri,
     });
     
-    if (!output?.options) {
+    if (!aiResponse?.options) {
         throw new Error("AI did not return valid options.");
     }
 
@@ -63,7 +63,7 @@ export async function addWord(prevState: any, formData: FormData) {
         word,
         definition,
         imageUrl: dataUri, 
-        options: [...output.options, word],
+        options: [...aiResponse.options, word],
         correctOption: word,
         supervisorId: userId,
         unitId: unitId,
@@ -265,15 +265,14 @@ export async function addUnit(prevState: any, formData: FormData) {
   
   const { unitName, userId } = validatedFields.data;
 
-  // This is a server action, so it doesn't have direct access to localStorage.
-  // The check should rely on the data available to it, which is the mockUnits.
-  // A robust check would require fetching from a DB. Here we simulate the check
-  // against the base data. The client-side will prevent duplicates from its view.
-  const existingUnit = mockUnits.find(u => u.name.toLowerCase() === unitName.toLowerCase() && u.supervisorId === userId);
+  // In a real app, this check would happen against a database
+  const allUnits = getUnitsBySupervisor(userId);
+  const existingUnit = allUnits.find(u => u.name.toLowerCase() === unitName.toLowerCase());
+
 
   if (existingUnit) {
       return {
-          errors: { unitName: ["A unit with this name already exists in the base data."] },
+          errors: { unitName: ["A unit with this name already exists."] },
           message: "Unit already exists.",
           success: false,
       }
@@ -285,6 +284,5 @@ export async function addUnit(prevState: any, formData: FormData) {
     supervisorId: userId,
   };
   
-  // This just returns the unit to be saved in localStorage on the client
   return { success: true, message: "Unit created!", newUnit };
 }
