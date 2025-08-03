@@ -29,17 +29,18 @@ export default function RootLayout({
 }>) {
   return (
     <LanguageProvider>
-      <body
-        suppressHydrationWarning
-        className={cn(
-          "min-h-screen bg-background font-body antialiased",
-          ptSans.variable,
-          belleza.variable
-        )}
-      >
-        {children}
-        <Toaster />
-      </body>
+      <html lang="en" suppressHydrationWarning>
+        <body
+          className={cn(
+            "min-h-screen bg-background font-body antialiased",
+            ptSans.variable,
+            belleza.variable
+          )}
+        >
+          {children}
+          <Toaster />
+        </body>
+      </html>
     </LanguageProvider>
   );
 }
