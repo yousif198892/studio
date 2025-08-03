@@ -11,22 +11,7 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { getUserById, mockUsers } from "@/lib/data";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-
-// This component ensures that its children are only rendered on the client side.
-function ClientOnly({ children }: { children: React.ReactNode }) {
-  const [hasMounted, setHasMounted] = useState(false);
-
-  useEffect(() => {
-    setHasMounted(true);
-  }, []);
-
-  if (!hasMounted) {
-    return null;
-  }
-
-  return <>{children}</>;
-}
-
+import { ClientOnly } from "@/components/client-only";
 
 export default function DashboardLayout({
   children,
