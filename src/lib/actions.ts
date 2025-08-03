@@ -62,19 +62,18 @@ export async function addWord(prevState: any, formData: FormData) {
         options: [...options, word],
         correctOption: word,
         supervisorId: userId,
-        nextReview: new Date(),
+        // Make nextReview a string to be JSON serializable
+        nextReview: new Date().toISOString(),
         strength: 0,
     };
 
-    mockWords.push(newWord);
+    return { success: true, message: "Word created!", newWord: newWord };
 
   } catch (error) {
     console.error("Error adding word:", error);
-    return { message: "Failed to add word. AI generation error.", errors: {}, success: false };
+    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+    return { message: `Failed to add word. AI generation error: ${errorMessage}`, errors: {}, success: false };
   }
-
-  revalidatePath(`/dashboard/words`);
-  redirect(`/dashboard/words?userId=${validatedFields.data.userId}`);
 }
 
 const registerSchema = z

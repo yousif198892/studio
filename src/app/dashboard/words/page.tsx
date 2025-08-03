@@ -1,4 +1,5 @@
 
+"use client"
 import {
   Card,
   CardContent,
@@ -6,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getWordsBySupervisor } from "@/lib/data";
+import { getWordsBySupervisor, Word } from "@/lib/data";
 import {
     Table,
     TableBody,
@@ -19,14 +20,31 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function WordsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const userId = searchParams?.userId as string || "sup1";
-  const words = getWordsBySupervisor(userId);
+export default function WordsPage() {
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId") || "sup1";
+  const [words, setWords] = useState<Word[]>([]);
+
+  useEffect(() => {
+    // This code now runs only on the client
+    const initialWords = getWordsBySupervisor(userId);
+    const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+
+    // Filter stored words by supervisorId and ensure they are parsed correctly
+    const userAddedWords = storedWords
+      .filter(w => w.supervisorId === userId)
+      .map(w => ({...w, nextReview: new Date(w.nextReview)}));
+
+    // Combine and remove duplicates, giving preference to user-added words
+    const combined = [...initialWords, ...userAddedWords];
+    const uniqueWords = Array.from(new Map(combined.map(item => [item['id'], item])).values());
+    
+    setWords(uniqueWords);
+  }, [userId]);
+
 
   return (
     <div className="space-y-6">

@@ -7,15 +7,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Word } from "@/lib/data";
 
 const initialState = {
   message: "",
   errors: {},
   success: false,
+  newWord: null,
 };
 
 function SubmitButton() {
@@ -40,19 +42,44 @@ export function AddWordForm() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
+  const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
+
 
   useEffect(() => {
-    if (state?.message && !state.success) {
+    if (state?.success && state.newWord) {
+      toast({
+        title: "Success!",
+        description: state.message,
+      });
+
+      // Save to localStorage
+      try {
+        const existingWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+        const newWord: Word = {
+          ...state.newWord,
+          // Ensure nextReview is a Date object if it's a string
+          nextReview: new Date(state.newWord.nextReview)
+        };
+        const updatedWords = [...existingWords, newWord];
+        localStorage.setItem('userWords', JSON.stringify(updatedWords));
+      } catch (e) {
+        console.error("Could not save to localStorage", e);
+      }
+
+      formRef.current?.reset();
+      router.push(`/dashboard/words?userId=${userId}`);
+    } else if (state?.message && !state.success) {
       toast({
         title: "Error",
         description: state.message,
         variant: "destructive",
       });
     }
-  }, [state, toast]);
+  }, [state, toast, router, userId]);
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
         <Label htmlFor="word">Word</Label>
