@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getStudentsBySupervisorId, getWordsForStudent, getUserById, mockUsers } from "@/lib/data";
+import { getStudentsBySupervisorId, getWordsForStudent, getUserById, mockUsers, User } from "@/lib/data";
 import { BookOpen, Target, Users, KeyRound } from "lucide-react";
 import {
     Table,
