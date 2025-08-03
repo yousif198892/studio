@@ -7,7 +7,6 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { getUserById, type User } from "@/lib/data";
 import { useEffect, useState } from "react";
-import { ClientOnly } from "@/components/client-only";
 
 export default function DashboardLayout({
   children,
@@ -19,7 +18,7 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fallback to a default user if no userId is in the query params
+    // In a real app, this would come from a session or a more robust user management system.
     const userId = searchParams?.get('userId') as string || "sup1";
     const foundUser = getUserById(userId);
     
@@ -44,7 +43,6 @@ export default function DashboardLayout({
   }
   
   return (
-    <ClientOnly>
       <SidebarProvider>
         <div className="flex min-h-screen">
           <DashboardSidebar user={user} />
@@ -56,6 +54,5 @@ export default function DashboardLayout({
           </div>
         </div>
       </SidebarProvider>
-    </ClientOnly>
   );
 }

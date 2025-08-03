@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { ClientOnly } from "@/components/client-only";
 
 // In a real app, this would come from a session
 const MOCK_USER_ID = "user1";
@@ -40,33 +39,31 @@ export default function LearnPage() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary">
-      <ClientOnly>
-        {currentWord ? (
-          <div key={currentWord.id} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
-            <h1 className="text-3xl font-bold font-headline mb-4 text-center">{t('learn.title')}</h1>
-            <QuizCard
-              word={currentWord}
-              onCorrect={handleCorrect}
-              onIncorrect={handleIncorrect}
-              onNextWord={handleNextWord}
-            />
-          </div>
-        ) : (
-          <Card className="w-full max-w-lg text-center">
-              <CardHeader>
-                  <CardTitle className="font-headline text-2xl">{t('learn.finishedTitle')}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                  <p className="text-muted-foreground">{t('learn.finishedDescription1')}</p>
-                  <p className="text-muted-foreground mt-2">{t('learn.finishedDescription2')}</p>
-                  <Button onClick={() => setSessionCount(prev => prev + 1)} className="mt-6">
-                      {t('learn.startNewSession')}
-                      <ArrowRight className="ms-2 h-4 w-4" />
-                  </Button>
-              </CardContent>
-          </Card>
-        )}
-      </ClientOnly>
+      {currentWord ? (
+        <div key={currentWord.id} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
+          <h1 className="text-3xl font-bold font-headline mb-4 text-center">{t('learn.title')}</h1>
+          <QuizCard
+            word={currentWord}
+            onCorrect={handleCorrect}
+            onIncorrect={handleIncorrect}
+            onNextWord={handleNextWord}
+          />
+        </div>
+      ) : (
+        <Card className="w-full max-w-lg text-center">
+            <CardHeader>
+                <CardTitle className="font-headline text-2xl">{t('learn.finishedTitle')}</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-muted-foreground">{t('learn.finishedDescription1')}</p>
+                <p className="text-muted-foreground mt-2">{t('learn.finishedDescription2')}</p>
+                <Button onClick={() => setSessionCount(prev => prev + 1)} className="mt-6">
+                    {t('learn.startNewSession')}
+                    <ArrowRight className="ms-2 h-4 w-4" />
+                </Button>
+            </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
