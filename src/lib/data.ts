@@ -123,10 +123,21 @@ export let mockWords: Word[] = [
     }
 ];
 
+// This is a workaround to simulate a persistent data layer.
+// In a real app, you would use a database.
+let storedUsersCache: User[] = [];
+if (typeof localStorage !== 'undefined') {
+  try {
+    storedUsersCache = JSON.parse(localStorage.getItem('users') || '[]');
+  } catch (e) {
+    //
+  }
+}
+
 // This function now works on both server and client.
 // On the client, it merges mock users with users from localStorage.
 // On the server, it can only access the mock users.
-export async function getAllUsers(): Promise<User[]> {
+export function getAllUsers(): User[] {
     let allUsers = [...mockUsers];
 
     // This block is crucial. It ensures that on the client-side, we always
@@ -210,3 +221,6 @@ export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
 }
 
 
+
+
+    

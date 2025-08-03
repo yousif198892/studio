@@ -175,7 +175,7 @@ export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role") as "student" | "supervisor";
     
     const email = formData.get("email") as string;
-    const allUsers = await getAllUsers();
+    const allUsers = getAllUsers();
     if (allUsers.find(u => u.email === email)) {
         return {
             errors: { email: ["User with this email already exists."] },
@@ -241,7 +241,7 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   const { email, password } = validatedFields.data;
-  const allUsers = await getAllUsers();
+  const allUsers = getAllUsers();
   const user = allUsers.find((u) => u.email === email);
 
   if (!user || user.password !== password) {
@@ -296,3 +296,6 @@ export async function addUnit(prevState: any, formData: FormData) {
   
   return { success: true, message: "Unit created!", newUnit };
 }
+
+
+    
