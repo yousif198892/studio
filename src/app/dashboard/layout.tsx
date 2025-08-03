@@ -12,18 +12,17 @@ export const metadata: Metadata = {
   description: "Your personal learning dashboard.",
 };
 
-// In a real app, this would come from a session
-// For now, we'll just use the last registered user as the "logged in" user.
-const MOCK_USER_ID = mockUsers[mockUsers.length - 1]?.id || "sup1";
-
-
 export default async function DashboardLayout({
   children,
+  searchParams,
 }: {
   children: React.ReactNode;
+  searchParams: { [key: string]: string | string[] | undefined };
 }) {
+  const userId = searchParams?.userId as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+  
   // In a real app, you'd get the user from a session
-  const user = getUserById(MOCK_USER_ID);
+  const user = getUserById(userId);
   if (!user) {
     redirect("/login");
   }
@@ -31,7 +30,7 @@ export default async function DashboardLayout({
   return (
     <SidebarProvider>
       <div className="flex min-h-screen">
-        <DashboardSidebar userRole={user.role as "student" | "supervisor"} />
+        <DashboardSidebar user={user} />
         <div className="flex-1 flex flex-col">
           <DashboardHeader />
           <main className="flex-1 p-4 md:p-6 lg:p-8">

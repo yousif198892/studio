@@ -160,7 +160,7 @@ export async function register(prevState: any, formData: FormData) {
     // In a real app, you would create a session here.
     // By adding the user, the dashboard layout will now pick them up as the last user.
     
-    redirect("/dashboard");
+    redirect(`/dashboard?userId=${newUser.id}`);
 }
 
 
@@ -201,5 +201,5 @@ export async function login(prevState: any, formData: FormData) {
     mockUsers.push(mockUsers.splice(userIndex, 1)[0]);
   }
   
-  redirect("/dashboard");
+  redirect(`/dashboard?userId=${user.id}`);
 }

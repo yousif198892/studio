@@ -5,7 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getStudentsBySupervisorId, getWordsForStudent, getUserById } from "@/lib/data";
+import { getStudentsBySupervisorId, getWordsForStudent, getUserById, mockUsers } from "@/lib/data";
 import { BookOpen, Target, Users } from "lucide-react";
 import {
     Table,
@@ -17,15 +17,13 @@ import {
   } from "@/components/ui/table"
 import Image from "next/image";
 
-
-// In a real app, this would come from a session
-// For now, we'll just use the last registered user as the "logged in" user.
-import { mockUsers } from "@/lib/data";
-const MOCK_USER_ID = mockUsers[mockUsers.length - 1]?.id || "sup1";
-
-
-export default function Dashboard() {
-  const user = getUserById(MOCK_USER_ID);
+export default function Dashboard({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const userId = searchParams?.userId as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+  const user = getUserById(userId);
 
   if (user?.role === "student") {
     const words = getWordsForStudent(user.id);

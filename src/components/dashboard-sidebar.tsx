@@ -23,23 +23,19 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
-import { getUserById, mockUsers } from "@/lib/data";
+import { type User } from "@/lib/data";
 
 type DashboardSidebarProps = {
-  userRole: "student" | "supervisor";
+  user: User;
 };
 
-// In a real app, this would come from a session
-// For now, we'll just use the last registered user as the "logged in" user.
-const MOCK_USER_ID = mockUsers[mockUsers.length - 1]?.id || "sup1";
-
-export function DashboardSidebar({ userRole }: DashboardSidebarProps) {
+export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const pathname = usePathname();
-  const user = getUserById(MOCK_USER_ID);
+  const userRole = user.role;
 
   const menuItems = [
     {
-      href: "/dashboard",
+      href: `/dashboard?userId=${user.id}`,
       label: "Dashboard",
       icon: <Home />,
       roles: ["student", "supervisor"],
@@ -69,7 +65,7 @@ export function DashboardSidebar({ userRole }: DashboardSidebarProps) {
         roles: ["supervisor"],
     },
     {
-      href: "/dashboard/profile",
+      href: `/dashboard/profile?userId=${user.id}`,
       label: "Profile",
       icon: <Settings />,
       roles: ["student", "supervisor"],
@@ -94,7 +90,7 @@ export function DashboardSidebar({ userRole }: DashboardSidebarProps) {
             <SidebarMenuItem key={item.href}>
               <Link href={item.href}>
                 <SidebarMenuButton
-                  isActive={pathname === item.href}
+                  isActive={pathname === item.href.split('?')[0]}
                   className="w-full"
                 >
                   {item.icon}
