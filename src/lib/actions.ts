@@ -44,13 +44,13 @@ export async function addWord(prevState: any, formData: FormData) {
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${imageFile.type};base64,${base64}`;
 
-    const aiResult = await generateWordOptions({
+    const { options } = await generateWordOptions({
       word,
       definition,
       explanatoryImage: dataUri,
     });
     
-    if (!aiResult || !aiResult.options) {
+    if (!options) {
         throw new Error("AI did not return valid options.");
     }
 
@@ -58,8 +58,8 @@ export async function addWord(prevState: any, formData: FormData) {
         id: `word${Date.now()}`,
         word,
         definition,
-        imageUrl: dataUri,
-        options: [...aiResult.options, word],
+        imageUrl: dataUri, 
+        options: [...options, word],
         correctOption: word,
         supervisorId: userId,
         nextReview: new Date(),
