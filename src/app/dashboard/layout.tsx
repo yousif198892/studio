@@ -2,14 +2,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
   SidebarProvider,
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarFooter,
-  SidebarTrigger
 } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
@@ -37,7 +29,7 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen flex-row-reverse">
+      <div className="flex min-h-screen">
         <DashboardSidebar user={user} />
         <div className="flex-1 flex flex-col">
           <DashboardHeader />

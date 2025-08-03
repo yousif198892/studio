@@ -85,7 +85,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   );
 
   return (
-    <Sidebar className="border-l" side="right">
+    <Sidebar className="border-r" side="left">
       <SidebarHeader>
         <div className="flex items-center gap-2 p-2">
             <Logo />
