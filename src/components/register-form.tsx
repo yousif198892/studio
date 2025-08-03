@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useFormState } from "react-dom";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Logo } from "./logo";
 import { register } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
-import { useEffect } from "react";
+import { useActionState, useEffect } from "react";
 import { redirect } from "next/navigation";
 
 const initialState = {
@@ -25,12 +24,12 @@ const initialState = {
 };
 
 export function RegisterForm() {
-  const [studentState, studentFormAction] = useFormState(register, initialState);
-  const [supervisorState, supervisorFormAction] = useFormState(register, initialState);
+  const [studentState, studentFormAction] = useActionState(register, initialState);
+  const [supervisorState, supervisorFormAction] = useActionState(register, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
-    if (studentState.message && Object.keys(studentState.errors).length === 0) {
+    if (studentState.message && Object.keys(studentState.errors || {}).length === 0) {
       toast({ title: "Success!", description: studentState.message });
       // Redirect is now handled in the server action
     } else if (studentState.message) {
@@ -40,7 +39,7 @@ export function RegisterForm() {
   }, [studentState, toast]);
 
    useEffect(() => {
-    if (supervisorState.message && Object.keys(supervisorState.errors).length === 0) {
+    if (supervisorState.message && Object.keys(supervisorState.errors || {}).length === 0) {
       toast({ title: "Success!", description: supervisorState.message });
        // Redirect is now handled in the server action
     } else if (supervisorState.message) {

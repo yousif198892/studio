@@ -1,12 +1,12 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useFormStatus } from "react-dom";
 import { addWord } from "@/lib/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
+import { useActionState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
@@ -33,7 +33,7 @@ function SubmitButton() {
 }
 
 export function AddWordForm() {
-  const [state, formAction] = useFormState(addWord, initialState);
+  const [state, formAction] = useActionState(addWord, initialState);
   const { toast } = useToast();
 
   useEffect(() => {

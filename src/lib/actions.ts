@@ -102,17 +102,19 @@ const registerSchema = z
 
 export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role") as "student" | "supervisor";
-    const supervisorId = formData.get("supervisorId") as string;
-
-    const data = {
+    
+    const dataToValidate: any = {
         name: formData.get("name"),
         email: formData.get("email"),
         password: formData.get("password"),
         role: role,
-        ...(role === 'student' && { supervisorId: supervisorId }),
     };
 
-    const validatedFields = registerSchema.safeParse(data);
+    if (role === 'student') {
+        dataToValidate.supervisorId = formData.get("supervisorId");
+    }
+
+    const validatedFields = registerSchema.safeParse(dataToValidate);
 
     if (!validatedFields.success) {
         return {
@@ -142,8 +144,8 @@ export async function register(prevState: any, formData: FormData) {
     };
     
     console.log("New user to be saved:", newUser);
-    // In a real app, this would persist. Here, it only lives for this request.
-    // mockUsers.push(newUser); 
+    // This is not ideal, but for the mock data, we'll push it here.
+    mockUsers.push(newUser); 
 
     // Simulate login by redirecting to dashboard
     redirect("/dashboard");
