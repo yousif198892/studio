@@ -127,35 +127,32 @@ export let mockWords: Word[] = [
 // This is a workaround to simulate a persistent data layer.
 // In a real app, you would use a database.
 export function getAllUsers(): User[] {
-    let allUsers = [...mockUsers];
-
-    // This block is crucial. It ensures that on the client-side, we always
-    // read the most up-to-date user list, which includes newly created users.
-    if (typeof window !== 'undefined') {
-        try {
-            const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-            const combined = [...mockUsers, ...storedUsers];
-            // Use a Map to create a unique list of users based on their ID,
-            // preferring users from localStorage in case of duplicates.
-            const userMap = new Map(combined.map(user => [user.id, user]));
-            allUsers = Array.from(userMap.values());
-        } catch (e) {
-            console.error("Could not parse users from localStorage", e);
-        }
-    }
-
-    return allUsers;
+  if (typeof window !== 'undefined') {
+    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const combinedUsers = [...mockUsers, ...storedUsers];
+    const uniqueUsers = Array.from(new Map(combinedUsers.map(user => [user.id, user])).values());
+    return uniqueUsers;
+  }
+  // This function might be called on the server, where localStorage is not available.
+  // We will rely on a different mechanism for server actions to get all users.
+  return mockUsers;
 }
 
 
 // Helper functions to simulate data fetching
 export const getUserById = (id: string): User | undefined => {
-    const allUsers = getAllUsers();
+    let allUsers: User[] = mockUsers;
+     if (typeof window !== 'undefined') {
+        allUsers = JSON.parse(localStorage.getItem('combinedUsers') || JSON.stringify(mockUsers));
+    }
     return allUsers.find(u => u.id === id);
 }
 
 export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
-    const allUsers = getAllUsers();
+    let allUsers: User[] = mockUsers;
+     if (typeof window !== 'undefined') {
+        allUsers = JSON.parse(localStorage.getItem('combinedUsers') || JSON.stringify(mockUsers));
+    }
     return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 
