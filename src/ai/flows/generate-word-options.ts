@@ -1,4 +1,3 @@
-// Implemented by Gemini.
 'use server';
 
 /**
@@ -45,7 +44,7 @@ const prompt = ai.definePrompt({
   Definition: {{{definition}}}
   Image: {{media url=explanatoryImage}}
 
-  Generate three incorrect options.`,
+  Generate three incorrect options based on the provided information. Your output should only contain the three incorrect options.`,
 });
 
 export async function generateWordOptions(

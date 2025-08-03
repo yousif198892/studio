@@ -42,14 +42,12 @@ export function AddWordForm() {
   const userId = searchParams.get("userId");
 
   useEffect(() => {
-    if (state.success && state.message) {
-      toast({
-        title: "Success!",
-        description: state.message,
-      });
-      // A successful redirect is now handled in the server action,
-      // but if we wanted to handle it client-side, it would be here.
-    } else if (!state.success && state.message) {
+    if (state?.success) {
+        toast({
+            title: "Success!",
+            description: "Word added successfully.",
+        });
+    } else if (state?.message) {
       toast({
         title: "Error",
         description: state.message,
@@ -64,7 +62,7 @@ export function AddWordForm() {
       <div className="grid gap-2">
         <Label htmlFor="word">Word</Label>
         <Input id="word" name="word" placeholder="e.g., Ephemeral" required />
-        {state.errors?.word && (
+        {state?.errors?.word && (
           <p className="text-sm text-destructive">{state.errors.word[0]}</p>
         )}
       </div>
@@ -76,14 +74,14 @@ export function AddWordForm() {
           placeholder="e.g., Lasting for a very short time."
           required
         />
-        {state.errors?.definition && (
+        {state?.errors?.definition && (
           <p className="text-sm text-destructive">{state.errors.definition[0]}</p>
         )}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="image">Explanatory Image</Label>
         <Input id="image" name="image" type="file" accept="image/*" required />
-         {state.errors?.image && (
+         {state?.errors?.image && (
           <p className="text-sm text-destructive">{state.errors.image[0]}</p>
         )}
       </div>

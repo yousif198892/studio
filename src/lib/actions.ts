@@ -63,7 +63,7 @@ export async function addWord(prevState: any, formData: FormData) {
         id: `word${Date.now()}`,
         word,
         definition,
-        imageUrl: `https://placehold.co/600x400.png?text=${word}`, // Using placeholder for now
+        imageUrl: dataUri,
         options: [...aiResult.options, word],
         correctOption: word,
         supervisorId: userId,
@@ -75,12 +75,14 @@ export async function addWord(prevState: any, formData: FormData) {
     mockWords.push(newWord);
 
     revalidatePath(`/dashboard/words`);
-    redirect(`/dashboard/words?userId=${userId}`);
+    
 
   } catch (error) {
     console.error("Error adding word:", error);
     return { message: "Failed to add word. AI generation error.", errors: {}, success: false };
   }
+
+  redirect(`/dashboard/words?userId=${validatedFields.data.userId}`);
 }
 
 const registerSchema = z
@@ -146,7 +148,7 @@ export async function register(prevState: any, formData: FormData) {
     const { name, password } = validatedFields.data;
     
     const newUser = {
-        id: `user${Date.now()}`,
+        id: role === 'supervisor' ? 'sup' + mockUsers.length : `user${Date.now()}`,
         name,
         email,
         password,
