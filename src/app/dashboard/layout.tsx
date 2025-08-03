@@ -5,7 +5,7 @@ import { redirect, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { getUserById, mockUsers, User } from "@/lib/data";
+import { getUserById, type User } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { ClientOnly } from "@/components/client-only";
 
@@ -20,7 +20,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     // Fallback to a default user if no userId is in the query params
-    const userId = searchParams?.get('userId') as string || mockUsers.find(u => u.role === 'supervisor')?.id || "sup1";
+    const userId = searchParams?.get('userId') as string || "sup1";
     const foundUser = getUserById(userId);
     
     if (foundUser) {
