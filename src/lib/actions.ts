@@ -154,13 +154,12 @@ export async function register(prevState: any, formData: FormData) {
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
     
+    // This is the key change: Add the new user to our "database".
     mockUsers.push(newUser); 
     
     // In a real app, you would create a session here.
-    // We'll update the "last user" to be this user.
-    mockUsers.push(mockUsers.splice(mockUsers.findIndex(u => u.id === newUser.id), 1)[0]);
-
-    // Simulate login by redirecting to dashboard
+    // By adding the user, the dashboard layout will now pick them up as the last user.
+    
     redirect("/dashboard");
 }
 
@@ -195,10 +194,12 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  // In a real app, you would create a session here.
-  // For now, we'll just redirect.
-  // We'll update the "last user" to be this user.
-  mockUsers.push(mockUsers.splice(mockUsers.findIndex(u => u.id === user.id), 1)[0]);
+  // To simulate a session, we move the logged-in user to the end of the array.
+  // The dashboard will pick up the last user as the "logged-in" one.
+  const userIndex = mockUsers.findIndex(u => u.id === user.id);
+  if (userIndex > -1) {
+    mockUsers.push(mockUsers.splice(userIndex, 1)[0]);
+  }
   
   redirect("/dashboard");
 }
