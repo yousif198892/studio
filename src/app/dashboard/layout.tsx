@@ -5,7 +5,7 @@ import { redirect, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { getUserById, type User } from "@/lib/data";
+import { getUserById, type User, getAllUsers } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { ClientOnly } from "@/components/client-only";
 
@@ -19,19 +19,27 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would come from a session or a more robust user management system.
-    const userId = searchParams?.get('userId') as string || "sup1";
-    const foundUser = getUserById(userId);
-    
-    if (foundUser) {
-      setUser(foundUser);
-    } else {
-       // In a real app with proper auth, you might redirect to /login
-       // For this demo, we'll handle it client-side.
-       console.error("User not found, redirecting to login.")
-       redirect("/login");
+    const fetchUser = async () => {
+      // In a real app, this would come from a session or a more robust user management system.
+      const userId = searchParams?.get('userId') as string || "sup1";
+      const allUsers = await getAllUsers();
+      
+      const foundUser = allUsers.find(u => u.id === userId);
+      
+      // Store combined users for other components to access without re-fetching
+      localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+      
+      if (foundUser) {
+        setUser(foundUser);
+      } else {
+         // In a real app with proper auth, you might redirect to /login
+         // For this demo, we'll handle it client-side.
+         console.error("User not found, redirecting to login.")
+         redirect("/login");
+      }
+      setLoading(false);
     }
-    setLoading(false);
+    fetchUser();
   }, [searchParams]);
 
   if (loading) {

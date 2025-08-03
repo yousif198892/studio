@@ -123,25 +123,47 @@ export let mockWords: Word[] = [
     }
 ];
 
-const getAllUsers = (): User[] => {
-    if (typeof window !== 'undefined') {
-        const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-        const allUsers = [...mockUsers, ...storedUsers];
-        return Array.from(new Map(allUsers.map(user => [user.id, user])).values());
+// This function now works on both server and client.
+// On the client, it merges mock users with users from localStorage.
+// On the server, it can only access the mock users.
+export async function getAllUsers(): Promise<User[]> {
+  let allUsers = [...mockUsers];
+
+  if (typeof window !== 'undefined') {
+    try {
+      const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+      if (Array.isArray(storedUsers)) {
+        const combined = [...mockUsers, ...storedUsers];
+        allUsers = Array.from(new Map(combined.map(user => [user.id, user])).values());
+      }
+    } catch (e) {
+      console.error("Could not parse users from localStorage", e);
     }
-    return mockUsers;
+  }
+  
+  return allUsers;
 }
 
 
 // Helper functions to simulate data fetching
 export const getUserById = (id: string): User | undefined => {
-    const allUsers = getAllUsers();
-    return allUsers.find(u => u.id === id);
+    // This function will only work correctly on the client-side now
+    // because getAllUsers on the server doesn't have localStorage.
+    // The dashboard layout already ensures this is only called on the client.
+    if (typeof window !== 'undefined') {
+        const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || JSON.stringify(mockUsers));
+        return allUsers.find(u => u.id === id);
+    }
+    // Server-side fallback
+    return mockUsers.find(u => u.id === id);
 }
 
 export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
-    const allUsers = getAllUsers();
-    return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
+    if (typeof window !== 'undefined') {
+        const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || JSON.stringify(mockUsers));
+        return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
+    }
+    return mockUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 
 export const getWordsForStudent = (studentId: string): Word[] => {

@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getStudentsBySupervisorId, getWordsForStudent, getUserById, mockUsers, User } from "@/lib/data";
+import { getStudentsBySupervisorId, getWordsForStudent, getUserById, User } from "@/lib/data";
 import { BookOpen, Target, Users, KeyRound } from "lucide-react";
 import {
     Table,
@@ -31,7 +31,7 @@ export default function Dashboard() {
 
   useEffect(() => {
      // In a real app, this would come from a session or a more robust user management system.
-    const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+    const userId = searchParams?.get('userId') as string || "sup1";
     const foundUser = getUserById(userId);
     setUser(foundUser);
   }, [searchParams]);

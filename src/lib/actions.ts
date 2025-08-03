@@ -4,7 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, mockWords, Word, Unit, mockUnits, getUnitsBySupervisor } from "./data";
+import { mockUsers, Word, Unit, mockUnits, getUnitsBySupervisor, getAllUsers } from "./data";
 import { redirect } from "next/navigation";
 import { translations } from "./i18n";
 
@@ -175,7 +175,8 @@ export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role") as "student" | "supervisor";
     
     const email = formData.get("email") as string;
-    if (mockUsers.find(u => u.email === email)) {
+    const allUsers = await getAllUsers();
+    if (allUsers.find(u => u.email === email)) {
         return {
             errors: { email: ["User with this email already exists."] },
             message: "User with this email already exists.",
@@ -240,8 +241,8 @@ export async function login(prevState: any, formData: FormData) {
   }
 
   const { email, password } = validatedFields.data;
-
-  const user = mockUsers.find((u) => u.email === email);
+  const allUsers = await getAllUsers();
+  const user = allUsers.find((u) => u.email === email);
 
   if (!user || user.password !== password) {
     return {
