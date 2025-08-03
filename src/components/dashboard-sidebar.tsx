@@ -99,7 +99,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
               <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname === item.href.split('?')[0]}
-                  className="w-full flex-row-reverse"
+                  className="w-full justify-end"
                 >
                   <span>{item.label}</span>
                   {item.icon}
