@@ -113,9 +113,18 @@ const registerSchema = z
 export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role") as "student" | "supervisor";
     
+    // Check for existing user first
+    const email = formData.get("email") as string;
+    if (mockUsers.find(u => u.email === email)) {
+        return {
+            errors: { email: ["User with this email already exists."] },
+            message: "Registration failed.",
+        };
+    }
+
     const dataToValidate: any = {
         name: formData.get("name"),
-        email: formData.get("email"),
+        email: email,
         password: formData.get("password"),
         role: role,
     };
@@ -133,32 +142,19 @@ export async function register(prevState: any, formData: FormData) {
         };
     }
 
-    const { name, email, password } = validatedFields.data;
-
-    // Check if user already exists
-    if (mockUsers.find(u => u.email === email)) {
-        return {
-            errors: { email: ["User with this email already exists."] },
-            message: "Registration failed.",
-        };
-    }
+    const { name, password } = validatedFields.data;
     
-    // In a real app, you would save the new user to your database
     const newUser = {
         id: `user${Date.now()}`,
         name,
         email,
-        password, // Storing password for login check
+        password,
         role,
         avatar: "https://placehold.co/100x100.png",
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
     
-    // This is the key change: Add the new user to our "database".
     mockUsers.push(newUser); 
-    
-    // In a real app, you would create a session here.
-    // By adding the user, the dashboard layout will now pick them up as the last user.
     
     redirect(`/dashboard?userId=${newUser.id}`);
 }
@@ -186,19 +182,11 @@ export async function login(prevState: any, formData: FormData) {
 
   const user = mockUsers.find((u) => u.email === email);
 
-  // In a real app, you would also verify the password hash
   if (!user || user.password !== password) {
     return {
       errors: {},
       message: "Invalid email or password.",
     };
-  }
-
-  // To simulate a session, we move the logged-in user to the end of the array.
-  // The dashboard will pick up the last user as the "logged-in" one.
-  const userIndex = mockUsers.findIndex(u => u.id === user.id);
-  if (userIndex > -1) {
-    mockUsers.push(mockUsers.splice(userIndex, 1)[0]);
   }
   
   redirect(`/dashboard?userId=${user.id}`);
