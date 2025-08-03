@@ -49,10 +49,16 @@ export function AddWordForm() {
   const { toast } = useToast();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId") || "sup1";
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const userId = searchParams.get("userId") || "sup1";
 
   useEffect(() => {
     if (userId) {
@@ -92,6 +98,10 @@ export function AddWordForm() {
       });
     }
   }, [state, toast, router, userId, t]);
+
+  if (!isClient) {
+    return null;
+  }
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
