@@ -35,6 +35,7 @@ const prompt = ai.definePrompt({
   name: 'generateWordOptionsPrompt',
   input: {schema: GenerateWordOptionsInputSchema},
   output: {schema: GenerateWordOptionsOutputSchema},
+  model: 'googleai/gemini-2.0-flash',
   prompt: `You are an AI assistant helping teachers create vocabulary quizzes.
 
   Given a vocabulary word, its definition, and an explanatory image, your task is to generate three incorrect, but contextually relevant, answer options.
