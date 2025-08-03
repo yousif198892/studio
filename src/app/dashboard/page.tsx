@@ -19,7 +19,10 @@ import Image from "next/image";
 
 
 // In a real app, this would come from a session
-const MOCK_USER_ID = "sup1"; // "user1" for student, "sup1" for supervisor
+// For now, we'll just use the last registered user as the "logged in" user.
+import { mockUsers } from "@/lib/data";
+const MOCK_USER_ID = mockUsers[mockUsers.length - 1]?.id || "sup1";
+
 
 export default function Dashboard() {
   const user = getUserById(MOCK_USER_ID);

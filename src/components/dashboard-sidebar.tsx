@@ -7,7 +7,6 @@ import {
   BookOpen,
   PlusCircle,
   Settings,
-  User,
   LogOut,
   Users,
 } from "lucide-react";
@@ -24,13 +23,19 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
+import { getUserById, mockUsers } from "@/lib/data";
 
 type DashboardSidebarProps = {
   userRole: "student" | "supervisor";
 };
 
+// In a real app, this would come from a session
+// For now, we'll just use the last registered user as the "logged in" user.
+const MOCK_USER_ID = mockUsers[mockUsers.length - 1]?.id || "sup1";
+
 export function DashboardSidebar({ userRole }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const user = getUserById(MOCK_USER_ID);
 
   const menuItems = [
     {
@@ -103,13 +108,13 @@ export function DashboardSidebar({ userRole }: DashboardSidebarProps) {
       <SidebarFooter className="p-2 border-t">
         <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
           <Avatar>
-            <AvatarImage src="https://placehold.co/100x100.png" alt="User" />
-            <AvatarFallback>U</AvatarFallback>
+            <AvatarImage src={user?.avatar} alt="User" />
+            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className="font-semibold text-sm truncate">Alex Johnson</p>
+            <p className="font-semibold text-sm truncate">{user?.name}</p>
             <p className="text-xs text-muted-foreground truncate">
-              alex@example.com
+              {user?.email}
             </p>
           </div>
           <Link href="/login">
