@@ -87,7 +87,7 @@ const registerSchema = z
     email: z.string().email('Invalid email address.'),
     password: z.string().min(6, 'Password must be at least 6 characters.'),
     role: z.enum(['student', 'supervisor']),
-    supervisorId: z.string().optional(),
+    supervisorId: z.string().optional().or(z.literal('')),
   })
   .superRefine((data, ctx) => {
     if (data.role === 'student' && (!data.supervisorId || data.supervisorId.trim() === '')) {
@@ -142,11 +142,11 @@ export async function register(prevState: any, formData: FormData) {
     };
     
     console.log("New user to be saved:", newUser);
-    mockUsers.push(newUser);
+    // In a real app, this would persist. Here, it only lives for this request.
+    // mockUsers.push(newUser); 
 
-    // No revalidation needed as we're redirecting
-    // revalidatePath("/register");
-    redirect("/login");
+    // Simulate login by redirecting to dashboard
+    redirect("/dashboard");
 }
 
 
