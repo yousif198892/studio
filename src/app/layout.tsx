@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { LanguageProvider } from "@/hooks/use-language";
+import { LanguageSetter } from "@/components/language-setter";
 
 const ptSans = PT_Sans({
   subsets: ["latin"],
@@ -28,19 +29,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-body antialiased",
-          ptSans.variable,
-          belleza.variable
-        )}
-      >
-        <LanguageProvider>
-          {children}
-          <Toaster />
-        </LanguageProvider>
-      </body>
-    </html>
+    <LanguageProvider>
+      <LanguageSetter>
+        <html suppressHydrationWarning>
+          <body
+            className={cn(
+              "min-h-screen bg-background font-body antialiased",
+              ptSans.variable,
+              belleza.variable
+            )}
+          >
+            {children}
+            <Toaster />
+          </body>
+        </html>
+      </LanguageSetter>
+    </LanguageProvider>
   );
 }
