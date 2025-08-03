@@ -5,6 +5,7 @@ export type User = {
   id: string;
   name: string;
   email: string;
+  password?: string; // Added for login simulation
   role: "student" | "supervisor";
   avatar: string;
   supervisorId?: string;
@@ -29,6 +30,7 @@ export const mockUsers: User[] = [
     id: "user1",
     name: "Alex Johnson",
     email: "alex@example.com",
+    password: "password123",
     role: "student",
     avatar: "https://placehold.co/100x100.png",
     supervisorId: "sup1",
@@ -39,6 +41,7 @@ export const mockUsers: User[] = [
     id: "user2",
     name: "Maria Garcia",
     email: "maria@example.com",
+    password: "password123",
     role: "student",
     avatar: "https://placehold.co/100x100.png",
     supervisorId: "sup1",
@@ -49,6 +52,7 @@ export const mockUsers: User[] = [
     id: "sup1",
     name: "Dr. Evelyn Reed",
     email: "e.reed@example.com",
+    password: "password123",
     role: "supervisor",
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/Los_Angeles",

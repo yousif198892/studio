@@ -17,11 +17,32 @@ import { register } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { useActionState, useEffect } from "react";
 import { redirect } from "next/navigation";
+import { useFormStatus } from "react-dom";
+import { Loader2 } from "lucide-react";
 
 const initialState = {
   message: "",
   errors: {},
 };
+
+function StudentSubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" className="w-full mt-2" disabled={pending}>
+            {pending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</>) : "Create an account"}
+        </Button>
+    )
+}
+
+function SupervisorSubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+        <Button type="submit" className="w-full mt-2" disabled={pending}>
+             {pending ? (<><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...</>) : "Create a supervisor account"}
+        </Button>
+    )
+}
+
 
 export function RegisterForm() {
   const [studentState, studentFormAction] = useActionState(register, initialState);
@@ -32,9 +53,10 @@ export function RegisterForm() {
     if (studentState.message && Object.keys(studentState.errors || {}).length === 0) {
       toast({ title: "Success!", description: studentState.message });
       // Redirect is now handled in the server action
-    } else if (studentState.message) {
-      const errorMessage = studentState.errors?.supervisorId?.[0] || studentState.message;
-      toast({ title: "Error", description: errorMessage, variant: "destructive" });
+    } else if (studentState.message || (studentState.errors && Object.keys(studentState.errors).length > 0)) {
+      const firstError = Object.values(studentState.errors || {}).flat()[0];
+      const message = firstError || studentState.message;
+      toast({ title: "Error", description: message, variant: "destructive" });
     }
   }, [studentState, toast]);
 
@@ -42,8 +64,10 @@ export function RegisterForm() {
     if (supervisorState.message && Object.keys(supervisorState.errors || {}).length === 0) {
       toast({ title: "Success!", description: supervisorState.message });
        // Redirect is now handled in the server action
-    } else if (supervisorState.message) {
-      toast({ title: "Error", description: supervisorState.message, variant: "destructive" });
+    } else if (supervisorState.message || (supervisorState.errors && Object.keys(supervisorState.errors).length > 0)) {
+       const firstError = Object.values(supervisorState.errors || {}).flat()[0];
+       const message = firstError || supervisorState.message;
+      toast({ title: "Error", description: message, variant: "destructive" });
     }
   }, [supervisorState, toast]);
 
@@ -94,9 +118,7 @@ export function RegisterForm() {
                   <Input id="supervisor-id" name="supervisorId" placeholder="Enter your supervisor's ID" />
                   {studentState.errors?.supervisorId && <p className="text-sm text-destructive">{studentState.errors.supervisorId[0]}</p>}
                 </div>
-                <Button type="submit" className="w-full mt-2">
-                  Create an account
-                </Button>
+                <StudentSubmitButton />
               </div>
             </form>
           </TabsContent>
@@ -125,9 +147,7 @@ export function RegisterForm() {
                   <Input id="supervisor-password" name="password" type="password" required/>
                   {supervisorState.errors?.password && <p className="text-sm text-destructive">{supervisorState.errors.password[0]}</p>}
                 </div>
-                <Button type="submit" className="w-full mt-2">
-                  Create a supervisor account
-                </Button>
+                <SupervisorSubmitButton />
               </div>
             </form>
           </TabsContent>

@@ -97,6 +97,16 @@ const registerSchema = z
         message: 'Supervisor ID is required for students.',
       });
     }
+    if (data.role === 'student') {
+        const supervisor = mockUsers.find(u => u.id === data.supervisorId && u.role === 'supervisor');
+        if (!supervisor) {
+             ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                path: ['supervisorId'],
+                message: 'Invalid Supervisor ID.',
+            });
+        }
+    }
   });
 
 
@@ -123,7 +133,7 @@ export async function register(prevState: any, formData: FormData) {
         };
     }
 
-    const { name, email } = validatedFields.data;
+    const { name, email, password } = validatedFields.data;
 
     // Check if user already exists
     if (mockUsers.find(u => u.email === email)) {
@@ -138,13 +148,12 @@ export async function register(prevState: any, formData: FormData) {
         id: `user${Date.now()}`,
         name,
         email,
+        password, // Storing password for login check
         role,
         avatar: "https://placehold.co/100x100.png",
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
     
-    console.log("New user to be saved:", newUser);
-    // This is not ideal, but for the mock data, we'll push it here.
     mockUsers.push(newUser); 
 
     // Simulate login by redirecting to dashboard
@@ -170,18 +179,36 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
-  const { email } = validatedFields.data;
+  const { email, password } = validatedFields.data;
 
   const user = mockUsers.find((u) => u.email === email);
 
-  if (!user) {
+  // In a real app, you would also verify the password hash
+  if (!user || user.password !== password) {
     return {
       errors: {},
       message: "Invalid email or password.",
     };
   }
 
-  // In a real app, you would verify the password and create a session.
+  // In a real app, you would create a session here.
   // For now, we'll just redirect.
+  // We'll update the "last user" to be this user.
+  const lastUser = mockUsers.pop();
+  if (lastUser && lastUser.id !== user.id) {
+    mockUsers.push(lastUser);
+  }
+  const userToMove = mockUsers.find((u, i) => {
+    if (u.id === user.id) {
+        mockUsers.splice(i, 1);
+        return true;
+    }
+    return false;
+  });
+
+  if (userToMove) {
+    mockUsers.push(userToMove);
+  }
+  
   redirect("/dashboard");
 }
