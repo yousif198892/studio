@@ -134,6 +134,7 @@ export async function getAllUsers(): Promise<User[]> {
       const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
       if (Array.isArray(storedUsers)) {
         const combined = [...mockUsers, ...storedUsers];
+        // Use a map to remove duplicates, preferring the ones from localStorage
         allUsers = Array.from(new Map(combined.map(user => [user.id, user])).values());
       }
     } catch (e) {
@@ -151,16 +152,16 @@ export const getUserById = (id: string): User | undefined => {
     // because getAllUsers on the server doesn't have localStorage.
     // The dashboard layout already ensures this is only called on the client.
     if (typeof window !== 'undefined') {
-        const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || JSON.stringify(mockUsers));
+        const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
         return allUsers.find(u => u.id === id);
     }
-    // Server-side fallback
+    // Server-side fallback for things like build time.
     return mockUsers.find(u => u.id === id);
 }
 
 export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
     if (typeof window !== 'undefined') {
-        const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || JSON.stringify(mockUsers));
+        const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
         return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
     }
     return mockUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
@@ -205,3 +206,4 @@ export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
     }
     return baseUnits;
 }
+

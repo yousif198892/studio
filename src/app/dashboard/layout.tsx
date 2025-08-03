@@ -5,7 +5,7 @@ import { redirect, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { getUserById, type User, getAllUsers } from "@/lib/data";
+import { getUserById, type User, getAllUsers, mockUsers } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { ClientOnly } from "@/components/client-only";
 
@@ -22,12 +22,13 @@ export default function DashboardLayout({
     const fetchUser = async () => {
       // In a real app, this would come from a session or a more robust user management system.
       const userId = searchParams?.get('userId') as string || "sup1";
-      const allUsers = await getAllUsers();
       
-      const foundUser = allUsers.find(u => u.id === userId);
+      const allUsers = await getAllUsers();
       
       // Store combined users for other components to access without re-fetching
       localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+      
+      const foundUser = allUsers.find(u => u.id === userId);
       
       if (foundUser) {
         setUser(foundUser);
