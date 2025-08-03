@@ -20,24 +20,14 @@ import {
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
 
 export default function StudentsPage() {
   const searchParams = useSearchParams();
   const { t } = useLanguage();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const userId = searchParams?.get('userId') as string || "sup1";
   const user = getUserById(userId);
   const students = getStudentsBySupervisorId(userId);
-  
-  if (!isClient) {
-      return <div>{t('dashboard.loading')}</div>
-  }
 
   return (
     <div className="space-y-6">

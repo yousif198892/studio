@@ -21,22 +21,17 @@ export default function EditWordPage() {
   const userId = searchParams.get('userId') || 'sup1';
   const [word, setWord] = useState<Word | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
-    if (isClient && wordId) {
+    if (wordId) {
       const allWords = getWordsBySupervisor(userId);
       const foundWord = allWords.find(w => w.id === wordId);
       setWord(foundWord || null);
       setLoading(false);
     }
-  }, [wordId, userId, isClient]);
+  }, [wordId, userId]);
 
-  if (!isClient || loading) {
+  if (loading) {
     return <div>{t('dashboard.loading')}</div>;
   }
 

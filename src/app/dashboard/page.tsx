@@ -22,25 +22,14 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
   const { t } = useLanguage();
-  const [isClient, setIsClient] = useState(false);
   
-  useEffect(() => {
-    setIsClient(true)
-  }, []);
-
   // In a real app, this would come from a session or a more robust user management system.
-  // For now, we derive it client-side to avoid hydration issues.
   const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
   const user = getUserById(userId);
-
-  if (!isClient) {
-    return <div>{t('dashboard.loading')}</div>;
-  }
   
   if (!user) {
     // This could redirect to a login or error page in a real app

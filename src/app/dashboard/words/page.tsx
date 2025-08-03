@@ -41,22 +41,14 @@ export default function WordsPage() {
   const [words, setWords] = useState<Word[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
   const { t } = useLanguage();
-  const [isClient, setIsClient] = useState(false)
 
   useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  useEffect(() => {
-    if(isClient) {
-      const supervisorWords = getWordsBySupervisor(userId);
-      setWords(supervisorWords);
-      
-      const supervisorUnits = getUnitsBySupervisor(userId);
-      setUnits(supervisorUnits);
-    }
-
-  }, [userId, isClient]);
+    const supervisorWords = getWordsBySupervisor(userId);
+    setWords(supervisorWords);
+    
+    const supervisorUnits = getUnitsBySupervisor(userId);
+    setUnits(supervisorUnits);
+  }, [userId]);
 
   const handleDelete = (wordId: string) => {
     // Remove from component state
@@ -73,11 +65,6 @@ export default function WordsPage() {
     const unit = units.find(u => u.id === unitId);
     return unit ? unit.name : "N/A";
   }
-
-  if (!isClient) {
-    return <div>{t('dashboard.loading')}</div>
-  }
-
 
   return (
     <div className="space-y-6">

@@ -40,23 +40,20 @@ export default function UnitsPage() {
     const userId = searchParams.get("userId") || "sup1";
     const [units, setUnits] = useState<Unit[]>([]);
     const { t } = useLanguage();
-    const [isClient, setIsClient] = useState(false)
 
     useEffect(() => {
-        setIsClient(true)
-    }, [])
-
-    useEffect(() => {
-        if (isClient && userId) {
+        if (userId) {
             const supervisorUnits = getUnitsBySupervisor(userId);
             setUnits(supervisorUnits);
         }
-    }, [userId, isClient]);
+    }, [userId]);
 
     const handleUnitAdded = (newUnit: Unit) => {
       setUnits(prev => {
         const updatedUnits = [...prev, newUnit];
-        localStorage.setItem('userUnits', JSON.stringify(updatedUnits.filter(u => u.supervisorId === userId)));
+        // In a real app, supervisorId would be part of the newUnit object from the server
+        const storedUnits = JSON.parse(localStorage.getItem('userUnits') || '[]').filter((u: Unit) => u.supervisorId === userId);
+        localStorage.setItem('userUnits', JSON.stringify([...storedUnits, newUnit]));
         return updatedUnits;
       });
     };
@@ -70,11 +67,6 @@ export default function UnitsPage() {
         const updatedStoredUnits = storedUnits.filter(u => u.id !== unitId);
         localStorage.setItem('userUnits', JSON.stringify(updatedStoredUnits));
     }
-
-    if (!isClient) {
-        return <div>{t('dashboard.loading')}</div>
-    }
-
 
     return (
         <div className="space-y-6">

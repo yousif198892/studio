@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getWordForReview, Word } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
@@ -13,18 +13,18 @@ import { useLanguage } from "@/hooks/use-language";
 const MOCK_USER_ID = "user1";
 
 export default function LearnPage() {
-  const [currentWord, setCurrentWord] = useState<Word | undefined>(
-    () => getWordForReview(MOCK_USER_ID)
-  );
-  
+  const [currentWord, setCurrentWord] = useState<Word | undefined>();
   const [sessionCount, setSessionCount] = useState(0);
   const { t } = useLanguage();
+
+  useEffect(() => {
+    setCurrentWord(getWordForReview(MOCK_USER_ID));
+  }, [sessionCount]);
 
   const handleNextWord = () => {
     // In a real app, you'd fetch the next word from your backend
     // based on the SRS algorithm. Here we just cycle for demonstration.
     setSessionCount(prev => prev + 1);
-    setCurrentWord(getWordForReview(MOCK_USER_ID));
   };
   
   const handleCorrect = () => {
@@ -57,7 +57,7 @@ export default function LearnPage() {
             <CardContent>
                 <p className="text-muted-foreground">{t('learn.finishedDescription1')}</p>
                 <p className="text-muted-foreground mt-2">{t('learn.finishedDescription2')}</p>
-                <Button onClick={handleNextWord} className="mt-6">
+                <Button onClick={() => setSessionCount(prev => prev + 1)} className="mt-6">
                     {t('learn.startNewSession')}
                     <ArrowRight className="ms-2 h-4 w-4" />
                 </Button>
