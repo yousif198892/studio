@@ -6,7 +6,7 @@ import { addUnit } from "@/lib/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useActionState, useState } from "react";
+import { useEffect, useRef, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -48,12 +48,7 @@ export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const formRef = useRef<HTMLFormElement>(null);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
+  
   const userId = searchParams.get("userId") || "sup1";
 
   useEffect(() => {
@@ -77,10 +72,6 @@ export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void
       });
     }
   }, [state, toast, onUnitAdded, t]);
-
-  if (!isClient) {
-    return null; // Or a loading skeleton
-  }
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">

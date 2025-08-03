@@ -52,11 +52,6 @@ export function AddWordForm() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [units, setUnits] = useState<Unit[]>([]);
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
 
   const userId = searchParams.get("userId") || "sup1";
 
@@ -98,10 +93,6 @@ export function AddWordForm() {
       });
     }
   }, [state, toast, router, userId, t]);
-
-  if (!isClient) {
-    return null;
-  }
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">

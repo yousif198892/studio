@@ -1,14 +1,11 @@
 
 "use client";
 
-import { redirect } from "next/navigation";
-import {
-  SidebarProvider,
-} from "@/components/ui/sidebar";
+import { redirect, useSearchParams } from "next/navigation";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { getUserById, mockUsers, User } from "@/lib/data";
-import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ClientOnly } from "@/components/client-only";
 
@@ -19,21 +16,31 @@ export default function DashboardLayout({
 }) {
   const searchParams = useSearchParams();
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+    // Fallback to a default user if no userId is in the query params
+    const userId = searchParams?.get('userId') as string || mockUsers.find(u => u.role === 'supervisor')?.id || "sup1";
     const foundUser = getUserById(userId);
+    
     if (foundUser) {
       setUser(foundUser);
     } else {
-      // In a real app with proper auth, you might redirect to /login
-      // For this demo, we'll handle it client-side.
-      redirect("/login");
+       // In a real app with proper auth, you might redirect to /login
+       // For this demo, we'll handle it client-side.
+       console.error("User not found, redirecting to login.")
+       redirect("/login");
     }
+    setLoading(false);
   }, [searchParams]);
 
+  if (loading) {
+    return null; // Or a loading spinner
+  }
+  
   if (!user) {
-    return null; // Or return a loading spinner while user is being determined
+    // This state can be hit briefly before redirect triggers.
+    return null;
   }
   
   return (

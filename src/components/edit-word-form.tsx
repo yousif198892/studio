@@ -52,12 +52,7 @@ export function EditWordForm({ word }: { word: Word }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [units, setUnits] = useState<Unit[]>([]);
-  const [isClient, setIsClient] = useState(false);
   
-  useEffect(() => {
-      setIsClient(true);
-  }, []);
-
   const userId = searchParams.get("userId");
 
   useEffect(() => {
@@ -105,10 +100,6 @@ export function EditWordForm({ word }: { word: Word }) {
       });
     }
   }, [state, toast, router, userId, t]);
-
-  if (!isClient) {
-      return null; // Or a loading skeleton
-  }
 
   return (
     <form action={formAction} className="space-y-4">

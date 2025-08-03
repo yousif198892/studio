@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getWordsBySupervisor, Word, mockWords } from "@/lib/data";
+import { getWordsBySupervisor, Word } from "@/lib/data";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/hooks/use-language";

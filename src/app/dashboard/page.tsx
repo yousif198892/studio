@@ -22,18 +22,23 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
   const { t } = useLanguage();
-  
-  // In a real app, this would come from a session or a more robust user management system.
-  const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
-  const user = getUserById(userId);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+     // In a real app, this would come from a session or a more robust user management system.
+    const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+    const foundUser = getUserById(userId);
+    setUser(foundUser);
+  }, [searchParams]);
   
   if (!user) {
     // This could redirect to a login or error page in a real app
-    return <div>User not found.</div>;
+    return <div>{t('dashboard.loading')}</div>;
   }
 
   if (user?.role === "student") {
