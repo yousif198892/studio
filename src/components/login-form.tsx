@@ -14,11 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useFormStatus } from "react-dom";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { login } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
+import { getAllUsers, User } from "@/lib/data";
 
 const initialState = {
   message: "",
@@ -48,17 +49,25 @@ export function LoginForm() {
     const [state, formAction] = useActionState(login, initialState);
     const { toast } = useToast();
     const { t } = useLanguage();
+    const [dynamicUsers, setDynamicUsers] = useState<User[]>([]);
 
     useEffect(() => {
-        // This effect will now correctly trigger for any message from the server action.
-        if (state?.message) {
-          // Determine if the message is a validation error or a generic login failure.
-          const isValidationError = Object.keys(state.errors || {}).length > 0;
-          const descriptionKey = isValidationError ? 'toasts.validationFailed' : 'toasts.loginError';
+      // On the client, read all users which includes those from localStorage.
+      const allUsers = getAllUsers();
+      setDynamicUsers(allUsers);
+    }, []);
 
+    useEffect(() => {
+        if (state?.message && Object.keys(state.errors || {}).length > 0) {
           toast({
             title: t('toasts.error'),
-            description: state.message, // Directly show the server message
+            description: state.message,
+            variant: "destructive",
+          });
+        } else if (state?.message) {
+           toast({
+            title: t('toasts.error'),
+            description: state.message,
             variant: "destructive",
           });
         }
@@ -78,6 +87,7 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form action={formAction} className="grid gap-4">
+          <input type="hidden" name="dynamicUsers" value={JSON.stringify(dynamicUsers)} />
           <div className="grid gap-2">
             <Label htmlFor="email">{t('login.emailLabel')}</Label>
             <Input
