@@ -126,15 +126,18 @@ export let mockWords: Word[] = [
 
 // This is a workaround to simulate a persistent data layer.
 // In a real app, you would use a database.
+// This function can be called from both server and client.
 export function getAllUsers(): User[] {
+  // If on the client, merge with localStorage.
   if (typeof window !== 'undefined') {
     const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    // Use a Map to ensure no duplicates from the mock list if they were also stored.
     const combinedUsers = [...mockUsers, ...storedUsers];
     const uniqueUsers = Array.from(new Map(combinedUsers.map(user => [user.id, user])).values());
     return uniqueUsers;
   }
-  // This function might be called on the server, where localStorage is not available.
-  // We will rely on a different mechanism for server actions to get all users.
+  // On the server, we can only return the static list.
+  // The login logic will need to handle this discrepancy.
   return mockUsers;
 }
 

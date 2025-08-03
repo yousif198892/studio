@@ -50,10 +50,15 @@ export function LoginForm() {
     const { t } = useLanguage();
 
     useEffect(() => {
-        if (state?.message && Object.keys(state.errors || {}).length > 0) {
+        // This effect will now correctly trigger for any message from the server action.
+        if (state?.message) {
+          // Determine if the message is a validation error or a generic login failure.
+          const isValidationError = Object.keys(state.errors || {}).length > 0;
+          const descriptionKey = isValidationError ? 'toasts.validationFailed' : 'toasts.loginError';
+
           toast({
             title: t('toasts.error'),
-            description: t('toasts.loginError'),
+            description: state.message, // Directly show the server message
             variant: "destructive",
           });
         }
