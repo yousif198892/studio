@@ -123,20 +123,9 @@ export let mockWords: Word[] = [
     }
 ];
 
+
 // This is a workaround to simulate a persistent data layer.
 // In a real app, you would use a database.
-let storedUsersCache: User[] = [];
-if (typeof localStorage !== 'undefined') {
-  try {
-    storedUsersCache = JSON.parse(localStorage.getItem('users') || '[]');
-  } catch (e) {
-    //
-  }
-}
-
-// This function now works on both server and client.
-// On the client, it merges mock users with users from localStorage.
-// On the server, it can only access the mock users.
 export function getAllUsers(): User[] {
     let allUsers = [...mockUsers];
 
@@ -161,23 +150,13 @@ export function getAllUsers(): User[] {
 
 // Helper functions to simulate data fetching
 export const getUserById = (id: string): User | undefined => {
-    // This function will only work correctly on the client-side now
-    // because getAllUsers on the server doesn't have localStorage.
-    // The dashboard layout already ensures this is only called on the client.
-    if (typeof window !== 'undefined') {
-        const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
-        return allUsers.find(u => u.id === id);
-    }
-    // Server-side fallback for things like build time.
-    return mockUsers.find(u => u.id === id);
+    const allUsers = getAllUsers();
+    return allUsers.find(u => u.id === id);
 }
 
 export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
-    if (typeof window !== 'undefined') {
-        const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
-        return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
-    }
-    return mockUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
+    const allUsers = getAllUsers();
+    return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 
 export const getWordsForStudent = (studentId: string): Word[] => {
@@ -219,8 +198,3 @@ export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
     }
     return baseUnits;
 }
-
-
-
-
-    
