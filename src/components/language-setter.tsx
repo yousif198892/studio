@@ -1,10 +1,10 @@
 
 "use client";
 
-import { useLanguage } from "@/hooks/use-language";
+import { useLanguage } from "@/hooks/use-language.tsx";
 import { useEffect } from "react";
 
-export function LanguageSetter({ children }: { children: React.ReactNode }) {
+export function LanguageSetter() {
   const { language, setLanguage } = useLanguage();
 
   useEffect(() => {
@@ -20,5 +20,5 @@ export function LanguageSetter({ children }: { children: React.ReactNode }) {
     localStorage.setItem("language", language);
   }, [language]);
 
-  return <>{children}</>;
+  return null;
 }

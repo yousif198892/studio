@@ -1,9 +1,10 @@
+
 import type { Metadata } from "next";
 import { PT_Sans, Belleza } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
-import { LanguageProvider } from "@/hooks/use-language";
+import { LanguageProvider } from "@/hooks/use-language.tsx";
 import { LanguageSetter } from "@/components/language-setter";
 
 const ptSans = PT_Sans({
@@ -29,21 +30,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <LanguageProvider>
-      <LanguageSetter>
-        <html suppressHydrationWarning>
-          <body
-            className={cn(
-              "min-h-screen bg-background font-body antialiased",
-              ptSans.variable,
-              belleza.variable
-            )}
-          >
-            {children}
-            <Toaster />
-          </body>
-        </html>
-      </LanguageSetter>
-    </LanguageProvider>
+    <html suppressHydrationWarning>
+      <body
+        className={cn(
+          "min-h-screen bg-background font-body antialiased",
+          ptSans.variable,
+          belleza.variable
+        )}
+      >
+        <LanguageProvider>
+          <LanguageSetter />
+          {children}
+          <Toaster />
+        </LanguageProvider>
+      </body>
+    </html>
   );
 }
