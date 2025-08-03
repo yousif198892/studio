@@ -40,15 +40,23 @@ export default function UnitsPage() {
     const [units, setUnits] = useState<Unit[]>([]);
 
     useEffect(() => {
+        // This now runs only on the client, preventing hydration errors
         if (userId) {
             const supervisorUnits = getUnitsBySupervisor(userId);
             setUnits(supervisorUnits);
         }
     }, [userId]);
 
+    const handleUnitAdded = (newUnit: Unit) => {
+      setUnits(prev => {
+        const updatedUnits = [...prev, newUnit];
+        localStorage.setItem('userUnits', JSON.stringify(updatedUnits.filter(u => u.supervisorId === userId)));
+        return updatedUnits;
+      });
+    };
+
     const handleDelete = (unitId: string) => {
         // Prevent deleting units if words are associated with it in a real app
-        
         const updatedUnits = units.filter(u => u.id !== unitId);
         setUnits(updatedUnits);
 
@@ -117,7 +125,7 @@ export default function UnitsPage() {
                              <CardDescription>Create a new unit to categorize your words.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <AddUnitForm onUnitAdded={(newUnit) => setUnits(prev => [...prev, newUnit])} />
+                            <AddUnitForm onUnitAdded={handleUnitAdded} />
                         </CardContent>
                     </Card>
                 </div>

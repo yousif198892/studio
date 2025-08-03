@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getWordsBySupervisor, Word, Unit, getUnitsBySupervisor, mockUnits } from "@/lib/data";
+import { getWordsBySupervisor, Word, Unit, getUnitsBySupervisor } from "@/lib/data";
 import {
     Table,
     TableBody,
@@ -41,7 +41,7 @@ export default function WordsPage() {
   const [units, setUnits] = useState<Unit[]>([]);
 
   useEffect(() => {
-    // This code now runs only on the client
+    // This code now runs only on the client, preventing hydration errors
     const supervisorWords = getWordsBySupervisor(userId);
     setWords(supervisorWords);
     

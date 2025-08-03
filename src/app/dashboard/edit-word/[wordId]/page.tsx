@@ -21,15 +21,9 @@ export default function EditWordPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // This now runs only on the client, preventing hydration errors
     if (wordId) {
-      // Combine initial mock words and words from local storage
-      const initialWords = getWordsBySupervisor(userId);
-      const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-      const userAddedWords = storedWords
-        .filter(w => w.supervisorId === userId)
-        .map(w => ({ ...w, nextReview: new Date(w.nextReview) }));
-      const allWords = Array.from(new Map([...initialWords, ...userAddedWords].map(item => [item['id'], item])).values());
-      
+      const allWords = getWordsBySupervisor(userId);
       const foundWord = allWords.find(w => w.id === wordId);
       setWord(foundWord || null);
       setLoading(false);

@@ -53,20 +53,13 @@ export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void
         title: "Success!",
         description: state.message,
       });
-
-      // Save to localStorage
-      try {
-        const existingUnits: Unit[] = JSON.parse(localStorage.getItem('userUnits') || '[]');
-        const updatedUnits = [...existingUnits, state.newUnit];
-        localStorage.setItem('userUnits', JSON.stringify(updatedUnits));
-      } catch (e) {
-        console.error("Could not save to localStorage", e);
-      }
       
       onUnitAdded(state.newUnit);
       formRef.current?.reset();
+      // Reset the state manually after processing
+      state.success = false;
       
-    } else if (state.message && !state.success) {
+    } else if (state.message && !state.success && state.errors) {
       toast({
         title: "Error",
         description: state.message,
