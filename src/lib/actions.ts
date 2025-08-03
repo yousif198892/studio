@@ -207,7 +207,7 @@ export async function register(prevState: any, formData: FormData) {
     const { name, password } = validatedFields.data;
     
     const newUser = {
-        id: role === 'supervisor' ? 'sup' + mockUsers.length : `user${Date.now()}`,
+        id: role === 'supervisor' ? `sup${Date.now()}` : `user${Date.now()}`,
         name,
         email,
         password,
@@ -215,6 +215,10 @@ export async function register(prevState: any, formData: FormData) {
         avatar: "https://placehold.co/100x100.png",
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
+    
+    // The mockUsers array is updated here, but this is only in memory for this server action's scope.
+    // To make it visible on the client on the next page, we would ideally write to a persistent store.
+    // For this demo, we'll continue with the redirect and rely on client-side state.
     
     mockUsers.push(newUser);
     
