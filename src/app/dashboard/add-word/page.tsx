@@ -6,8 +6,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { redirect } from "next/navigation";
 
-export default function AddWordPage() {
+export default function AddWordPage({
+  searchParams,
+}: {
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const userId = searchParams?.userId;
+  if (!userId) {
+    redirect("/login");
+  }
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold font-headline">Add New Word</h1>
