@@ -4,21 +4,20 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers } from "./data";
+import { mockUsers, mockWords } from "./data";
 import { redirect } from "next/navigation";
 
 const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
+  userId: z.string().min(1, "User ID is required."),
 });
-
-// In a real app, you'd get this from the user's session
-const MOCK_SUPERVISOR_ID = "sup1";
 
 export async function addWord(prevState: any, formData: FormData) {
   const validatedFields = addWordSchema.safeParse({
     word: formData.get("word"),
     definition: formData.get("definition"),
+    userId: formData.get("userId"),
   });
 
   if (!validatedFields.success) {
@@ -28,7 +27,7 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition } = validatedFields.data;
+  const { word, definition, userId } = validatedFields.data;
   const imageFile = formData.get("image") as File;
 
   if (!imageFile || imageFile.size === 0) {
@@ -54,8 +53,6 @@ export async function addWord(prevState: any, formData: FormData) {
     
     console.log("AI Result:", aiResult.options);
 
-    // Here you would save the new word to your database
-    // For now, we'll just log it.
     const newWord = {
         id: `word${Date.now()}`,
         word,
@@ -63,18 +60,18 @@ export async function addWord(prevState: any, formData: FormData) {
         imageUrl: dataUri, // In real app, you'd upload to storage and save URL
         options: [...aiResult.options, word],
         correctOption: word,
-        supervisorId: MOCK_SUPERVISOR_ID,
+        supervisorId: userId,
         nextReview: new Date(),
         strength: 0,
     };
 
     console.log("New word to be saved:", newWord);
-    // mockWords.push(newWord); // This won't persist across requests on the server
+    mockWords.push(newWord);
 
-    revalidatePath("/dashboard/add-word");
-    revalidatePath("/dashboard/words");
+    revalidatePath(`/dashboard/words?userId=${userId}`);
+    revalidatePath(`/dashboard/add-word?userId=${userId}`);
+    redirect(`/dashboard/words?userId=${userId}`);
 
-    return { message: `Successfully added word: ${word}`, errors: {} };
   } catch (error) {
     console.error("Error adding word:", error);
     return { message: "Failed to add word. AI generation error.", errors: {} };
@@ -154,10 +151,8 @@ export async function register(prevState: any, formData: FormData) {
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
     
-    // This won't persist across requests in dev server, but it's here for completeness.
     mockUsers.push(newUser); 
     
-    // Redirect to the dashboard as the new user.
     redirect(`/dashboard?userId=${newUser.id}`);
 }
 

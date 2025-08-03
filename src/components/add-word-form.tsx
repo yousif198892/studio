@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useActionState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 
 const initialState = {
   message: "",
@@ -35,6 +36,8 @@ function SubmitButton() {
 export function AddWordForm() {
   const [state, formAction] = useActionState(addWord, initialState);
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
 
   useEffect(() => {
     if (state.message && state.errors && Object.keys(state.errors).length === 0) {
@@ -53,6 +56,7 @@ export function AddWordForm() {
 
   return (
     <form action={formAction} className="space-y-4">
+      <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
         <Label htmlFor="word">Word</Label>
         <Input id="word" name="word" placeholder="e.g., Ephemeral" required />
