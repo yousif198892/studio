@@ -10,10 +10,12 @@ import { useActionState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { redirect } from "next/navigation";
 
 const initialState = {
   message: "",
   errors: {},
+  success: false,
 };
 
 function SubmitButton() {
@@ -40,12 +42,14 @@ export function AddWordForm() {
   const userId = searchParams.get("userId");
 
   useEffect(() => {
-    if (state.message && state.errors && Object.keys(state.errors).length === 0) {
+    if (state.success && state.message) {
       toast({
         title: "Success!",
         description: state.message,
       });
-    } else if (state.message) {
+      // A successful redirect is now handled in the server action,
+      // but if we wanted to handle it client-side, it would be here.
+    } else if (!state.success && state.message) {
       toast({
         title: "Error",
         description: state.message,

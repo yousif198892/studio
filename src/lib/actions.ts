@@ -24,6 +24,7 @@ export async function addWord(prevState: any, formData: FormData) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
       message: "Validation failed.",
+      success: false,
     };
   }
 
@@ -34,6 +35,7 @@ export async function addWord(prevState: any, formData: FormData) {
     return {
       errors: { image: ["Image is required."] },
       message: "Validation failed.",
+      success: false,
     };
   }
 
@@ -57,7 +59,7 @@ export async function addWord(prevState: any, formData: FormData) {
         id: `word${Date.now()}`,
         word,
         definition,
-        imageUrl: dataUri, // In real app, you'd upload to storage and save URL
+        imageUrl: `https://placehold.co/600x400.png?text=${word}`, // Using placeholder for now
         options: [...aiResult.options, word],
         correctOption: word,
         supervisorId: userId,
@@ -68,13 +70,12 @@ export async function addWord(prevState: any, formData: FormData) {
     console.log("New word to be saved:", newWord);
     mockWords.push(newWord);
 
-    revalidatePath(`/dashboard/words?userId=${userId}`);
-    revalidatePath(`/dashboard/add-word?userId=${userId}`);
+    revalidatePath(`/dashboard/words`);
     redirect(`/dashboard/words?userId=${userId}`);
 
   } catch (error) {
     console.error("Error adding word:", error);
-    return { message: "Failed to add word. AI generation error.", errors: {} };
+    return { message: "Failed to add word. AI generation error.", errors: {}, success: false };
   }
 }
 
@@ -110,7 +111,6 @@ const registerSchema = z
 export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role") as "student" | "supervisor";
     
-    // Check for existing user first
     const email = formData.get("email") as string;
     if (mockUsers.find(u => u.email === email)) {
         return {
@@ -151,7 +151,7 @@ export async function register(prevState: any, formData: FormData) {
         supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
     };
     
-    mockUsers.push(newUser); 
+    mockUsers.push(newUser);
     
     redirect(`/dashboard?userId=${newUser.id}`);
 }
@@ -188,4 +188,3 @@ export async function login(prevState: any, formData: FormData) {
   
   redirect(`/dashboard?userId=${user.id}`);
 }
-
