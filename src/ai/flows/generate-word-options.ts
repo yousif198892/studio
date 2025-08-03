@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   Definition: {{{definition}}}
   Image: {{media url=explanatoryImage}}
 
-  Options:`, // The explanatory image is passed in as a media url.
+  Options:`,
 });
 
 const generateWordOptionsFlow = ai.defineFlow(
@@ -60,7 +60,23 @@ const generateWordOptionsFlow = ai.defineFlow(
     outputSchema: GenerateWordOptionsOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    // The AI model can't handle the full data URI.
+    // Let's modify the prompt to just use the description and word.
+    const modifiedInput = {
+      ...input,
+      // Create a prompt that doesn't rely on the image.
+      prompt: `You are an AI assistant helping teachers create vocabulary quizzes.
+
+      Given a vocabulary word and its definition, your task is to generate three incorrect, but contextually relevant, answer options.
+      These options should be plausible enough to challenge students, but definitively wrong.
+    
+      Word: ${input.word}
+      Definition: ${input.definition}
+    
+      Options:`,
+    };
+
+    const {output} = await prompt(modifiedInput);
     return output!;
   }
 );
