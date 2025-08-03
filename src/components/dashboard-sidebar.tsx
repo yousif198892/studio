@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -9,6 +10,7 @@ import {
   Settings,
   LogOut,
   Users,
+  Layers,
 } from "lucide-react";
 
 import {
@@ -57,6 +59,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       label: "Add Word",
       icon: <PlusCircle />,
       roles: ["supervisor"],
+    },
+     {
+        href: `/dashboard/units?userId=${user.id}`,
+        label: "My Units",
+        icon: <Layers />,
+        roles: ["supervisor"],
     },
     {
         href: `/dashboard/students?userId=${user.id}`,

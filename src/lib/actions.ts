@@ -4,7 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, mockWords, Word } from "./data";
+import { mockUsers, mockWords, Word, Unit, mockUnits } from "./data";
 import { redirect } from "next/navigation";
 
 const addWordSchema = z.object({
@@ -48,13 +48,13 @@ export async function addWord(prevState: any, formData: FormData) {
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${imageFile.type};base64,${base64}`;
 
-    const aiResult = await generateWordOptions({
+    const { output } = await generateWordOptions({
       word,
       definition,
       explanatoryImage: dataUri,
     });
     
-    if (!aiResult?.options) {
+    if (!output?.options) {
         throw new Error("AI did not return valid options.");
     }
 
@@ -63,7 +63,7 @@ export async function addWord(prevState: any, formData: FormData) {
         word,
         definition,
         imageUrl: dataUri, 
-        options: [...aiResult.options, word],
+        options: [...output.options, word],
         correctOption: word,
         supervisorId: userId,
         unitId: unitId,
@@ -86,6 +86,7 @@ const updateWordSchema = z.object({
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
   wordId: z.string().min(1, "Word ID is required."),
+  unitId: z.string().min(1, "Please select a unit."),
 });
 
 export async function updateWord(prevState: any, formData: FormData) {
@@ -94,6 +95,7 @@ export async function updateWord(prevState: any, formData: FormData) {
     definition: formData.get("definition"),
     userId: formData.get("userId"),
     wordId: formData.get("wordId"),
+    unitId: formData.get("unitId"),
   });
 
   if (!validatedFields.success) {
@@ -103,7 +105,7 @@ export async function updateWord(prevState: any, formData: FormData) {
       success: false,
     };
   }
-   const { word, definition, wordId } = validatedFields.data;
+   const { word, definition, wordId, unitId } = validatedFields.data;
   const imageFile = formData.get("image") as File | null;
 
   try {
@@ -121,6 +123,7 @@ export async function updateWord(prevState: any, formData: FormData) {
         id: wordId,
         word,
         definition,
+        unitId,
         imageUrl: dataUri,
       }
     };
@@ -239,4 +242,47 @@ export async function login(prevState: any, formData: FormData) {
   }
   
   redirect(`/dashboard?userId=${user.id}`);
+}
+
+const addUnitSchema = z.object({
+  unitName: z.string().min(1, "Unit name is required."),
+  userId: z.string().min(1, "User ID is required."),
+});
+
+export async function addUnit(prevState: any, formData: FormData) {
+  const validatedFields = addUnitSchema.safeParse({
+    unitName: formData.get("unitName"),
+    userId: formData.get("userId"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Validation failed.",
+      success: false,
+    };
+  }
+  
+  const { unitName, userId } = validatedFields.data;
+
+  // Check if unit already exists for this supervisor
+  const allUnits = [...mockUnits, ...JSON.parse(typeof window !== 'undefined' ? localStorage.getItem('userUnits') || '[]' : '[]')];
+  const existingUnit = allUnits.find(u => u.name.toLowerCase() === unitName.toLowerCase() && u.supervisorId === userId);
+
+  if (existingUnit) {
+      return {
+          errors: { unitName: ["A unit with this name already exists."] },
+          message: "Unit already exists.",
+          success: false,
+      }
+  }
+
+  const newUnit: Unit = {
+    id: `unit${Date.now()}`,
+    name: unitName,
+    supervisorId: userId,
+  };
+  
+  // This just returns the unit to be saved in localStorage on the client
+  return { success: true, message: "Unit created!", newUnit };
 }
