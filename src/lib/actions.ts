@@ -11,6 +11,7 @@ const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
+  unitId: z.string().min(1, "Please select a unit."),
   image: z.any(),
 });
 
@@ -19,6 +20,7 @@ export async function addWord(prevState: any, formData: FormData) {
     word: formData.get("word"),
     definition: formData.get("definition"),
     userId: formData.get("userId"),
+    unitId: formData.get("unitId"),
     image: formData.get("image"),
   });
 
@@ -30,7 +32,7 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId } = validatedFields.data;
+  const { word, definition, userId, unitId } = validatedFields.data;
   const imageFile = formData.get("image") as File;
 
   if (!imageFile || imageFile.size === 0) {
@@ -46,13 +48,13 @@ export async function addWord(prevState: any, formData: FormData) {
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${imageFile.type};base64,${base64}`;
 
-    const {output} = await generateWordOptions({
+    const aiResult = await generateWordOptions({
       word,
       definition,
       explanatoryImage: dataUri,
     });
     
-    if (!output?.options) {
+    if (!aiResult?.options) {
         throw new Error("AI did not return valid options.");
     }
 
@@ -61,9 +63,10 @@ export async function addWord(prevState: any, formData: FormData) {
         word,
         definition,
         imageUrl: dataUri, 
-        options: [...output.options, word],
+        options: [...aiResult.options, word],
         correctOption: word,
         supervisorId: userId,
+        unitId: unitId,
         nextReview: new Date(),
         strength: 0,
     };

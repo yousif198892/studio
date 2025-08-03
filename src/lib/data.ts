@@ -1,3 +1,4 @@
+
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
@@ -13,6 +14,12 @@ export type User = {
   fontSize?: "sm" | "base" | "lg";
 };
 
+export type Unit = {
+    id: string;
+    name: string;
+    supervisorId: string;
+}
+
 export type Word = {
   id: string;
   word: string;
@@ -21,6 +28,7 @@ export type Word = {
   options: string[]; // This will include the correct word and 3 incorrect ones
   correctOption: string;
   supervisorId: string;
+  unitId: string;
   nextReview: Date;
   strength: number;
 };
@@ -70,6 +78,12 @@ export const mockUsers: User[] = [
   }
 ];
 
+export const mockUnits: Unit[] = [
+    { id: "unit1", name: "Unit 1: Common Nouns", supervisorId: "sup1" },
+    { id: "unit2", name: "Unit 2: Action Verbs", supervisorId: "sup1" },
+    { id: "unit3", name: "Unit 3: Adjectives", supervisorId: "sup1" },
+]
+
 export const mockWords: Word[] = [
     {
         id: "word1",
@@ -79,6 +93,7 @@ export const mockWords: Word[] = [
         options: ["Ephemeral", "Permanent", "Eternal", "Enduring"],
         correctOption: "Ephemeral",
         supervisorId: "sup1",
+        unitId: "unit3",
         nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
         strength: 2,
     },
@@ -90,6 +105,7 @@ export const mockWords: Word[] = [
         options: ["Rare", "Scarce", "Ubiquitous", "Limited"],
         correctOption: "Ubiquitous",
         supervisorId: "sup1",
+        unitId: "unit3",
         nextReview: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
         strength: 3,
     },
@@ -101,6 +117,7 @@ export const mockWords: Word[] = [
         options: ["Mellifluous", "Cacophonous", "Harsh", "Grating"],
         correctOption: "Mellifluous",
         supervisorId: "sup1",
+        unitId: "unit3",
         nextReview: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago (due for review)
         strength: 1,
     }
@@ -112,10 +129,36 @@ export const getStudentsBySupervisorId = (supervisorId: string): User[] => mockU
 export const getWordsForStudent = (studentId: string): Word[] => {
     const student = getUserById(studentId);
     if (!student || !student.supervisorId) return [];
-    return mockWords.filter(w => w.supervisorId === student.supervisorId);
+    const supervisorWords = getWordsBySupervisor(student.supervisorId);
+    // In a real app you might have student-specific word lists, but here we just use the supervisor's list
+    return supervisorWords;
 };
-export const getWordsBySupervisor = (supervisorId: string): Word[] => mockWords.filter(w => w.supervisorId === supervisorId);
+export const getWordsBySupervisor = (supervisorId: string): Word[] => {
+    const baseWords = mockWords.filter(w => w.supervisorId === supervisorId);
+    if (typeof window !== 'undefined') {
+        const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+        const userAddedWords = storedWords
+            .filter(w => w.supervisorId === supervisorId);
+        
+        const combined = [...userAddedWords, ...baseWords];
+        const uniqueWords = Array.from(new Map(combined.map(item => [item.id, item])).values());
+        return uniqueWords;
+    }
+    return baseWords;
+};
 export const getWordForReview = (studentId: string): Word | undefined => {
     const words = getWordsForStudent(studentId);
-    return words.filter(w => w.nextReview <= new Date()).sort((a, b) => a.nextReview.getTime() - b.nextReview.getTime())[0];
+    return words.filter(w => new Date(w.nextReview) <= new Date()).sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime())[0];
 };
+
+export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
+    const baseUnits = mockUnits.filter(u => u.supervisorId === supervisorId);
+     if (typeof window !== 'undefined') {
+        const storedUnits: Unit[] = JSON.parse(localStorage.getItem('userUnits') || '[]');
+        const userAddedUnits = storedUnits.filter(u => u.supervisorId === supervisorId);
+        const combined = [...userAddedUnits, ...baseUnits];
+        const uniqueUnits = Array.from(new Map(combined.map(item => [item.id, item])).values());
+        return uniqueUnits;
+    }
+    return baseUnits;
+}

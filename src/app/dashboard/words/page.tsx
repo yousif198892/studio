@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getWordsBySupervisor, Word } from "@/lib/data";
+import { getWordsBySupervisor, Word, Unit, getUnitsBySupervisor, mockUnits } from "@/lib/data";
 import {
     Table,
     TableBody,
@@ -38,22 +38,16 @@ export default function WordsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "sup1";
   const [words, setWords] = useState<Word[]>([]);
+  const [units, setUnits] = useState<Unit[]>([]);
 
   useEffect(() => {
     // This code now runs only on the client
-    const initialWords = getWordsBySupervisor(userId);
-    const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-
-    // Filter stored words by supervisorId and ensure they are parsed correctly
-    const userAddedWords = storedWords
-      .filter(w => w.supervisorId === userId)
-      .map(w => ({...w, nextReview: new Date(w.nextReview)}));
-
-    // Combine and remove duplicates, giving preference to user-added words
-    const combined = [...userAddedWords, ...initialWords];
-    const uniqueWords = Array.from(new Map(combined.map(item => [item['id'], item])).values());
+    const supervisorWords = getWordsBySupervisor(userId);
+    setWords(supervisorWords);
     
-    setWords(uniqueWords);
+    const supervisorUnits = getUnitsBySupervisor(userId);
+    setUnits(supervisorUnits);
+
   }, [userId]);
 
   const handleDelete = (wordId: string) => {
@@ -65,6 +59,11 @@ export default function WordsPage() {
     const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
     const updatedStoredWords = storedWords.filter(w => w.id !== wordId);
     localStorage.setItem('userWords', JSON.stringify(updatedStoredWords));
+  }
+  
+  const getUnitName = (unitId: string) => {
+    const unit = units.find(u => u.id === unitId);
+    return unit ? unit.name : "N/A";
   }
 
 
@@ -96,6 +95,7 @@ export default function WordsPage() {
                 </TableHead>
                 <TableHead>Word</TableHead>
                 <TableHead>Definition</TableHead>
+                <TableHead>Unit</TableHead>
                 <TableHead>
                   <span className="sr-only">Actions</span>
                 </TableHead>
@@ -115,6 +115,7 @@ export default function WordsPage() {
                   </TableCell>
                   <TableCell className="font-medium">{word.word}</TableCell>
                   <TableCell>{word.definition}</TableCell>
+                  <TableCell>{getUnitName(word.unitId)}</TableCell>
                   <TableCell>
                     <div className="flex gap-2 justify-end">
                         <Button variant="outline" size="icon" asChild>

@@ -7,11 +7,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word } from "@/lib/data";
+import { Word, Unit, getUnitsBySupervisor } from "@/lib/data";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const initialState = {
   message: "",
@@ -41,9 +42,17 @@ export function AddWordForm() {
   const [state, formAction] = useFormState(addWord, initialState);
   const { toast } = useToast();
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
+  const userId = searchParams.get("userId") || "sup1";
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [units, setUnits] = useState<Unit[]>([]);
+
+  useEffect(() => {
+    if (userId) {
+        const supervisorUnits = getUnitsBySupervisor(userId);
+        setUnits(supervisorUnits);
+    }
+  }, [userId]);
 
 
   useEffect(() => {
@@ -100,6 +109,22 @@ export function AddWordForm() {
           <p className="text-sm text-destructive">{state.errors.definition[0]}</p>
         )}
       </div>
+       <div className="grid gap-2">
+            <Label htmlFor="unitId">Unit</Label>
+            <Select name="unitId">
+                <SelectTrigger>
+                    <SelectValue placeholder="Select a unit" />
+                </SelectTrigger>
+                <SelectContent>
+                    {units.map(unit => (
+                        <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {state?.errors?.unitId && (
+                <p className="text-sm text-destructive">{state.errors.unitId[0]}</p>
+            )}
+       </div>
       <div className="grid gap-2">
         <Label htmlFor="image">Explanatory Image</Label>
         <Input id="image" name="image" type="file" accept="image/*" required />
