@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Unit } from "@/lib/data";
+import { useLanguage } from "@/hooks/use-language";
 
 const initialState: {
   message: string;
@@ -25,22 +26,24 @@ const initialState: {
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useLanguage();
 
   return (
     <Button type="submit" disabled={pending} className="w-full">
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          جارٍ إضافة الوحدة...
+          {t('unitsPage.addUnit.form.addingButton')}
         </>
       ) : (
-        "إضافة وحدة"
+        t('unitsPage.addUnit.form.addButton')
       )}
     </Button>
   );
 }
 
 export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void }) {
+  const { t } = useLanguage();
   const [state, formAction] = useActionState(addUnit, initialState);
   const { toast } = useToast();
   const searchParams = useSearchParams();
@@ -50,8 +53,8 @@ export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void
   useEffect(() => {
     if (state.success && state.newUnit) {
       toast({
-        title: "نجاح!",
-        description: state.message,
+        title: t('toasts.success'),
+        description: t('toasts.addUnitSuccess'),
       });
       
       onUnitAdded(state.newUnit);
@@ -60,20 +63,21 @@ export function AddUnitForm({ onUnitAdded }: { onUnitAdded: (unit: Unit) => void
       state.success = false;
       
     } else if (state.message && !state.success && state.errors) {
+       const errorMessage = state.errors?.unitName?.[0] === 'Unit with this name already exists.' ? t('toasts.addUnitExists') : state.message;
       toast({
-        title: "خطأ",
-        description: state.message,
+        title: t('toasts.error'),
+        description: errorMessage,
         variant: "destructive",
       });
     }
-  }, [state, toast, onUnitAdded]);
+  }, [state, toast, onUnitAdded, t]);
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
-        <Label htmlFor="unitName">اسم الوحدة</Label>
-        <Input id="unitName" name="unitName" placeholder="مثال: الفصل الأول الأفعال" required />
+        <Label htmlFor="unitName">{t('unitsPage.addUnit.form.nameLabel')}</Label>
+        <Input id="unitName" name="unitName" placeholder={t('unitsPage.addUnit.form.namePlaceholder')} required />
         {state?.errors?.unitName && (
           <p className="text-sm text-destructive">{state.errors.unitName[0]}</p>
         )}

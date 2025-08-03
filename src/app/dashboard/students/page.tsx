@@ -1,4 +1,6 @@
 
+"use client";
+
 import {
   Card,
   CardContent,
@@ -16,34 +18,34 @@ import {
     TableRow,
   } from "@/components/ui/table"
 import Image from "next/image";
+import { useLanguage } from "@/hooks/use-language";
+import { useSearchParams } from "next/navigation";
 
-export default function StudentsPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const userId = searchParams?.userId as string || "sup1";
+export default function StudentsPage() {
+  const searchParams = useSearchParams();
+  const userId = searchParams?.get('userId') as string || "sup1";
   const user = getUserById(userId);
   const students = getStudentsBySupervisorId(userId);
+  const { t } = useLanguage();
 
   return (
     <div className="space-y-6">
-        <h1 className="text-3xl font-bold font-headline">طلابي</h1>
-        <p className="text-muted-foreground">مرحبًا، {user?.name}. إليك طلابك.</p>
+        <h1 className="text-3xl font-bold font-headline">{t('studentsPage.title')}</h1>
+        <p className="text-muted-foreground">{t('studentsPage.description', user?.name || '')}</p>
         <Card>
             <CardHeader>
-                <CardTitle>جميع الطلاب</CardTitle>
-                <CardDescription>قائمة الطلاب تحت إشرافك.</CardDescription>
+                <CardTitle>{t('studentsPage.allStudents.title')}</CardTitle>
+                <CardDescription>{t('studentsPage.allStudents.description')}</CardDescription>
             </CardHeader>
             <CardContent>
                 <Table>
                     <TableHeader>
                         <TableRow>
                         <TableHead className="hidden w-[100px] sm:table-cell">
-                            <span className="sr-only">صورة</span>
+                            <span className="sr-only">Image</span>
                         </TableHead>
-                        <TableHead>الاسم</TableHead>
-                        <TableHead>البريد الإلكتروني</TableHead>
+                        <TableHead>{t('dashboard.supervisor.myStudents.name')}</TableHead>
+                        <TableHead>{t('dashboard.supervisor.myStudents.email')}</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -51,7 +53,7 @@ export default function StudentsPage({
                             <TableRow key={student.id}>
                                 <TableCell className="hidden sm:table-cell">
                                     <Image
-                                    alt="الصورة الرمزية للطالب"
+                                    alt="Student avatar"
                                     className="aspect-square rounded-full object-cover"
                                     height="64"
                                     src={student.avatar}

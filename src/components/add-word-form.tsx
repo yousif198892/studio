@@ -13,6 +13,7 @@ import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Word, Unit, getUnitsBySupervisor } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useLanguage } from "@/hooks/use-language";
 
 const initialState: {
   message: string,
@@ -27,16 +28,17 @@ const initialState: {
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useLanguage();
 
   return (
     <Button type="submit" disabled={pending} className="w-full">
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          جار إضافة الكلمة...
+          {t('addWord.form.addingButton')}
         </>
       ) : (
-        "إضافة كلمة"
+        t('addWord.form.addButton')
       )}
     </Button>
   );
@@ -45,6 +47,7 @@ function SubmitButton() {
 export function AddWordForm() {
   const [state, formAction] = useActionState(addWord, initialState);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "sup1";
   const router = useRouter();
@@ -62,8 +65,8 @@ export function AddWordForm() {
   useEffect(() => {
     if (state.success && state.newWord) {
       toast({
-        title: "نجاح!",
-        description: state.message,
+        title: t('toasts.success'),
+        description: t('toasts.addWordSuccess'),
       });
 
       // Save to localStorage
@@ -83,29 +86,29 @@ export function AddWordForm() {
       router.push(`/dashboard/words?userId=${userId}`);
     } else if (state.message && !state.success) {
       toast({
-        title: "خطأ",
-        description: state.message,
+        title: t('toasts.error'),
+        description: state.message.startsWith('Failed to add word. AI Generation Error:') ? t('toasts.aiError', state.message.replace('Failed to add word. AI Generation Error:', '').trim()) : state.message,
         variant: "destructive",
       });
     }
-  }, [state, toast, router, userId]);
+  }, [state, toast, router, userId, t]);
 
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
-        <Label htmlFor="word">الكلمة</Label>
-        <Input id="word" name="word" placeholder="مثال: سريع الزوال" required />
+        <Label htmlFor="word">{t('addWord.form.wordLabel')}</Label>
+        <Input id="word" name="word" placeholder={t('addWord.form.wordPlaceholder')} required />
         {state?.errors?.word && (
           <p className="text-sm text-destructive">{state.errors.word[0]}</p>
         )}
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="definition">التعريف</Label>
+        <Label htmlFor="definition">{t('addWord.form.definitionLabel')}</Label>
         <Textarea
           id="definition"
           name="definition"
-          placeholder="مثال: يدوم لفترة قصيرة جدًا."
+          placeholder={t('addWord.form.definitionPlaceholder')}
           required
         />
         {state?.errors?.definition && (
@@ -113,10 +116,10 @@ export function AddWordForm() {
         )}
       </div>
        <div className="grid gap-2">
-            <Label htmlFor="unitId">الوحدة</Label>
+            <Label htmlFor="unitId">{t('addWord.form.unitLabel')}</Label>
             <Select name="unitId">
                 <SelectTrigger>
-                    <SelectValue placeholder="اختر وحدة" />
+                    <SelectValue placeholder={t('addWord.form.selectUnit')} />
                 </SelectTrigger>
                 <SelectContent>
                     {units.map(unit => (
@@ -129,7 +132,7 @@ export function AddWordForm() {
             )}
        </div>
       <div className="grid gap-2">
-        <Label htmlFor="image">صورة توضيحية</Label>
+        <Label htmlFor="image">{t('addWord.form.imageLabel')}</Label>
         <Input id="image" name="image" type="file" accept="image/*" required />
          {state?.errors?.image && (
           <p className="text-sm text-destructive">{state.errors.image[0]}</p>

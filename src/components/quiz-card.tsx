@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,7 @@ import { type Word } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Progress } from "@/components/ui/progress";
 import { ArrowRight } from "lucide-react";
+import { useLanguage } from "@/hooks/use-language";
 
 type QuizCardProps = {
   word: Word;
@@ -20,6 +22,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Shuffling options on the client-side to avoid hydration mismatch
@@ -68,7 +71,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
       </CardHeader>
       <CardContent className="p-6">
         <p className="text-center text-muted-foreground mb-4 font-semibold">
-          أي كلمة تعني: &ldquo;{word.definition}&rdquo;؟
+          {t('learn.question', word.definition)}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {shuffledOptions.map((option) => (
@@ -91,12 +94,12 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
       <CardFooter className="flex-col items-stretch gap-4 p-6 bg-secondary/50">
         {isAnswered && (
              <Button onClick={onNextWord} size="lg" className="w-full">
-                الكلمة التالية <ArrowRight className="mr-2 h-5 w-5" />
+                {t('learn.nextWord')} <ArrowRight className="ms-2 h-5 w-5" />
             </Button>
         )}
         <div>
             <div className="flex justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">قوة الكلمة</span>
+                <span className="text-xs font-medium text-muted-foreground">{t('learn.wordStrength')}</span>
                 <span className="text-xs font-medium text-muted-foreground">{word.strength} / {totalWords}</span>
             </div>
             <Progress value={progress} className="w-full h-2" />

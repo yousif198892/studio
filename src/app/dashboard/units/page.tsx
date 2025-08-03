@@ -33,11 +33,13 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function UnitsPage() {
     const searchParams = useSearchParams();
     const userId = searchParams.get("userId") || "sup1";
     const [units, setUnits] = useState<Unit[]>([]);
+    const { t } = useLanguage();
 
     useEffect(() => {
         // This now runs only on the client, preventing hydration errors
@@ -68,28 +70,28 @@ export default function UnitsPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">وحداتي</h1>
-            <p className="text-muted-foreground">إدارة وحدات المفردات الخاصة بك.</p>
+            <h1 className="text-3xl font-bold font-headline">{t('unitsPage.title')}</h1>
+            <p className="text-muted-foreground">{t('unitsPage.description')}</p>
             <div className="grid md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                     <Card>
                         <CardHeader>
-                            <CardTitle>جميع الوحدات</CardTitle>
-                            <CardDescription>قائمة بجميع وحدات المفردات الخاصة بك.</CardDescription>
+                            <CardTitle>{t('unitsPage.allUnits.title')}</CardTitle>
+                            <CardDescription>{t('unitsPage.allUnits.description')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <Table>
                                 <TableHeader>
                                     <TableRow>
-                                        <TableHead>اسم الوحدة</TableHead>
-                                        <TableHead><span className="sr-only">الإجراءات</span></TableHead>
+                                        <TableHead>{t('unitsPage.allUnits.name')}</TableHead>
+                                        <TableHead><span className="sr-only">{t('unitsPage.allUnits.actions')}</span></TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {units.map((unit) => (
                                         <TableRow key={unit.id}>
                                             <TableCell className="font-medium">{unit.name}</TableCell>
-                                            <TableCell className="text-right">
+                                            <TableCell className="text-end">
                                                 <AlertDialog>
                                                     <AlertDialogTrigger asChild>
                                                         <Button variant="destructive" size="icon">
@@ -98,15 +100,14 @@ export default function UnitsPage() {
                                                     </AlertDialogTrigger>
                                                     <AlertDialogContent>
                                                         <AlertDialogHeader>
-                                                        <AlertDialogTitle>هل أنت متأكد تمامًا؟</AlertDialogTitle>
+                                                        <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
                                                         <AlertDialogDescription>
-                                                            لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف الوحدة بشكل دائم "{unit.name}".
-                                                            سوف تحتاج إلى إعادة تعيين أي كلمات في هذه الوحدة.
+                                                           {t('unitsPage.deleteDialog.description', unit.name)}
                                                         </AlertDialogDescription>
                                                         </AlertDialogHeader>
                                                         <AlertDialogFooter>
-                                                        <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                                                        <AlertDialogAction onClick={() => handleDelete(unit.id)}>متابعة</AlertDialogAction>
+                                                        <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDelete(unit.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
                                                         </AlertDialogFooter>
                                                     </AlertDialogContent>
                                                 </AlertDialog>
@@ -121,8 +122,8 @@ export default function UnitsPage() {
                 <div>
                     <Card>
                         <CardHeader>
-                            <CardTitle>إضافة وحدة جديدة</CardTitle>
-                             <CardDescription>أنشئ وحدة جديدة لتصنيف كلماتك.</CardDescription>
+                            <CardTitle>{t('unitsPage.addUnit.title')}</CardTitle>
+                             <CardDescription>{t('unitsPage.addUnit.description')}</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <AddUnitForm onUnitAdded={handleUnitAdded} />

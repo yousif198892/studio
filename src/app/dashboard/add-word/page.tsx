@@ -1,3 +1,6 @@
+
+"use client";
+
 import { AddWordForm } from "@/components/add-word-form";
 import {
   Card,
@@ -6,28 +9,22 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { redirect } from "next/navigation";
+import { useLanguage } from "@/hooks/use-language";
 
-export default function AddWordPage({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const userId = searchParams?.userId;
-  if (!userId) {
-    redirect("/login");
-  }
+export default function AddWordPage() {
+  const { t } = useLanguage();
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">إضافة كلمة جديدة</h1>
+      <h1 className="text-3xl font-bold font-headline">{t('addWord.title')}</h1>
       <p className="text-muted-foreground">
-        أنشئ بطاقة مفردات جديدة لطلابك. سيقوم الذكاء الاصطناعي بإنشاء خيارات مضللة تلقائيًا.
+        {t('addWord.description')}
       </p>
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>بطاقة مفردات جديدة</CardTitle>
+          <CardTitle>{t('addWord.cardTitle')}</CardTitle>
           <CardDescription>
-            املأ تفاصيل الكلمة الجديدة.
+            {t('addWord.cardDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>

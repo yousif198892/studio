@@ -26,6 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { type User } from "@/lib/data";
+import { useLanguage } from "@/hooks/use-language";
 
 type DashboardSidebarProps = {
   user: User;
@@ -34,47 +35,48 @@ type DashboardSidebarProps = {
 export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const pathname = usePathname();
   const userRole = user.role;
+  const { t } = useLanguage();
 
   const menuItems = [
     {
       href: `/dashboard?userId=${user.id}`,
-      label: "لوحة التحكم",
+      label: t('sidebar.dashboard'),
       icon: <Home />,
       roles: ["student", "supervisor"],
     },
     {
       href: `/learn?userId=${user.id}`,
-      label: "تعلم",
+      label: t('sidebar.learn'),
       icon: <BookOpen />,
       roles: ["student"],
     },
     {
         href: `/dashboard/words?userId=${user.id}`,
-        label: "كلماتي",
+        label: t('sidebar.myWords'),
         icon: <BookOpen />,
         roles: ["supervisor"],
     },
     {
       href: `/dashboard/add-word?userId=${user.id}`,
-      label: "إضافة كلمة",
+      label: t('sidebar.addWord'),
       icon: <PlusCircle />,
       roles: ["supervisor"],
     },
      {
         href: `/dashboard/units?userId=${user.id}`,
-        label: "وحداتي",
+        label: t('sidebar.myUnits'),
         icon: <Layers />,
         roles: ["supervisor"],
     },
     {
         href: `/dashboard/students?userId=${user.id}`,
-        label: "طلابي",
+        label: t('sidebar.myStudents'),
         icon: <Users />,
         roles: ["supervisor"],
     },
     {
       href: `/dashboard/profile?userId=${user.id}`,
-      label: "الملف الشخصي",
+      label: t('sidebar.profile'),
       icon: <Settings />,
       roles: ["student", "supervisor"],
     },

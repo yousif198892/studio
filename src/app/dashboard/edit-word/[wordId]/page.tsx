@@ -11,10 +11,12 @@ import {
 import { getWordsBySupervisor, Word, mockWords } from "@/lib/data";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function EditWordPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const { t } = useLanguage();
   const wordId = params.wordId as string;
   const userId = searchParams.get('userId') || 'sup1';
   const [word, setWord] = useState<Word | null>(null);
@@ -31,24 +33,24 @@ export default function EditWordPage() {
   }, [wordId, userId]);
 
   if (loading) {
-    return <div>جار التحميل...</div>;
+    return <div>{t('dashboard.loading')}</div>;
   }
 
   if (!word) {
-    return <div>لم يتم العثور على الكلمة.</div>;
+    return <div>Word not found.</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">تعديل الكلمة</h1>
+      <h1 className="text-3xl font-bold font-headline">{t('editWord.title')}</h1>
       <p className="text-muted-foreground">
-        قم بتحديث تفاصيل بطاقة المفردات الخاصة بك.
+        {t('editWord.description')}
       </p>
       <Card className="max-w-2xl">
         <CardHeader>
-          <CardTitle>تعديل: {word.word}</CardTitle>
+          <CardTitle>{t('editWord.cardTitle', word.word)}</CardTitle>
           <CardDescription>
-            قم بتعديل الحقول أدناه واحفظ تغييراتك.
+            {t('editWord.cardDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>

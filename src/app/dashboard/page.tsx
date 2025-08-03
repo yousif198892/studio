@@ -1,3 +1,6 @@
+
+"use client"
+
 import {
   Card,
   CardContent,
@@ -17,14 +20,14 @@ import {
   } from "@/components/ui/table"
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/hooks/use-language";
+import { useSearchParams } from "next/navigation";
 
-export default function Dashboard({
-  searchParams,
-}: {
-  searchParams: { [key: string]: string | string[] | undefined };
-}) {
-  const userId = searchParams?.userId as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+export default function Dashboard() {
+  const searchParams = useSearchParams();
+  const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
   const user = getUserById(userId);
+  const { t } = useLanguage();
 
   if (user?.role === "student") {
     const words = getWordsForStudent(user.id);
@@ -33,32 +36,32 @@ export default function Dashboard({
 
     return (
       <div className="space-y-6">
-        <h1 className="text-3xl font-bold font-headline">مرحبًا، {user.name}!</h1>
-        <p className="text-muted-foreground">إليك ملخص لتقدمك في التعلم. استمر في العمل الرائع!</p>
+        <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.welcome', user.name)}</h1>
+        <p className="text-muted-foreground">{t('dashboard.student.description')}</p>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                كلمات للمراجعة
+                {t('dashboard.student.reviewTitle')}
               </CardTitle>
               <Target className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{wordsToReview}</div>
               <p className="text-xs text-muted-foreground">
-                جاهز لجلستك التالية
+                {t('dashboard.student.reviewDescription')}
               </p>
             </CardContent>
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">الكلمات المكتسبة</CardTitle>
+              <CardTitle className="text-sm font-medium">{t('dashboard.student.learnedTitle')}</CardTitle>
               <BookOpen className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{wordsLearned}</div>
               <p className="text-xs text-muted-foreground">
-                إجمالي كلمات المفردات المكتسبة
+                {t('dashboard.student.learnedDescription')}
               </p>
             </CardContent>
           </Card>
@@ -71,12 +74,12 @@ export default function Dashboard({
     const students = getStudentsBySupervisorId(user.id);
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">لوحة تحكم المشرف</h1>
-            <p className="text-muted-foreground">مرحبًا، {user.name}.</p>
+            <h1 className="text-3xl font-bold font-headline">{t('dashboard.supervisor.title')}</h1>
+            <p className="text-muted-foreground">{t('dashboard.supervisor.welcome', user.name)}</p>
             <Card>
                 <CardHeader>
-                    <CardTitle>معرف المشرف الخاص بك</CardTitle>
-                    <CardDescription>شارك هذا المعرف مع طلابك حتى يتمكنوا من الاتصال بك.</CardDescription>
+                    <CardTitle>{t('dashboard.supervisor.supervisorId.title')}</CardTitle>
+                    <CardDescription>{t('dashboard.supervisor.supervisorId.description')}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex items-center gap-4">
                     <KeyRound className="h-8 w-8 text-primary"/>
@@ -85,18 +88,18 @@ export default function Dashboard({
             </Card>
             <Card>
                 <CardHeader>
-                    <CardTitle>طلابي</CardTitle>
-                    <CardDescription>قائمة الطلاب تحت إشرافك.</CardDescription>
+                    <CardTitle>{t('dashboard.supervisor.myStudents.title')}</CardTitle>
+                    <CardDescription>{t('dashboard.supervisor.myStudents.description')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <Table>
                         <TableHeader>
                             <TableRow>
                             <TableHead className="hidden w-[100px] sm:table-cell">
-                                <span className="sr-only">صورة</span>
+                                <span className="sr-only">Image</span>
                             </TableHead>
-                            <TableHead>الاسم</TableHead>
-                            <TableHead>البريد الإلكتروني</TableHead>
+                            <TableHead>{t('dashboard.supervisor.myStudents.name')}</TableHead>
+                            <TableHead>{t('dashboard.supervisor.myStudents.email')}</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -104,7 +107,7 @@ export default function Dashboard({
                                 <TableRow key={student.id}>
                                     <TableCell className="hidden sm:table-cell">
                                         <Image
-                                        alt="الصورة الرمزية للطالب"
+                                        alt="Student avatar"
                                         className="aspect-square rounded-full object-cover"
                                         height="64"
                                         src={student.avatar}
@@ -123,5 +126,5 @@ export default function Dashboard({
     )
   }
 
-  return <div>جار التحميل...</div>
+  return <div>{t('dashboard.loading')}</div>
 }

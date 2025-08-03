@@ -3,6 +3,7 @@ import { PT_Sans, Belleza } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
+import { LanguageProvider } from "@/hooks/use-language";
 
 const ptSans = PT_Sans({
   subsets: ["latin"],
@@ -27,7 +28,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="ltr">
+    <LanguageProvider>
       <body
         suppressHydrationWarning
         className={cn(
@@ -39,6 +40,6 @@ export default function RootLayout({
         {children}
         <Toaster />
       </body>
-    </html>
+    </LanguageProvider>
   );
 }

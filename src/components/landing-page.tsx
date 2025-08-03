@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -5,26 +6,26 @@ import { BrainCircuit, Users, Star, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
+import { useLanguage } from "@/hooks/use-language";
 
 export function LandingPage() {
+  const { t } = useLanguage();
+
   const features = [
     {
       icon: <BrainCircuit className="w-8 h-8 text-primary" />,
-      title: "اختبارات مدعومة بالذكاء الاصطناعي",
-      description:
-        "تحدَّ نفسك بخيارات غير صحيحة تم إنشاؤها بواسطة الذكاء الاصطناعي، مما يجعل التعلم أكثر فعالية وجاذبية.",
+      title: t('landing.features.aiQuizzes.title'),
+      description: t('landing.features.aiQuizzes.description'),
     },
     {
       icon: <Users className="w-8 h-8 text-primary" />,
-      title: "أدوات المشرف",
-      description:
-        "يمكن للمشرفين إضافة مفردات مخصصة وتتبع تقدم الطلاب، وتخصيص تجربة التعلم.",
+      title: t('landing.features.supervisorTools.title'),
+      description: t('landing.features.supervisorTools.description'),
     },
     {
       icon: <Star className="w-8 h-8 text-primary" />,
-      title: "التكرار المتباعد",
-      description:
-        "تقوم الخوارزمية الذكية لدينا بجدولة المراجعات على فترات مثالية لتثبيت الكلمات في ذاكرتك طويلة المدى.",
+      title: t('landing.features.srs.title'),
+      description: t('landing.features.srs.description'),
     },
   ];
 
@@ -35,17 +36,17 @@ export function LandingPage() {
           <Logo />
           <span className="sr-only">LinguaLeap</span>
         </Link>
-        <nav className="mr-auto flex gap-4 sm:gap-6">
+        <nav className="ms-auto flex gap-4 sm:gap-6">
           <Link
             href="/login"
             className="text-sm font-medium hover:underline underline-offset-4"
             prefetch={false}
           >
-            تسجيل الدخول
+            {t('landing.login')}
           </Link>
           <Button asChild>
             <Link href="/register" prefetch={false}>
-              ابدأ
+              {t('landing.getStarted')}
             </Link>
           </Button>
         </nav>
@@ -56,15 +57,15 @@ export function LandingPage() {
             <div className="grid max-w-[1300px] mx-auto gap-4 px-4 sm:px-6 md:px-10 md:grid-cols-2 md:gap-16">
               <div>
                 <h1 className="lg:leading-tighter text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl xl:text-[3.4rem] 2xl:text-[3.75rem] font-headline text-primary">
-                  انطلق في اللغة مع الذكاء الاصطناعي
+                  {t('landing.title')}
                 </h1>
                 <p className="mx-auto max-w-[700px] text-muted-foreground md:text-xl mt-4">
-                  يجمع LinguaLeap بين تقنيات التعلم المثبتة والذكاء الاصطناعي المتطور لإنشاء تجربة بناء مفردات مخصصة وفعالة.
+                  {t('landing.description')}
                 </p>
                 <div className="space-x-4 mt-6">
                   <Button asChild size="lg">
                     <Link href="/register" prefetch={false}>
-                      ابدأ التعلم الآن <ArrowRight className="mr-2 h-5 w-5" />
+                      {t('landing.getStarted')} <ArrowRight className="ms-2 h-5 w-5" />
                     </Link>
                   </Button>
                 </div>
@@ -87,13 +88,13 @@ export function LandingPage() {
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
               <div className="space-y-2">
                 <div className="inline-block rounded-lg bg-secondary px-3 py-1 text-sm text-primary">
-                  الميزات الرئيسية
+                  Key Features
                 </div>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl font-headline">
-                  لماذا يعمل LinguaLeap
+                  {t('landing.features.title')}
                 </h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                  لقد صممنا المزيج المثالي من التكنولوجيا والتربية لتسريع اكتسابك للغة.
+                  {t('landing.features.description')}
                 </p>
               </div>
             </div>
@@ -112,13 +113,13 @@ export function LandingPage() {
         </section>
       </main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t bg-secondary">
-        <p className="text-xs text-muted-foreground">&copy; 2024 LinguaLeap. كل الحقوق محفوظة.</p>
-        <nav className="sm:mr-auto flex gap-4 sm:gap-6">
+        <p className="text-xs text-muted-foreground">{t('landing.footer.copyright')}</p>
+        <nav className="sm:ms-auto flex gap-4 sm:gap-6">
           <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            شروط الخدمة
+            {t('landing.footer.terms')}
           </Link>
           <Link href="#" className="text-xs hover:underline underline-offset-4" prefetch={false}>
-            الخصوصية
+            {t('landing.footer.privacy')}
           </Link>
         </nav>
       </footer>

@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,8 +19,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function ProfilePage() {
+  const { t, language, setLanguage } = useLanguage();
   const timezones = [
     "America/New_York",
     "America/Los_Angeles",
@@ -27,15 +31,19 @@ export default function ProfilePage() {
     "Asia/Tokyo",
   ];
 
+  const handleLanguageChange = (value: "en" | "ar") => {
+    setLanguage(value);
+  }
+
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">ملفي الشخصي</h1>
+      <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>المعلومات الشخصية</CardTitle>
+            <CardTitle>{t('profile.personalInfo.title')}</CardTitle>
             <CardDescription>
-              قم بتحديث تفاصيلك الشخصية هنا.
+              {t('profile.personalInfo.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -45,36 +53,48 @@ export default function ProfilePage() {
                 <AvatarFallback>AJ</AvatarFallback>
               </Avatar>
               <div className="grid gap-1.5">
-                <Label htmlFor="picture">الصورة الشخصية</Label>
+                <Label htmlFor="picture">{t('profile.personalInfo.picture')}</Label>
                 <Input id="picture" type="file" />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="name">الاسم الكامل</Label>
+              <Label htmlFor="name">{t('profile.personalInfo.fullName')}</Label>
               <Input id="name" defaultValue="Alex Johnson" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">البريد الإلكتروني</Label>
+              <Label htmlFor="email">{t('profile.personalInfo.email')}</Label>
               <Input id="email" type="email" defaultValue="alex@example.com" disabled />
             </div>
           </CardContent>
           <CardFooter>
-            <Button>حفظ التغييرات</Button>
+            <Button>{t('profile.personalInfo.save')}</Button>
           </CardFooter>
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>التفضيلات</CardTitle>
+            <CardTitle>{t('profile.preferences.title')}</CardTitle>
             <CardDescription>
-              خصص تجربتك التعليمية.
+              {t('profile.preferences.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="timezone">المنطقة الزمنية</Label>
+              <Label htmlFor="language">{t('profile.preferences.language')}</Label>
+               <Select value={language} onValueChange={handleLanguageChange}>
+                <SelectTrigger>
+                  <SelectValue placeholder={t('profile.preferences.selectLanguage')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="ar">العربية</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="timezone">{t('profile.preferences.timezone')}</Label>
               <Select defaultValue="America/New_York">
                 <SelectTrigger>
-                  <SelectValue placeholder="اختر المنطقة الزمنية" />
+                  <SelectValue placeholder={t('profile.preferences.selectTimezone')} />
                 </SelectTrigger>
                 <SelectContent>
                   {timezones.map((tz) => (
@@ -86,47 +106,47 @@ export default function ProfilePage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="font-size">حجم الخط</Label>
+              <Label htmlFor="font-size">{t('profile.preferences.fontSize')}</Label>
               <Select defaultValue="base">
                 <SelectTrigger>
-                  <SelectValue placeholder="اختر حجم الخط" />
+                  <SelectValue placeholder={t('profile.preferences.selectFontSize')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sm">صغير</SelectItem>
-                  <SelectItem value="base">افتراضي</SelectItem>
-                  <SelectItem value="lg">كبير</SelectItem>
+                  <SelectItem value="sm">{t('profile.preferences.fontSmall')}</SelectItem>
+                  <SelectItem value="base">{t('profile.preferences.fontDefault')}</SelectItem>
+                  <SelectItem value="lg">{t('profile.preferences.fontLarge')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </CardContent>
           <CardFooter>
-            <Button>حفظ التفضيلات</Button>
+            <Button>{t('profile.preferences.save')}</Button>
           </CardFooter>
         </Card>
         <Card className="md:col-span-2">
           <CardHeader>
-            <CardTitle>إدارة الحساب</CardTitle>
+            <CardTitle>{t('profile.account.title')}</CardTitle>
             <CardDescription>
-              قم بإدارة إعدادات حسابك وبياناتك.
+              {t('profile.account.description')}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <h3 className="font-semibold">إعادة تعيين كلمة المرور</h3>
+              <h3 className="font-semibold">{t('profile.account.resetPassword.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                سيتم إرسال بريد إلكتروني إليك يحتوي على تعليمات لإعادة تعيين كلمة المرور الخاصة بك.
+                {t('profile.account.resetPassword.description')}
               </p>
             </div>
              <div>
-              <h3 className="font-semibold text-destructive">حذف الحساب</h3>
+              <h3 className="font-semibold text-destructive">{t('profile.account.deleteAccount.title')}</h3>
               <p className="text-sm text-muted-foreground">
-                حذف حسابك وجميع البيانات المرتبطة به بشكل دائم. لا يمكن التراجع عن هذا الإجراء.
+                {t('profile.account.deleteAccount.description')}
               </p>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline">إعادة تعيين كلمة المرور</Button>
-            <Button variant="destructive">حذف حسابي</Button>
+            <Button variant="outline">{t('profile.account.resetPassword.button')}</Button>
+            <Button variant="destructive">{t('profile.account.deleteAccount.button')}</Button>
           </CardFooter>
         </Card>
       </div>

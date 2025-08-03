@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -6,6 +7,7 @@ import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
+import { useLanguage } from "@/hooks/use-language";
 
 // In a real app, this would come from a session
 const MOCK_USER_ID = "user1";
@@ -16,6 +18,7 @@ export default function LearnPage() {
   );
   
   const [sessionCount, setSessionCount] = useState(0);
+  const { t } = useLanguage();
 
   const handleNextWord = () => {
     // In a real app, you'd fetch the next word from your backend
@@ -38,7 +41,7 @@ export default function LearnPage() {
     <div className="flex flex-col items-center justify-center min-h-full p-4">
       {currentWord ? (
         <div key={currentWord.id} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
-           <h1 className="text-3xl font-bold font-headline mb-4 text-center">جلسة تعلم</h1>
+           <h1 className="text-3xl font-bold font-headline mb-4 text-center">{t('learn.title')}</h1>
           <QuizCard
             word={currentWord}
             onCorrect={handleCorrect}
@@ -49,14 +52,14 @@ export default function LearnPage() {
       ) : (
         <Card className="w-full max-w-lg text-center">
             <CardHeader>
-                <CardTitle className="font-headline text-2xl">لقد انتهيت من كل شيء في الوقت الحالي!</CardTitle>
+                <CardTitle className="font-headline text-2xl">{t('learn.finishedTitle')}</CardTitle>
             </CardHeader>
             <CardContent>
-                <p className="text-muted-foreground">لقد راجعت كل كلماتك المستحقة. عمل رائع!</p>
-                <p className="text-muted-foreground mt-2">عد لاحقًا لجلستك التالية.</p>
+                <p className="text-muted-foreground">{t('learn.finishedDescription1')}</p>
+                <p className="text-muted-foreground mt-2">{t('learn.finishedDescription2')}</p>
                 <Button onClick={handleNextWord} className="mt-6">
-                    ابدأ جلسة جديدة على أي حال
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {t('learn.startNewSession')}
+                    <ArrowRight className="ms-2 h-4 w-4" />
                 </Button>
             </CardContent>
         </Card>

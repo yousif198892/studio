@@ -8,8 +8,8 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { getUserById, mockUsers } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "لوحة التحكم | LinguaLeap",
-  description: "لوحة التحكم التعليمية الشخصية الخاصة بك.",
+  title: "Dashboard | LinguaLeap",
+  description: "Your personalized learning dashboard.",
 };
 
 export default async function DashboardLayout({

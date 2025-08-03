@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Word, Unit, getUnitsBySupervisor } from "@/lib/data";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useLanguage } from "@/hooks/use-language";
 
 const initialState: {
     message: string,
@@ -28,16 +29,17 @@ const initialState: {
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const { t } = useLanguage();
 
   return (
     <Button type="submit" disabled={pending} className="w-full">
       {pending ? (
         <>
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          جارٍ حفظ التغييرات...
+          {t('editWord.form.savingButton')}
         </>
       ) : (
-        "حفظ التغييرات"
+        t('editWord.form.saveButton')
       )}
     </Button>
   );
@@ -46,6 +48,7 @@ function SubmitButton() {
 export function EditWordForm({ word }: { word: Word }) {
   const [state, formAction] = useActionState(updateWord, initialState);
   const { toast } = useToast();
+  const { t } = useLanguage();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   const router = useRouter();
@@ -62,8 +65,8 @@ export function EditWordForm({ word }: { word: Word }) {
   useEffect(() => {
     if (state.success && state.updatedWord) {
       toast({
-        title: "نجاح!",
-        description: state.message,
+        title: t('toasts.success'),
+        description: t('toasts.updateWordSuccess'),
       });
 
       // Update localStorage
@@ -90,31 +93,31 @@ export function EditWordForm({ word }: { word: Word }) {
       router.push(`/dashboard/words?userId=${userId}`);
     } else if (state.message && !state.success) {
       toast({
-        title: "خطأ",
+        title: t('toasts.error'),
         description: state.message,
         variant: "destructive",
       });
     }
-  }, [state, toast, router, userId]);
+  }, [state, toast, router, userId, t]);
 
   return (
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="wordId" value={word.id} />
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid gap-2">
-        <Label htmlFor="word">الكلمة</Label>
-        <Input id="word" name="word" defaultValue={word.word} placeholder="مثال: سريع الزوال" required />
+        <Label htmlFor="word">{t('addWord.form.wordLabel')}</Label>
+        <Input id="word" name="word" defaultValue={word.word} placeholder={t('addWord.form.wordPlaceholder')} required />
         {state?.errors?.word && (
           <p className="text-sm text-destructive">{state.errors.word[0]}</p>
         )}
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="definition">التعريف</Label>
+        <Label htmlFor="definition">{t('addWord.form.definitionLabel')}</Label>
         <Textarea
           id="definition"
           name="definition"
           defaultValue={word.definition}
-          placeholder="مثال: يدوم لفترة قصيرة جدًا."
+          placeholder={t('addWord.form.definitionPlaceholder')}
           required
         />
         {state?.errors?.definition && (
@@ -122,10 +125,10 @@ export function EditWordForm({ word }: { word: Word }) {
         )}
       </div>
        <div className="grid gap-2">
-            <Label htmlFor="unitId">الوحدة</Label>
+            <Label htmlFor="unitId">{t('addWord.form.unitLabel')}</Label>
             <Select name="unitId" defaultValue={word.unitId}>
                 <SelectTrigger>
-                    <SelectValue placeholder="اختر وحدة" />
+                    <SelectValue placeholder={t('addWord.form.selectUnit')} />
                 </SelectTrigger>
                 <SelectContent>
                     {units.map(unit => (
@@ -138,11 +141,11 @@ export function EditWordForm({ word }: { word: Word }) {
             )}
        </div>
       <div className="grid gap-2">
-        <Label htmlFor="image">صورة توضيحية</Label>
-        <p className="text-sm text-muted-foreground">الصورة الحالية:</p>
+        <Label htmlFor="image">{t('addWord.form.imageLabel')}</Label>
+        <p className="text-sm text-muted-foreground">{t('editWord.form.currentImage')}</p>
         <Image src={word.imageUrl} alt="Current image" width={100} height={100} className="rounded-md" />
         <Input id="image" name="image" type="file" accept="image/*" />
-        <p className="text-xs text-muted-foreground">اتركه فارغًا للاحتفاظ بالصورة الحالية.</p>
+        <p className="text-xs text-muted-foreground">{t('editWord.form.imageHelper')}</p>
          {state?.errors?.image && (
           <p className="text-sm text-destructive">{state.errors.image[0]}</p>
         )}

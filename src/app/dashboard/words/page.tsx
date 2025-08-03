@@ -33,12 +33,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useLanguage } from "@/hooks/use-language";
 
 export default function WordsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "sup1";
   const [words, setWords] = useState<Word[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     // This code now runs only on the client, preventing hydration errors
@@ -71,19 +73,19 @@ export default function WordsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold font-headline">كلماتي</h1>
-          <p className="text-muted-foreground">إدارة قائمة المفردات الخاصة بك.</p>
+          <h1 className="text-3xl font-bold font-headline">{t('wordsPage.title')}</h1>
+          <p className="text-muted-foreground">{t('wordsPage.description')}</p>
         </div>
         <Button asChild>
-            <Link href={`/dashboard/add-word?userId=${userId}`}>إضافة كلمة جديدة</Link>
+            <Link href={`/dashboard/add-word?userId=${userId}`}>{t('wordsPage.addNew')}</Link>
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>قائمة المفردات</CardTitle>
+          <CardTitle>{t('wordsPage.table.title')}</CardTitle>
           <CardDescription>
-            قائمة كاملة بجميع الكلمات التي أضفتها.
+            {t('wordsPage.table.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -91,13 +93,13 @@ export default function WordsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="hidden w-[100px] sm:table-cell">
-                  صورة
+                  {t('wordsPage.table.image')}
                 </TableHead>
-                <TableHead>الكلمة</TableHead>
-                <TableHead>التعريف</TableHead>
-                <TableHead>الوحدة</TableHead>
+                <TableHead>{t('wordsPage.table.word')}</TableHead>
+                <TableHead>{t('wordsPage.table.definition')}</TableHead>
+                <TableHead>{t('wordsPage.table.unit')}</TableHead>
                 <TableHead>
-                  <span className="sr-only">الإجراءات</span>
+                  <span className="sr-only">{t('wordsPage.table.actions')}</span>
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -106,7 +108,7 @@ export default function WordsPage() {
                 <TableRow key={word.id}>
                   <TableCell className="hidden sm:table-cell">
                     <Image
-                      alt="صورة الكلمة"
+                      alt="Word image"
                       className="aspect-square rounded-md object-cover"
                       height="64"
                       src={word.imageUrl}
@@ -131,15 +133,14 @@ export default function WordsPage() {
                           </AlertDialogTrigger>
                           <AlertDialogContent>
                             <AlertDialogHeader>
-                              <AlertDialogTitle>هل أنت متأكد تمامًا؟</AlertDialogTitle>
+                              <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
                               <AlertDialogDescription>
-                                لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف الكلمة بشكل دائم
-                                "{word.word}" من قائمتك.
+                                {t('wordsPage.deleteDialog.description', word.word)}
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                              <AlertDialogCancel>إلغاء</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(word.id)}>متابعة</AlertDialogAction>
+                              <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(word.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
