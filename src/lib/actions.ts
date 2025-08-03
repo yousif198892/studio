@@ -4,7 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, mockWords, Word, Unit, mockUnits } from "./data";
+import { mockUsers, mockWords, Word, Unit, mockUnits, getUnitsBySupervisor } from "./data";
 import { redirect } from "next/navigation";
 
 const addWordSchema = z.object({
@@ -86,7 +86,7 @@ const updateWordSchema = z.object({
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
   wordId: z.string().min(1, "Word ID is required."),
-  unitId: z.string().min(1, "Please select a unit."),
+  unitId: z.string().optional(),
 });
 
 export async function updateWord(prevState: any, formData: FormData) {
@@ -265,13 +265,15 @@ export async function addUnit(prevState: any, formData: FormData) {
   
   const { unitName, userId } = validatedFields.data;
 
-  // Check if unit already exists for this supervisor
-  const allUnits = [...mockUnits, ...JSON.parse(typeof window !== 'undefined' ? localStorage.getItem('userUnits') || '[]' : '[]')];
-  const existingUnit = allUnits.find(u => u.name.toLowerCase() === unitName.toLowerCase() && u.supervisorId === userId);
+  // This is a server action, so it doesn't have direct access to localStorage.
+  // The check should rely on the data available to it, which is the mockUnits.
+  // A robust check would require fetching from a DB. Here we simulate the check
+  // against the base data. The client-side will prevent duplicates from its view.
+  const existingUnit = mockUnits.find(u => u.name.toLowerCase() === unitName.toLowerCase() && u.supervisorId === userId);
 
   if (existingUnit) {
       return {
-          errors: { unitName: ["A unit with this name already exists."] },
+          errors: { unitName: ["A unit with this name already exists in the base data."] },
           message: "Unit already exists.",
           success: false,
       }

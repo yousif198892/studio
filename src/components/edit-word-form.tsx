@@ -7,12 +7,13 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect, useActionState } from "react";
+import { useEffect, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word } from "@/lib/data";
+import { Word, Unit, getUnitsBySupervisor } from "@/lib/data";
 import Image from "next/image";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const initialState: {
     message: string,
@@ -48,6 +49,15 @@ export function EditWordForm({ word }: { word: Word }) {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   const router = useRouter();
+  const [units, setUnits] = useState<Unit[]>([]);
+
+  useEffect(() => {
+    if (userId) {
+        const supervisorUnits = getUnitsBySupervisor(userId);
+        setUnits(supervisorUnits);
+    }
+  }, [userId]);
+
 
   useEffect(() => {
     if (state.success && state.updatedWord) {
@@ -67,6 +77,7 @@ export function EditWordForm({ word }: { word: Word }) {
                     word: state.updatedWord.word || w.word,
                     definition: state.updatedWord.definition || w.definition,
                     imageUrl: state.updatedWord.imageUrl || w.imageUrl,
+                    unitId: state.updatedWord.unitId || w.unitId,
                 };
             }
             return w;
@@ -110,6 +121,22 @@ export function EditWordForm({ word }: { word: Word }) {
           <p className="text-sm text-destructive">{state.errors.definition[0]}</p>
         )}
       </div>
+       <div className="grid gap-2">
+            <Label htmlFor="unitId">Unit</Label>
+            <Select name="unitId" defaultValue={word.unitId}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select a unit" />
+                </SelectTrigger>
+                <SelectContent>
+                    {units.map(unit => (
+                        <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {state?.errors?.unitId && (
+                <p className="text-sm text-destructive">{state.errors.unitId[0]}</p>
+            )}
+       </div>
       <div className="grid gap-2">
         <Label htmlFor="image">Explanatory Image</Label>
         <p className="text-sm text-muted-foreground">Current Image:</p>
