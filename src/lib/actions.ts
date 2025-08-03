@@ -155,6 +155,10 @@ export async function register(prevState: any, formData: FormData) {
     };
     
     mockUsers.push(newUser); 
+    
+    // In a real app, you would create a session here.
+    // We'll update the "last user" to be this user.
+    mockUsers.push(mockUsers.splice(mockUsers.findIndex(u => u.id === newUser.id), 1)[0]);
 
     // Simulate login by redirecting to dashboard
     redirect("/dashboard");
@@ -194,21 +198,7 @@ export async function login(prevState: any, formData: FormData) {
   // In a real app, you would create a session here.
   // For now, we'll just redirect.
   // We'll update the "last user" to be this user.
-  const lastUser = mockUsers.pop();
-  if (lastUser && lastUser.id !== user.id) {
-    mockUsers.push(lastUser);
-  }
-  const userToMove = mockUsers.find((u, i) => {
-    if (u.id === user.id) {
-        mockUsers.splice(i, 1);
-        return true;
-    }
-    return false;
-  });
-
-  if (userToMove) {
-    mockUsers.push(userToMove);
-  }
+  mockUsers.push(mockUsers.splice(mockUsers.findIndex(u => u.id === user.id), 1)[0]);
   
   redirect("/dashboard");
 }
