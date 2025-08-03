@@ -85,7 +85,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   );
 
   return (
-    <Sidebar className="border-r" side="right">
+    <Sidebar className="border-r" side="left">
       <SidebarHeader>
         <div className="flex items-center gap-2 p-2">
             <Logo />
@@ -99,10 +99,10 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
               <Link href={item.href}>
                 <SidebarMenuButton
                   isActive={pathname === item.href.split('?')[0]}
-                  className="w-full justify-end"
+                  className="w-full"
                 >
-                  <span>{item.label}</span>
                   {item.icon}
+                  <span>{item.label}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
@@ -111,21 +111,21 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       </SidebarContent>
       <SidebarFooter className="p-2 border-t">
         <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
-          <Link href="/login">
-            <Button variant="ghost" size="icon">
-                <LogOut className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div className="flex-1 overflow-hidden text-right">
+          <Avatar>
+            <AvatarImage src={user?.avatar} alt="User" />
+            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+          </Avatar>
+          <div className="flex-1 overflow-hidden">
             <p className="font-semibold text-sm truncate">{user?.name}</p>
             <p className="text-xs text-muted-foreground truncate">
               {user?.email}
             </p>
           </div>
-           <Avatar>
-            <AvatarImage src={user?.avatar} alt="User" />
-            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
-          </Avatar>
+          <Link href="/login">
+            <Button variant="ghost" size="icon">
+                <LogOut className="h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </SidebarFooter>
     </Sidebar>
