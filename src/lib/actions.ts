@@ -79,13 +79,24 @@ export async function addWord(prevState: any, formData: FormData) {
   }
 }
 
-const registerSchema = z.object({
-  name: z.string().min(1, "Name is required."),
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(6, "Password must be at least 6 characters."),
-  role: z.enum(["student", "supervisor"]),
-  supervisorId: z.string().optional(),
-});
+const registerSchema = z
+  .object({
+    name: z.string().min(1, 'Name is required.'),
+    email: z.string().email('Invalid email address.'),
+    password: z.string().min(6, 'Password must be at least 6 characters.'),
+    role: z.enum(['student', 'supervisor']),
+    supervisorId: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.role === 'student' && !data.supervisorId) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['supervisorId'],
+        message: 'Supervisor ID is required for students.',
+      });
+    }
+  });
+
 
 export async function register(prevState: any, formData: FormData) {
     const validatedFields = registerSchema.safeParse({

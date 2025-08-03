@@ -32,7 +32,8 @@ export function RegisterForm() {
     if (studentState.message && Object.keys(studentState.errors).length === 0) {
       toast({ title: "Success!", description: studentState.message });
     } else if (studentState.message) {
-      toast({ title: "Error", description: studentState.message, variant: "destructive" });
+      const errorMessage = studentState.errors?.supervisorId?.[0] || studentState.message;
+      toast({ title: "Error", description: errorMessage, variant: "destructive" });
     }
   }, [studentState, toast]);
 
@@ -68,6 +69,7 @@ export function RegisterForm() {
                 <div className="grid gap-2">
                   <Label htmlFor="student-name">Full Name</Label>
                   <Input id="student-name" name="name" placeholder="Max Robinson" required />
+                  {studentState.errors?.name && <p className="text-sm text-destructive">{studentState.errors.name[0]}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="student-email">Email</Label>
@@ -78,14 +80,17 @@ export function RegisterForm() {
                     placeholder="m@example.com"
                     required
                   />
+                  {studentState.errors?.email && <p className="text-sm text-destructive">{studentState.errors.email[0]}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="student-password">Password</Label>
-                  <Input id="student-password" name="password" type="password" />
+                  <Input id="student-password" name="password" type="password" required/>
+                  {studentState.errors?.password && <p className="text-sm text-destructive">{studentState.errors.password[0]}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="supervisor-id">Supervisor ID</Label>
                   <Input id="supervisor-id" name="supervisorId" placeholder="Enter your supervisor's ID" />
+                  {studentState.errors?.supervisorId && <p className="text-sm text-destructive">{studentState.errors.supervisorId[0]}</p>}
                 </div>
                 <Button type="submit" className="w-full mt-2">
                   Create an account
@@ -100,6 +105,7 @@ export function RegisterForm() {
                 <div className="grid gap-2">
                   <Label htmlFor="supervisor-name">Full Name</Label>
                   <Input id="supervisor-name" name="name" placeholder="Dr. Jane Smith" required />
+                  {supervisorState.errors?.name && <p className="text-sm text-destructive">{supervisorState.errors.name[0]}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="supervisor-email">Email</Label>
@@ -110,10 +116,12 @@ export function RegisterForm() {
                     placeholder="j.smith@example.com"
                     required
                   />
+                  {supervisorState.errors?.email && <p className="text-sm text-destructive">{supervisorState.errors.email[0]}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="supervisor-password">Password</Label>
-                  <Input id="supervisor-password" name="password" type="password" />
+                  <Input id="supervisor-password" name="password" type="password" required/>
+                  {supervisorState.errors?.password && <p className="text-sm text-destructive">{supervisorState.errors.password[0]}</p>}
                 </div>
                 <Button type="submit" className="w-full mt-2">
                   Create a supervisor account
