@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "./logo";
+import { Button } from "@/components/ui/button";
 
 type DashboardSidebarProps = {
   userRole: "student" | "supervisor";
