@@ -7,6 +7,7 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { getUserById, type User } from "@/lib/data";
 import { useEffect, useState } from "react";
+import { ClientOnly } from "@/components/client-only";
 
 export default function DashboardLayout({
   children,
@@ -19,7 +20,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     // In a real app, this would come from a session or a more robust user management system.
-    const userId = searchParams?.get('userId') as string || "sup1";
+    const userId = searchParams?.get('userId') || "sup1";
     const foundUser = getUserById(userId);
     
     if (foundUser) {
