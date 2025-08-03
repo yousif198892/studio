@@ -20,7 +20,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     // In a real app, this would come from a session or a more robust user management system.
-    const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+    const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1].id;
     const foundUser = getUserById(userId);
     
     if (foundUser) {
