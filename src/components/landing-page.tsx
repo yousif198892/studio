@@ -7,9 +7,15 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { useLanguage } from "@/hooks/use-language";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 export function LandingPage() {
-  const { t } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+
+  const handleLanguageChange = (checked: boolean) => {
+    setLanguage(checked ? 'ar' : 'en');
+  };
 
   const features = [
     {
@@ -36,7 +42,17 @@ export function LandingPage() {
           <Logo />
           <span className="sr-only">LinguaLeap</span>
         </Link>
-        <nav className="ms-auto flex gap-4 sm:gap-6">
+        <nav className="ms-auto flex items-center gap-4 sm:gap-6">
+           <div className="flex items-center space-x-2">
+            <Label htmlFor="language-switch" className={language === 'en' ? 'text-primary font-bold' : 'text-muted-foreground'}>EN</Label>
+            <Switch
+              id="language-switch"
+              checked={language === 'ar'}
+              onCheckedChange={handleLanguageChange}
+              aria-label="Toggle language between English and Arabic"
+            />
+            <Label htmlFor="language-switch" className={language === 'ar' ? 'text-primary font-bold' : 'text-muted-foreground'}>AR</Label>
+          </div>
           <Link
             href="/login"
             className="text-sm font-medium hover:underline underline-offset-4"
