@@ -1,3 +1,6 @@
+
+"use client";
+
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import {
@@ -6,25 +9,46 @@ import {
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { getUserById, mockUsers } from "@/lib/data";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export const metadata: Metadata = {
-  title: "Dashboard | LinguaLeap",
-  description: "Your personalized learning dashboard.",
-};
+// This component ensures that its children are only rendered on the client side.
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [hasMounted, setHasMounted] = useState(false);
 
-export default async function DashboardLayout({
+  useEffect(() => {
+    setHasMounted(true);
+  }, []);
+
+  if (!hasMounted) {
+    return null;
+  }
+
+  return <>{children}</>;
+}
+
+
+export default function DashboardLayout({
   children,
-  searchParams,
 }: {
   children: React.ReactNode;
-  searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const userId = searchParams?.userId as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
-  
+  const searchParams = useSearchParams();
   // In a real app, you'd get the user from a session
+  // For now, we'll get it from search params for demo purposes
+  const userId = searchParams?.get('userId') as string || mockUsers[mockUsers.length - 1]?.id || "sup1";
+  
   const user = getUserById(userId);
+
+  // Note: In a real app with server-side auth, this check might be different.
+  // Since we are relying on client-side params for this demo, we handle missing user on the client.
   if (!user) {
-    redirect("/login");
+    // Can't redirect from server component if user depends on client-side searchParams.
+    // A client-side redirect or a "not found" message is more appropriate here.
+    if (typeof window !== 'undefined') {
+       redirect("/login");
+    }
+    return null; // Or return a loading spinner
   }
 
   return (
@@ -34,7 +58,7 @@ export default async function DashboardLayout({
         <div className="flex-1 flex flex-col">
           <DashboardHeader />
           <main className="flex-1 p-4 md:p-6 lg:p-8">
-            {children}
+            <ClientOnly>{children}</ClientOnly>
           </main>
         </div>
       </div>
