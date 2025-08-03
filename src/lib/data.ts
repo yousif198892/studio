@@ -127,22 +127,24 @@ export let mockWords: Word[] = [
 // On the client, it merges mock users with users from localStorage.
 // On the server, it can only access the mock users.
 export async function getAllUsers(): Promise<User[]> {
-  let allUsers = [...mockUsers];
+    let allUsers = [...mockUsers];
 
-  if (typeof window !== 'undefined') {
-    try {
-      const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-      if (Array.isArray(storedUsers)) {
-        const combined = [...mockUsers, ...storedUsers];
-        // Use a map to remove duplicates, preferring the ones from localStorage
-        allUsers = Array.from(new Map(combined.map(user => [user.id, user])).values());
-      }
-    } catch (e) {
-      console.error("Could not parse users from localStorage", e);
+    // This block is crucial. It ensures that on the client-side, we always
+    // read the most up-to-date user list, which includes newly created users.
+    if (typeof window !== 'undefined') {
+        try {
+            const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+            const combined = [...mockUsers, ...storedUsers];
+            // Use a Map to create a unique list of users based on their ID,
+            // preferring users from localStorage in case of duplicates.
+            const userMap = new Map(combined.map(user => [user.id, user]));
+            allUsers = Array.from(userMap.values());
+        } catch (e) {
+            console.error("Could not parse users from localStorage", e);
+        }
     }
-  }
-  
-  return allUsers;
+
+    return allUsers;
 }
 
 
@@ -206,4 +208,5 @@ export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
     }
     return baseUnits;
 }
+
 
