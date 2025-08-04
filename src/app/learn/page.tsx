@@ -22,6 +22,7 @@ export default function LearnPage() {
   const [reviewWords, setReviewWords] = useState<Word[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [sessionCompleted, setSessionCompleted] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (userId) {
@@ -33,6 +34,7 @@ export default function LearnPage() {
       setReviewWords(dueWords);
       setCurrentWordIndex(0);
       setSessionCompleted(dueWords.length === 0);
+      setIsLoading(false);
     }
   }, [userId]);
 
@@ -68,9 +70,10 @@ export default function LearnPage() {
       setSessionCompleted(true);
     }
   };
-
+  
   const handleRestartSession = () => {
      if (userId) {
+      setIsLoading(true);
       const allWords = getWordsForStudent(userId);
       const dueWords = allWords
         .filter(w => new Date(w.nextReview) <= new Date())
@@ -79,6 +82,7 @@ export default function LearnPage() {
       setReviewWords(dueWords);
       setCurrentWordIndex(0);
       setSessionCompleted(dueWords.length === 0);
+      setIsLoading(false);
     }
   }
 
@@ -86,7 +90,6 @@ export default function LearnPage() {
     const word = reviewWords[currentWordIndex];
     if (!word) return;
 
-    // Use current strength to get interval, then increment strength.
     const intervalDays = srsIntervals[word.strength];
     const newStrength = Math.min(word.strength + 1, srsIntervals.length - 1);
     const newNextReview = new Date();
@@ -100,9 +103,6 @@ export default function LearnPage() {
     setReviewWords(updatedReviewWords);
 
     updateWordInStorage(updatedWord);
-
-    // Note: We don't call handleNextWord() from here anymore.
-    // The user will click the "Next Word" button in the QuizCard.
   };
 
   const handleIncorrect = () => {
@@ -110,13 +110,11 @@ export default function LearnPage() {
     if (!word) return;
     
     const newStrength = Math.max(0, word.strength - 1);
-    // On incorrect, always schedule for review tomorrow to reinforce it.
     const newNextReview = new Date();
     newNextReview.setDate(newNextReview.getDate() + 1);
 
     const updatedWord: Word = { ...word, strength: newStrength, nextReview: newNextReview };
 
-    // Update state for immediate feedback
     const updatedReviewWords = [...reviewWords];
     updatedReviewWords[currentWordIndex] = updatedWord;
     setReviewWords(updatedReviewWords);
@@ -124,18 +122,21 @@ export default function LearnPage() {
     updateWordInStorage(updatedWord);
   };
 
-  const currentWord = reviewWords[currentWordIndex];
+  const currentWord = !isLoading ? reviewWords[currentWordIndex] : null;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary relative">
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-4 right-4 z-10">
             <Button variant="ghost" size="icon" asChild>
                 <Link href={`/dashboard?userId=${userId}`}>
                     <LayoutDashboard className="h-6 w-6" />
                 </Link>
             </Button>
         </div>
-      {!sessionCompleted && currentWord ? (
+
+      {isLoading ? (
+          <div>Loading...</div>
+      ) : !sessionCompleted && currentWord ? (
         <div key={currentWord.id} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
           <h1 className="text-3xl font-bold font-headline mb-4 text-center">{t('learn.title')}</h1>
           <QuizCard
