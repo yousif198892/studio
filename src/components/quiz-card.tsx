@@ -85,6 +85,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
                 className={cn("text-lg h-auto py-4 whitespace-normal", {
                     "bg-green-500 hover:bg-green-600 text-white": isAnswered && isCorrectAnswer,
                     "bg-red-500 hover:bg-red-600 text-white": isAnswered && isSelected && !isCorrectAnswer,
+                    "bg-red-500 hover:bg-red-600 text-white opacity-70": isAnswered && !isSelected && !isCorrectAnswer
                 })}
                 variant={isAnswered && !isCorrectAnswer && !isSelected ? 'outline' : 'default'}
                 >
