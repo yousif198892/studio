@@ -25,9 +25,11 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Shuffling options on the client-side to avoid hydration mismatch
-    const opts = word.options || [];
-    setShuffledOptions([...opts].sort(() => Math.random() - 0.5));
+    if (word) {
+      // Correctly combine and shuffle options on the client-side
+      const allOptions = Array.from(new Set([word.correctOption, ...word.options]));
+      setShuffledOptions(allOptions.sort(() => Math.random() - 0.5));
+    }
     setSelectedOption(null);
     setIsAnswered(false);
   }, [word]);
