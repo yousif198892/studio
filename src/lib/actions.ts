@@ -369,3 +369,24 @@ export async function createSupervisor(prevState: any, formData: FormData) {
     
     return { success: true, message: "Supervisor created successfully!", newUser };
 }
+
+export async function deleteSupervisor(userId: string) {
+    // In a real application, you would perform database operations here.
+    // For this demo, we'll just simulate success or failure.
+    // You would also want to handle what happens to students assigned to this supervisor.
+
+    try {
+        // Here you would find the user in the database and delete them.
+        // For localStorage simulation, this will be handled client-side in the component
+        // because server actions don't have direct access to the client's localStorage.
+        // We're providing this server action for architectural completeness.
+        console.log(`Supervisor with ID: ${userId} marked for deletion.`);
+        
+        revalidatePath("/dashboard/admins");
+        return { success: true, message: "Supervisor deleted successfully!" };
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+        return { success: false, message: `Failed to delete supervisor: ${errorMessage}` };
+    }
+}

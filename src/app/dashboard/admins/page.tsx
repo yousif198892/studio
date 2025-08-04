@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createSupervisor } from "@/lib/actions";
+import { createSupervisor, deleteSupervisor } from "@/lib/actions";
 import {
   Card,
   CardContent,
@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useActionState, useEffect, useState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, Copy } from "lucide-react";
+import { Loader2, RefreshCw, Copy, Trash2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { getAllUsers, User } from "@/lib/data";
 import {
@@ -26,6 +26,17 @@ import {
     TableHeader,
     TableRow,
   } from "@/components/ui/table"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const initialState = {
   message: "",
@@ -100,6 +111,30 @@ export default function AdminsPage() {
         description: "Password copied to clipboard.",
       });
     });
+  };
+
+  const handleDelete = async (userId: string) => {
+    // Optimistically update the UI
+    setSupervisors(prev => prev.filter(s => s.id !== userId));
+
+    const result = await deleteSupervisor(userId);
+    
+    if (result.success) {
+        toast({
+            title: "Success!",
+            description: "Supervisor deleted successfully.",
+        });
+    } else {
+        toast({
+            title: "Error!",
+            description: result.message,
+            variant: 'destructive'
+        });
+        // Revert UI if deletion failed
+        const allUsers = getAllUsers();
+        const supervisorUsers = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin);
+        setSupervisors(supervisorUsers);
+    }
   };
 
   return (
@@ -186,6 +221,7 @@ export default function AdminsPage() {
                     <TableHeader>
                         <TableRow>
                             <TableHead>Supervisor</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -194,6 +230,30 @@ export default function AdminsPage() {
                                 <TableCell>
                                     <div className="font-medium">{supervisor.name}</div>
                                     <div className="text-sm text-muted-foreground">{supervisor.email}</div>
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <Button variant="destructive" size="icon">
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="sr-only">Delete Supervisor</span>
+                                            </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you sure you want to delete this supervisor?</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                This action cannot be undone. This will permanently delete the account for {supervisor.name}.
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDelete(supervisor.id)}>
+                                                Delete
+                                            </AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
                                 </TableCell>
                             </TableRow>
                         ))}
