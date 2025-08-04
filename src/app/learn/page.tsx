@@ -86,8 +86,9 @@ export default function LearnPage() {
     const word = reviewWords[currentWordIndex];
     if (!word) return;
 
+    // Use current strength to get interval, then increment strength.
+    const intervalDays = srsIntervals[word.strength];
     const newStrength = Math.min(word.strength + 1, srsIntervals.length - 1);
-    const intervalDays = srsIntervals[newStrength];
     const newNextReview = new Date();
     newNextReview.setDate(newNextReview.getDate() + intervalDays);
     
