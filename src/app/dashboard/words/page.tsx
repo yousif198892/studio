@@ -98,12 +98,12 @@ export default function WordsPage() {
           {filteredWords.map((word) => (
             <Card key={word.id} className="flex flex-col">
               <CardHeader className="p-0">
-                  <div className="aspect-video relative">
+                  <div className="aspect-video relative bg-muted rounded-t-lg">
                      <Image
                         src={word.imageUrl}
                         alt={`Image for ${word.word}`}
                         fill
-                        className="object-cover rounded-t-lg"
+                        className="object-contain rounded-t-lg"
                       />
                   </div>
               </CardHeader>
