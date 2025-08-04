@@ -90,7 +90,7 @@ export let mockWords: Word[] = [
         word: "Ephemeral",
         definition: "Lasting for a very short time.",
         imageUrl: "https://placehold.co/600x400.png",
-        options: ["Permanent", "Eternal", "Enduring"],
+        options: ["Ephemeral", "Permanent", "Eternal", "Enduring"],
         correctOption: "Ephemeral",
         supervisorId: "sup1",
         unitId: "unit3",
@@ -102,7 +102,7 @@ export let mockWords: Word[] = [
         word: "Ubiquitous",
         definition: "Present, appearing, or found everywhere.",
         imageUrl: "https://placehold.co/600x400.png",
-        options: ["Rare", "Scarce", "Limited"],
+        options: ["Ubiquitous", "Rare", "Scarce", "Limited"],
         correctOption: "Ubiquitous",
         supervisorId: "sup1",
         unitId: "unit3",
@@ -114,7 +114,7 @@ export let mockWords: Word[] = [
         word: "Mellifluous",
         definition: "A sound that is sweet and smooth, pleasing to hear.",
         imageUrl: "https://placehold.co/600x400.png",
-        options: ["Cacophonous", "Harsh", "Grating"],
+        options: ["Mellifluous", "Cacophonous", "Harsh", "Grating"],
         correctOption: "Mellifluous",
         supervisorId: "sup1",
         unitId: "unit3",
@@ -168,16 +168,22 @@ export const getWordsForStudent = (studentId: string): Word[] => {
 };
 export const getWordsBySupervisor = (supervisorId: string): Word[] => {
     const baseWords = mockWords.filter(w => w.supervisorId === supervisorId);
+    let allWords: Word[] = [...baseWords];
+
     if (typeof window !== 'undefined') {
         const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-        const userAddedWords = storedWords
-            .filter(w => w.supervisorId === supervisorId);
-        
-        const combined = [...userAddedWords, ...baseWords];
-        const uniqueWords = Array.from(new Map(combined.map(item => [item.id, item])).values());
-        return uniqueWords;
+        const userAddedWords = storedWords.filter(w => w.supervisorId === supervisorId);
+        allWords = [...userAddedWords, ...baseWords];
     }
-    return baseWords;
+    
+    const uniqueWordsMap = new Map<string, Word>();
+    allWords.forEach(word => {
+        // Ensure the correct option is always in the options list and options are unique
+        const sanitizedOptions = Array.from(new Set([...word.options, word.correctOption]));
+        uniqueWordsMap.set(word.id, { ...word, options: sanitizedOptions });
+    });
+
+    return Array.from(uniqueWordsMap.values());
 };
 export const getWordForReview = (studentId: string): Word | undefined => {
     const words = getWordsForStudent(studentId);

@@ -25,11 +25,9 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Reset state when a new word is passed in
-    const allOptions = [word.correctOption, ...word.options];
-    // Filter out any potential undefined/null values and ensure uniqueness
-    const uniqueOptions = [...new Set(allOptions.filter(Boolean))];
-    setShuffledOptions(uniqueOptions.sort(() => Math.random() - 0.5));
+    // The word.options array is now guaranteed to contain the correctOption and be unique from the data source.
+    // We just need to shuffle it.
+    setShuffledOptions([...word.options].sort(() => Math.random() - 0.5));
     setSelectedOption(null);
     setIsAnswered(false);
   }, [word]);
@@ -49,7 +47,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
     }
   };
   
-  const totalWords = 5; // Mock total words in session
+  const totalWords = 7; // Corresponds to SRS intervals length
   const progress = (word.strength / totalWords) * 100;
 
   return (
