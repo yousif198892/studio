@@ -135,18 +135,36 @@ export let mockWords: Word[] = [
 // In a real app, you would use a database.
 // This function can be called from both server and client.
 export function getAllUsers(): User[] {
-  // If on the client, merge with localStorage.
-  if (typeof window !== 'undefined') {
-    const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
-    const storedCombinedUsers = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
-    // Use a Map to ensure no duplicates from the mock list if they were also stored.
-    const combinedUsers = [...mockUsers, ...storedUsers, ...storedCombinedUsers];
-    const uniqueUsers = Array.from(new Map(combinedUsers.map(user => [user.id, user])).values());
-    return uniqueUsers;
-  }
-  // On the server, we can only return the static list.
-  // The login logic will need to handle this discrepancy.
-  return mockUsers;
+    // If on the client, merge with localStorage.
+    if (typeof window !== 'undefined') {
+        const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+        const storedCombinedUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+
+        // Create a map to hold the merged users, ensuring uniqueness.
+        const usersMap = new Map<string, User>();
+
+        // First, add all users from the static mockUsers array.
+        // This ensures that the latest data from the source code (like isMainAdmin) is present.
+        mockUsers.forEach(user => usersMap.set(user.id, user));
+
+        // Next, merge users from the 'users' localStorage item.
+        // This will overwrite mock users with any stored changes but keep new mock users.
+        storedUsers.forEach(user => {
+            const existingUser = usersMap.get(user.id);
+            usersMap.set(user.id, { ...existingUser, ...user });
+        });
+
+        // Finally, do the same for 'combinedUsers' for full coverage.
+        storedCombinedUsers.forEach(user => {
+            const existingUser = usersMap.get(user.id);
+            usersMap.set(user.id, { ...existingUser, ...user });
+        });
+
+        return Array.from(usersMap.values());
+    }
+
+    // On the server, we can only return the static list.
+    return mockUsers;
 }
 
 
