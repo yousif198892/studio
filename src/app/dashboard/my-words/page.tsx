@@ -18,10 +18,10 @@ import {
   } from "@/components/ui/table"
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, RotateCcw } from "lucide-react";
+import { MoreHorizontal, RotateCcw, Loader2, Volume2, Wind } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -43,6 +43,7 @@ import {
   } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
 
 export default function MyWordsPage() {
   const searchParams = useSearchParams();
@@ -51,6 +52,9 @@ export default function MyWordsPage() {
   const [units, setUnits] = useState<Unit[]>([]);
   const { t } = useLanguage();
   const { toast } = useToast();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
+  const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -64,6 +68,35 @@ export default function MyWordsPage() {
       }
     }
   }, [userId]);
+
+  const handlePlayAudio = async (word: string, speed: number) => {
+    const audioKey = `${word}-${speed}`;
+    if (loadingAudio === audioKey || currentlyPlaying === audioKey) return;
+
+    setLoadingAudio(audioKey);
+    try {
+      const { audioDataUri } = await generateSpeech({ text: word, speed });
+      
+      if (audioRef.current) {
+        audioRef.current.src = audioDataUri;
+        audioRef.current.play();
+        setCurrentlyPlaying(audioKey);
+        audioRef.current.onended = () => {
+          setCurrentlyPlaying(null);
+        };
+      }
+    } catch (error) {
+      console.error("Failed to generate or play speech:", error);
+      toast({
+        title: t('toasts.error'),
+        description: "Failed to generate audio for the word.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingAudio(null);
+    }
+  };
+
 
   const updateWordInStorage = (updatedWord: Word) => {
     try {
@@ -146,6 +179,7 @@ export default function MyWordsPage() {
 
   return (
     <div className="space-y-6">
+      <audio ref={audioRef} />
       <div>
         <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.learnedTitle')}</h1>
         <p className="text-muted-foreground">{t('wordsPage.myLearnedWordsDesc')}</p>
@@ -185,7 +219,31 @@ export default function MyWordsPage() {
                         width="64"
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{word.word}</TableCell>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <span>{word.word}</span>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handlePlayAudio(word.word, 1.0)} 
+                            disabled={!!loadingAudio}
+                            aria-label="Play normal speed"
+                          >
+                            {loadingAudio === `${word.word}-1.0` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={() => handlePlayAudio(word.word, 0.75)} 
+                            disabled={!!loadingAudio}
+                            aria-label="Play slow speed"
+                          >
+                            {loadingAudio === `${word.word}-0.75` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wind className="h-4 w-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell>{word.definition}</TableCell>
                     <TableCell>{getUnitName(word.unitId)}</TableCell>
                     <TableCell className="text-right">
