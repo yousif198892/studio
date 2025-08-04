@@ -19,14 +19,60 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]);
+  const { toast } = useToast();
 
   useEffect(() => {
     const allMessages = getMessages();
     setMessages(allMessages);
   }, []);
+
+  const handleDelete = (messageId: string) => {
+    // Remove from component state
+    const updatedMessages = messages.filter((m) => m.id !== messageId);
+    setMessages(updatedMessages);
+
+    // Remove from localStorage
+    try {
+      const storedMessages: Message[] = JSON.parse(
+        localStorage.getItem("adminMessages") || "[]"
+      );
+      const updatedStoredMessages = storedMessages.filter(
+        (m) => m.id !== messageId
+      );
+      localStorage.setItem(
+        "adminMessages",
+        JSON.stringify(updatedStoredMessages)
+      );
+      toast({
+        title: "Success!",
+        description: "Message deleted successfully.",
+      });
+    } catch (error) {
+      console.error("Failed to delete message from localStorage", error);
+      toast({
+        title: "Error",
+        description: "Could not delete the message.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -48,7 +94,8 @@ export default function MessagesPage() {
               <TableRow>
                 <TableHead>From</TableHead>
                 <TableHead>Message</TableHead>
-                <TableHead className="text-right">Received</TableHead>
+                <TableHead>Received</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -63,8 +110,39 @@ export default function MessagesPage() {
                   <TableCell className="max-w-md">
                     <p>{message.message}</p>
                   </TableCell>
+                  <TableCell>
+                    {formatDistanceToNow(new Date(message.createdAt), {
+                      addSuffix: true,
+                    })}
+                  </TableCell>
                   <TableCell className="text-right">
-                    {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="icon">
+                          <Trash2 className="h-4 w-4" />
+                          <span className="sr-only">Delete</span>
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you absolutely sure?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete the message from {message.name}.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(message.id)}
+                          >
+                            Continue
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </TableCell>
                 </TableRow>
               ))}
