@@ -90,8 +90,11 @@ export default function AdminsPage() {
       // Correctly add the new user to localStorage
       try {
         const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-        const updatedUsers = [...existingUsers, state.newUser];
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        // Prevent adding duplicates
+        if (!existingUsers.find(u => u.id === state.newUser?.id)) {
+            const updatedUsers = [...existingUsers, state.newUser];
+            localStorage.setItem('users', JSON.stringify(updatedUsers));
+        }
       } catch (e) {
         console.error("Could not save new supervisor to localStorage", e);
       }
@@ -206,7 +209,7 @@ export default function AdminsPage() {
                             <Copy className="h-4 w-4" />
                         </Button>
                     </div>
-                    <Button
+                     <Button
                         type="button"
                         variant="secondary"
                         onClick={generatePassword}
