@@ -27,8 +27,6 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
   const { t } = useLanguage();
 
   useEffect(() => {
-    // The word.options array is now guaranteed to contain the correctOption and be unique from the data source.
-    // We just need to shuffle it.
     const allOptions = Array.from(new Set([word.correctOption, ...word.options]));
     setShuffledOptions(allOptions.sort(() => Math.random() - 0.5));
     setSelectedOption(null);
@@ -119,4 +117,3 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
     </Card>
   );
 }
-
