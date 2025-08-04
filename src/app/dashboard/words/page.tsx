@@ -31,11 +31,6 @@ import { Badge } from "@/components/ui/badge";
 import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
 import { useToast } from "@/hooks/use-toast";
 
-type PlaybackState = {
-  wordId: string;
-  speed: number;
-};
-
 export default function WordsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "sup1";
@@ -47,7 +42,6 @@ export default function WordsPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
-  const [lastPlayback, setLastPlayback] = useState<PlaybackState | null>(null);
 
   useEffect(() => {
     const supervisorWords = getWordsBySupervisor(userId);
@@ -79,21 +73,16 @@ export default function WordsPage() {
 
   const handlePlayAudio = async (word: Word) => {
     const wordId = word.id;
-    if (loadingAudio === wordId) return;
-
-    // Determine speed: if the last played word is this one and it was normal speed, play slow. Otherwise, play normal.
-    const isSameWordAsLast = lastPlayback?.wordId === wordId;
-    const nextSpeed = isSameWordAsLast && lastPlayback?.speed === 1.0 ? 0.75 : 1.0;
+    if (loadingAudio) return;
     
     setLoadingAudio(wordId);
     try {
-      const { audioDataUri } = await generateSpeech({ text: word.word, speed: nextSpeed });
+      const { audioDataUri } = await generateSpeech({ text: word.word });
       
       if (audioRef.current) {
         audioRef.current.src = audioDataUri;
         audioRef.current.play();
         setCurrentlyPlaying(wordId);
-        setLastPlayback({ wordId, speed: nextSpeed });
         audioRef.current.onended = () => {
           setCurrentlyPlaying(null);
         };
@@ -105,7 +94,6 @@ export default function WordsPage() {
         description: "Failed to generate audio for the word.",
         variant: "destructive",
       });
-       setLastPlayback(null);
     } finally {
       setLoadingAudio(null);
     }

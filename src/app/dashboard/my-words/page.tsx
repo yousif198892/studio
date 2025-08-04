@@ -45,11 +45,6 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
 
-type PlaybackState = {
-  wordId: string;
-  speed: number;
-};
-
 export default function MyWordsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "user1";
@@ -60,7 +55,6 @@ export default function MyWordsPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
-  const [lastPlayback, setLastPlayback] = useState<PlaybackState | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -77,21 +71,16 @@ export default function MyWordsPage() {
 
   const handlePlayAudio = async (word: Word) => {
     const wordId = word.id;
-    if (loadingAudio === wordId) return;
+    if (loadingAudio) return;
 
-    // Determine speed: if the last played word is this one and it was normal speed, play slow. Otherwise, play normal.
-    const isSameWordAsLast = lastPlayback?.wordId === wordId;
-    const nextSpeed = isSameWordAsLast && lastPlayback?.speed === 1.0 ? 0.75 : 1.0;
-    
     setLoadingAudio(wordId);
     try {
-      const { audioDataUri } = await generateSpeech({ text: word.word, speed: nextSpeed });
+      const { audioDataUri } = await generateSpeech({ text: word.word });
       
       if (audioRef.current) {
         audioRef.current.src = audioDataUri;
         audioRef.current.play();
         setCurrentlyPlaying(wordId);
-        setLastPlayback({ wordId, speed: nextSpeed });
         audioRef.current.onended = () => {
           setCurrentlyPlaying(null);
         };
@@ -103,7 +92,6 @@ export default function MyWordsPage() {
         description: "Failed to generate audio for the word.",
         variant: "destructive",
       });
-       setLastPlayback(null);
     } finally {
       setLoadingAudio(null);
     }
