@@ -175,10 +175,10 @@ export const translations = {
     wordsPage: {
         title: "My Words",
         myLearnedWordsDesc: "Review and manage the words you've already learned.",
-        description: "Manage your vocabulary list.",
+        description: "Browse and manage your vocabulary cards.",
         addNew: "Add New Word",
         table: {
-            title: "Vocabulary List",
+            title: "My Word Collection",
             description: "A complete list of all words you've added.",
             image: "Image",
             word: "Word",
@@ -430,10 +430,10 @@ export const translations = {
     wordsPage: {
         title: "كلماتي",
         myLearnedWordsDesc: "راجع وأدر الكلمات التي تعلمتها بالفعل.",
-        description: "إدارة قائمة المفردات الخاصة بك.",
+        description: "تصفح وأدر بطاقات المفردات الخاصة بك.",
         addNew: "إضافة كلمة جديدة",
         table: {
-            title: "قائمة المفردات",
+            title: "مجموعتي من الكلمات",
             description: "قائمة كاملة بجميع الكلمات التي أضفتها.",
             image: "صورة",
             word: "الكلمة",
@@ -544,3 +544,4 @@ export type TranslationKey =
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'toasts.error' | 'toasts.success' | 'toasts.addUnitSuccess' | 'toasts.addUnitExists' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.unitRequired' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+

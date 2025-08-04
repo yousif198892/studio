@@ -3,19 +3,10 @@
 import {
   Card,
   CardContent,
-  CardDescription,
+  CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { getWordsBySupervisor, Word, Unit, getUnitsBySupervisor } from "@/lib/data";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
@@ -36,6 +27,7 @@ import {
 import { useLanguage } from "@/hooks/use-language";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 export default function WordsPage() {
   const searchParams = useSearchParams();
@@ -85,92 +77,77 @@ export default function WordsPage() {
         </Button>
       </div>
       
-      <div className="max-w-sm">
-        <Label htmlFor="lesson-filter">Lesson</Label>
-        <Select value={selectedUnit} onValueChange={setSelectedUnit}>
-            <SelectTrigger id="lesson-filter">
-                <SelectValue placeholder="Filter by unit" />
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value="all">All Units</SelectItem>
-                {units.map(unit => (
-                    <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex-1">
+          <Label htmlFor="lesson-filter">Unit</Label>
+          <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+              <SelectTrigger id="lesson-filter">
+                  <SelectValue placeholder="Filter by unit" />
+              </SelectTrigger>
+              <SelectContent>
+                  <SelectItem value="all">All Units</SelectItem>
+                  {units.map(unit => (
+                      <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
+                  ))}
+              </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('wordsPage.table.title')}</CardTitle>
-          <CardDescription>
-            {t('wordsPage.table.description')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="hidden w-[100px] sm:table-cell">
-                  {t('wordsPage.table.image')}
-                </TableHead>
-                <TableHead>{t('wordsPage.table.word')}</TableHead>
-                <TableHead>{t('wordsPage.table.definition')}</TableHead>
-                <TableHead>{t('wordsPage.table.unit')}</TableHead>
-                <TableHead>
-                  <span className="sr-only">{t('wordsPage.table.actions')}</span>
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredWords.map((word) => (
-                <TableRow key={word.id}>
-                  <TableCell className="hidden sm:table-cell">
-                    <Image
-                      alt="Word image"
-                      className="aspect-square rounded-md object-cover"
-                      height="64"
-                      src={word.imageUrl}
-                      width="64"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{word.word}</TableCell>
-                  <TableCell>{word.definition}</TableCell>
-                  <TableCell>{getUnitName(word.unitId)}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2 justify-end">
-                        <Button variant="outline" size="icon" asChild>
-                          <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
-                            <Pencil className="h-4 w-4" />
-                          </Link>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {filteredWords.map((word) => (
+            <Card key={word.id} className="flex flex-col">
+              <CardHeader className="p-0">
+                  <div className="aspect-video relative">
+                     <Image
+                        src={word.imageUrl}
+                        alt={`Image for ${word.word}`}
+                        fill
+                        className="object-cover rounded-t-lg"
+                      />
+                  </div>
+              </CardHeader>
+              <CardContent className="p-4 flex-grow">
+                <h3 className="text-lg font-bold font-headline">{word.word}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{word.definition}</p>
+                <div className="flex gap-2 mt-2">
+                    <Badge variant="outline">{getUnitName(word.unitId)}</Badge>
+                    {word.lesson && <Badge variant="secondary">{word.lesson}</Badge>}
+                </div>
+              </CardContent>
+              <CardFooter className="p-4 pt-0">
+                 <div className="flex gap-2 w-full">
+                    <Button variant="outline" size="sm" asChild className="w-full">
+                      <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit
+                      </Link>
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm" className="w-full">
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
                         </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="destructive" size="icon">
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                {t('wordsPage.deleteDialog.description', word.word)}
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleDelete(word.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t('wordsPage.deleteDialog.description', word.word)}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDelete(word.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                </div>
+              </CardFooter>
+            </Card>
+          ))}
+      </div>
     </div>
   );
 }
