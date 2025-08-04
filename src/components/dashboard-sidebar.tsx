@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -13,6 +14,7 @@ import {
   Layers,
   GraduationCap,
   BrainCircuit,
+  Shield,
 } from "lucide-react";
 
 import {
@@ -83,6 +85,13 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         roles: ["supervisor"],
     },
     {
+        href: `/dashboard/admins?userId=${user.id}`,
+        label: 'Admins',
+        icon: <Shield />,
+        roles: ["supervisor"],
+        isMainAdmin: true,
+    },
+    {
       href: `/dashboard/profile?userId=${user.id}`,
       label: t('sidebar.profile'),
       icon: <Settings />,
@@ -90,9 +99,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     },
   ];
 
-  const filteredMenuItems = menuItems.filter((item) =>
-    item.roles.includes(userRole)
-  );
+  const filteredMenuItems = menuItems.filter((item) => {
+    if (item.isMainAdmin) {
+        return user.isMainAdmin && item.roles.includes(userRole);
+    }
+    return item.roles.includes(userRole);
+  });
 
   return (
     <Sidebar className="border-r" side="left">

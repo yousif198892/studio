@@ -1,4 +1,5 @@
 
+
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -311,4 +312,59 @@ export async function addUnit(prevState: any, formData: FormData) {
   };
   
   return { success: true, message: "Unit created!", newUnit };
+}
+
+
+const createSupervisorSchema = z.object({
+    name: z.string().min(1, 'Name is required.'),
+    email: z.string().email('Invalid email address.'),
+    password: z.string().min(6, 'Password must be at least 6 characters.'),
+});
+
+export async function createSupervisor(prevState: any, formData: FormData) {
+    const validatedFields = createSupervisorSchema.safeParse({
+        name: formData.get("name"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+    });
+
+    if (!validatedFields.success) {
+        const errorMap = validatedFields.error.flatten().fieldErrors;
+        const firstError = Object.values(errorMap)[0]?.[0] || "Validation failed.";
+        return {
+            errors: errorMap,
+            message: firstError,
+            success: false,
+        };
+    }
+
+    const { name, email, password } = validatedFields.data;
+    
+    const allUsers = getAllUsers();
+    if (allUsers.find(u => u.email === email)) {
+        return {
+            errors: { email: ["User with this email already exists."] },
+            message: "User with this email already exists.",
+            success: false,
+        };
+    }
+    
+    const newUser = {
+        id: `sup${Date.now()}`,
+        name,
+        email,
+        password,
+        role: 'supervisor' as const,
+        avatar: "https://placehold.co/100x100.png",
+    };
+
+    // In a real app, this would save to a persistent database.
+    // For this demo, we can't update the mockUsers array directly on the server,
+    // but the success message will indicate the action was processed.
+    // The new user would need to be added to localStorage on the client-side
+    // or the page would need to be reloaded to see them in a list if one existed.
+    
+    console.log("New supervisor created (simulated):", newUser);
+    
+    return { success: true, message: "Supervisor created successfully!" };
 }
