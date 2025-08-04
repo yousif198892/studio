@@ -98,7 +98,7 @@ const updateWordSchema = z.object({
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
   wordId: z.string().min(1, "Word ID is required."),
-  unitId: z.string().optional(),
+  unitId: z.string().min(1, "Please select a unit."),
 });
 
 export async function updateWord(prevState: any, formData: FormData) {
