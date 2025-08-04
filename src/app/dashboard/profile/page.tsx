@@ -99,16 +99,26 @@ export default function ProfilePage() {
     if (!user || !previewImage) return;
 
     const updatedUser = { ...user, avatar: previewImage };
+    
+    // Read the latest user list from localStorage
     const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
     const userIndex = allUsers.findIndex((u: User) => u.id === user.id);
 
+    // Update the user in the list
     if (userIndex > -1) {
       allUsers[userIndex] = updatedUser;
-      localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
-      setUser(updatedUser);
+    } else {
+      // If user not in the list for some reason, add them
+      allUsers.push(updatedUser);
     }
     
-    setPreviewImage(null);
+    // Save the updated list back to localStorage
+    localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+    
+    // Update the state for immediate UI feedback
+    setUser(updatedUser);
+    setPreviewImage(null); // Clear the preview
+
     toast({
         title: t('toasts.success'),
         description: "Profile picture updated successfully!",

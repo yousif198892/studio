@@ -32,9 +32,9 @@ export default function DashboardLayout({
       
       if (foundUser) {
         setUser(foundUser);
-        // Persist the combined user list if it's not already there or needs updating
-        // This is a simplified approach for the mock data setup.
-        if (typeof window !== 'undefined') {
+        // Persist the combined user list if it's not already there.
+        // This prevents overwriting changes made in other components like the profile page.
+        if (typeof window !== 'undefined' && !localStorage.getItem('combinedUsers')) {
           const allUsers = getAllUsers();
           localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
         }
