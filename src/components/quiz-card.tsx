@@ -59,12 +59,12 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
   return (
     <Card className="w-full overflow-hidden shadow-lg">
       <CardHeader className="p-0">
-        <div className="relative aspect-video w-full">
+        <div className="relative aspect-video w-full bg-muted">
             <Image
                 src={word.imageUrl}
                 alt={`Image for ${word.word}`}
                 layout="fill"
-                objectFit="cover"
+                objectFit="contain"
                 data-ai-hint="abstract vocabulary"
             />
         </div>

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getWordForReview, Word } from "@/lib/data";
+import { getWordsForStudent, Word } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,35 +11,65 @@ import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 
 export default function LearnPage() {
-  const [currentWord, setCurrentWord] = useState<Word | undefined>();
-  const [sessionCount, setSessionCount] = useState(0);
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "user1";
 
+  const [reviewWords, setReviewWords] = useState<Word[]>([]);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [sessionCompleted, setSessionCompleted] = useState(false);
+
   useEffect(() => {
-    setCurrentWord(getWordForReview(userId));
-  }, [sessionCount, userId]);
+    if (userId) {
+      const allWords = getWordsForStudent(userId);
+      const dueWords = allWords
+        .filter(w => new Date(w.nextReview) <= new Date())
+        .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
+      
+      setReviewWords(dueWords);
+      setCurrentWordIndex(0);
+      setSessionCompleted(dueWords.length === 0);
+    }
+  }, [userId]);
 
   const handleNextWord = () => {
-    // In a real app, you'd fetch the next word from your backend
-    // based on the SRS algorithm. Here we just cycle for demonstration.
-    setSessionCount(prev => prev + 1);
+    if (currentWordIndex < reviewWords.length - 1) {
+      setCurrentWordIndex(prev => prev + 1);
+    } else {
+      setSessionCompleted(true);
+    }
   };
-  
+
+  const handleRestartSession = () => {
+     if (userId) {
+      const allWords = getWordsForStudent(userId);
+      const dueWords = allWords
+        .filter(w => new Date(w.nextReview) <= new Date())
+        .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
+      
+      setReviewWords(dueWords);
+      setCurrentWordIndex(0);
+      setSessionCompleted(dueWords.length === 0);
+    }
+  }
+
   const handleCorrect = () => {
-    console.log(`Correct: ${currentWord?.word}`);
+    const word = reviewWords[currentWordIndex];
+    console.log(`Correct: ${word?.word}`);
     // Here you would update the word's SRS data (increase strength, schedule next review)
   };
 
   const handleIncorrect = () => {
-    console.log(`Incorrect: ${currentWord?.word}`);
+    const word = reviewWords[currentWordIndex];
+    console.log(`Incorrect: ${word?.word}`);
     // Here you would update the word's SRS data (decrease strength, schedule review sooner)
   };
 
+  const currentWord = reviewWords[currentWordIndex];
+
   return (
     <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary">
-      {currentWord ? (
+      {!sessionCompleted && currentWord ? (
         <div key={currentWord.id} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
           <h1 className="text-3xl font-bold font-headline mb-4 text-center">{t('learn.title')}</h1>
           <QuizCard
@@ -57,7 +87,7 @@ export default function LearnPage() {
             <CardContent>
                 <p className="text-muted-foreground">{t('learn.finishedDescription1')}</p>
                 <p className="text-muted-foreground mt-2">{t('learn.finishedDescription2')}</p>
-                <Button onClick={() => setSessionCount(prev => prev + 1)} className="mt-6">
+                <Button onClick={handleRestartSession} className="mt-6">
                     {t('learn.startNewSession')}
                     <ArrowRight className="ms-2 h-4 w-4" />
                 </Button>
