@@ -146,7 +146,8 @@ export function getAllUsers(): User[] {
 export const getUserById = (id: string): User | undefined => {
     let allUsers: User[] = mockUsers;
      if (typeof window !== 'undefined') {
-        allUsers = JSON.parse(localStorage.getItem('combinedUsers') || JSON.stringify(mockUsers));
+        const storedUsers = localStorage.getItem('combinedUsers');
+        allUsers = storedUsers ? JSON.parse(storedUsers) : mockUsers;
     }
     return allUsers.find(u => u.id === id);
 }
@@ -204,4 +205,3 @@ export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
     }
     return baseUnits;
 }
-

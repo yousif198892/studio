@@ -50,11 +50,22 @@ export default function UnitsPage() {
 
     const handleUnitAdded = (newUnit: Unit) => {
       setUnits(prev => {
-        const updatedUnits = [...prev, newUnit];
-        // In a real app, supervisorId would be part of the newUnit object from the server
-        const storedUnits = JSON.parse(localStorage.getItem('userUnits') || '[]').filter((u: Unit) => u.supervisorId === userId);
-        localStorage.setItem('userUnits', JSON.stringify([...storedUnits, newUnit]));
-        return updatedUnits;
+        const updatedUnitsList = [...prev, newUnit];
+        
+        // This is a more robust way to update localStorage
+        // It fetches the latest from storage, adds the new one, and saves it back
+        const allStoredUnits: Unit[] = JSON.parse(localStorage.getItem('userUnits') || '[]');
+        const supervisorUnits = allStoredUnits.filter(u => u.supervisorId === userId);
+        const otherSupervisorUnits = allStoredUnits.filter(u => u.supervisorId !== userId);
+        
+        const updatedSupervisorUnits = [...supervisorUnits, newUnit];
+        const combined = [...otherSupervisorUnits, ...updatedSupervisorUnits];
+        
+        // Ensure uniqueness before saving
+        const uniqueUnits = Array.from(new Map(combined.map(item => [item.id, item])).values());
+        localStorage.setItem('userUnits', JSON.stringify(uniqueUnits));
+
+        return updatedUnitsList;
       });
     };
 
