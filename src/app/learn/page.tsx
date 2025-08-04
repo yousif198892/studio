@@ -11,6 +11,9 @@ import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
+// SRS Intervals (in days)
+const srsIntervals = [1, 2, 4, 8, 16, 32, 64];
+
 export default function LearnPage() {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
@@ -33,6 +36,29 @@ export default function LearnPage() {
     }
   }, [userId]);
 
+  const updateWordInStorage = (updatedWord: Word) => {
+    try {
+      const allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+      const supervisorId = getUserSupervisorId();
+      const supervisorWords = getWordsBySupervisor(supervisorId);
+      const otherSupervisorWords = allWords.filter(w => w.supervisorId !== supervisorId);
+      
+      const wordIndex = supervisorWords.findIndex(w => w.id === updatedWord.id);
+      
+      if (wordIndex > -1) {
+        supervisorWords[wordIndex] = updatedWord;
+      } else {
+        // This case handles if the word is a mock word not yet in localStorage
+        supervisorWords.push(updatedWord);
+      }
+      
+      localStorage.setItem('userWords', JSON.stringify([...otherSupervisorWords, ...supervisorWords]));
+
+    } catch (e) {
+      console.error("Failed to update word in localStorage", e);
+    }
+  };
+  
   const handleNextWord = () => {
     if (currentWordIndex < reviewWords.length - 1) {
       setCurrentWordIndex(prev => prev + 1);
@@ -56,15 +82,54 @@ export default function LearnPage() {
 
   const handleCorrect = () => {
     const word = reviewWords[currentWordIndex];
-    console.log(`Correct: ${word?.word}`);
-    // Here you would update the word's SRS data (increase strength, schedule next review)
+    if (!word) return;
+
+    const newStrength = Math.min(word.strength + 1, srsIntervals.length - 1);
+    const intervalDays = srsIntervals[newStrength];
+    const newNextReview = new Date();
+    newNextReview.setDate(newNextReview.getDate() + intervalDays);
+    
+    const updatedWord: Word = { ...word, strength: newStrength, nextReview: newNextReview };
+    
+    // Update state for immediate feedback
+    const updatedReviewWords = [...reviewWords];
+    updatedReviewWords[currentWordIndex] = updatedWord;
+    setReviewWords(updatedReviewWords);
+
+    updateWordInStorage(updatedWord);
   };
 
   const handleIncorrect = () => {
     const word = reviewWords[currentWordIndex];
-    console.log(`Incorrect: ${word?.word}`);
-    // Here you would update the word's SRS data (decrease strength, schedule review sooner)
+    if (!word) return;
+    
+    const newStrength = Math.max(0, word.strength - 1);
+    const intervalDays = srsIntervals[newStrength];
+    const newNextReview = new Date();
+    newNextReview.setDate(newNextReview.getDate() + intervalDays);
+
+    const updatedWord: Word = { ...word, strength: newStrength, nextReview: newNextReview };
+
+    // Update state for immediate feedback
+    const updatedReviewWords = [...reviewWords];
+    updatedReviewWords[currentWordIndex] = updatedWord;
+    setReviewWords(updatedReviewWords);
+    
+    updateWordInStorage(updatedWord);
   };
+  
+  // Helper functions to avoid repeating logic from data.ts on client if possible
+  const getUserSupervisorId = () => {
+      const allUsers = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+      const currentUser = allUsers.find((u: any) => u.id === userId);
+      return currentUser?.supervisorId;
+  }
+  
+  const getWordsBySupervisor = (supervisorId: string) => {
+    const allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+    return allWords.filter(w => w.supervisorId === supervisorId);
+  }
+
 
   const currentWord = reviewWords[currentWordIndex];
 
