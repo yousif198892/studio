@@ -18,6 +18,9 @@ type QuizCardProps = {
   onNextWord: () => void;
 };
 
+type ButtonVariant = "default" | "correct" | "incorrect" | "muted";
+
+
 export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
@@ -25,11 +28,10 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
   const { t } = useLanguage();
 
   useEffect(() => {
-    if (word) {
-      // Correctly combine and shuffle options on the client-side
-      const allOptions = Array.from(new Set([word.correctOption, ...word.options]));
-      setShuffledOptions(allOptions.sort(() => Math.random() - 0.5));
-    }
+    // Reset state when a new word is passed in
+    const allOptions = [word.correctOption, ...word.options];
+    const uniqueOptions = Array.from(new Set(allOptions));
+    setShuffledOptions(uniqueOptions.sort(() => Math.random() - 0.5));
     setSelectedOption(null);
     setIsAnswered(false);
   }, [word]);
@@ -38,15 +40,32 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
   const handleOptionClick = (option: string) => {
     if (isAnswered) return;
 
+    const isCorrect = option === word.correctOption;
     setSelectedOption(option);
     setIsAnswered(true);
 
-    if (option === word.correctOption) {
+    if (isCorrect) {
       onCorrect();
+      setTimeout(() => {
+        onNextWord();
+      }, 1000); // Wait 1 second before moving to the next word
     } else {
       onIncorrect();
     }
   };
+  
+  const getButtonVariant = (option: string): ButtonVariant => {
+    if (!isAnswered) {
+        return "default";
+    }
+    if (option === word.correctOption) {
+        return "correct";
+    }
+    if (option === selectedOption) {
+        return "incorrect";
+    }
+    return "muted";
+  }
   
   const totalWords = 5; // Mock total words in session
   const progress = (word.strength / totalWords) * 100;
@@ -70,25 +89,28 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
           {t('learn.question', word.definition)}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {shuffledOptions.map((option, index) => (
-            <Button
-              key={`${option}-${index}`}
-              onClick={() => handleOptionClick(option)}
-              className={cn("text-lg h-auto py-4 whitespace-normal", {
-                "bg-green-500 hover:bg-green-600 text-white": isAnswered && option === word.correctOption,
-                "bg-red-500 hover:bg-red-600 text-white": isAnswered && selectedOption === option && option !== word.correctOption,
-                "opacity-70": isAnswered && selectedOption !== option && option !== word.correctOption,
-              })}
-              variant="outline"
-              disabled={isAnswered}
-            >
-              {option}
-            </Button>
-          ))}
+          {shuffledOptions.map((option, index) => {
+             const variant = getButtonVariant(option);
+            return (
+                <Button
+                key={index}
+                onClick={() => handleOptionClick(option)}
+                className={cn("text-lg h-auto py-4 whitespace-normal", {
+                    "bg-green-500 hover:bg-green-600 text-white": variant === 'correct',
+                    "bg-red-500 hover:bg-red-600 text-white": variant === 'incorrect',
+                    "bg-muted hover:bg-muted/80": variant === 'muted',
+                })}
+                variant={variant === 'default' ? 'outline' : 'default'}
+                disabled={isAnswered}
+                >
+                {option}
+                </Button>
+            )
+          })}
         </div>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-4 p-6 bg-secondary/50">
-        {isAnswered && (
+        {isAnswered && selectedOption !== word.correctOption && (
              <Button onClick={onNextWord} size="lg" className="w-full">
                 {t('learn.nextWord')} <ArrowRight className="ms-2 h-5 w-5" />
             </Button>
