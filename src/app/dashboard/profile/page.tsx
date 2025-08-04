@@ -31,12 +31,18 @@ export default function ProfilePage() {
   const searchParams = useSearchParams();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
+  const [name, setName] = useState('');
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+
 
   useEffect(() => {
     const userId = searchParams.get("userId");
     if (userId) {
       const foundUser = getUserById(userId);
       setUser(foundUser || null);
+      if (foundUser) {
+          setName(foundUser.name);
+      }
     }
   }, [searchParams]);
 
@@ -53,7 +59,17 @@ export default function ProfilePage() {
   };
   
   const handleSaveChanges = () => {
+      if (!user) return;
       // In a real app, this would call a server action to update the user data.
+      const updatedUser = { ...user, name };
+      const allUsers = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+      const userIndex = allUsers.findIndex((u:User) => u.id === user.id);
+      if (userIndex > -1) {
+        allUsers[userIndex] = updatedUser;
+        localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+        setUser(updatedUser);
+      }
+
       toast({
         title: t('toasts.success'),
         description: "Personal information saved!",
@@ -68,6 +84,37 @@ export default function ProfilePage() {
       });
   }
 
+  const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handlePictureUpload = () => {
+    if (!user || !previewImage) return;
+
+    const updatedUser = { ...user, avatar: previewImage };
+    const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+    const userIndex = allUsers.findIndex((u: User) => u.id === user.id);
+
+    if (userIndex > -1) {
+      allUsers[userIndex] = updatedUser;
+      localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+      setUser(updatedUser);
+    }
+    
+    setPreviewImage(null);
+    toast({
+        title: t('toasts.success'),
+        description: "Profile picture updated successfully!",
+      });
+  }
+
   if (!user) {
     return <div>{t('dashboard.loading')}</div>;
   }
@@ -75,39 +122,48 @@ export default function ProfilePage() {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('profile.personalInfo.title')}</CardTitle>
-            <CardDescription>
-              {t('profile.personalInfo.description')}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-4">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={user.avatar} />
-                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="grid gap-1.5">
-                <Label htmlFor="picture">{t('profile.personalInfo.picture')}</Label>
-                <Input id="picture" type="file" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="name">{t('profile.personalInfo.fullName')}</Label>
-              <Input id="name" defaultValue={user.name} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">{t('profile.personalInfo.email')}</Label>
-              <Input id="email" type="email" defaultValue={user.email} disabled />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button onClick={handleSaveChanges}>{t('profile.personalInfo.save')}</Button>
-          </CardFooter>
-        </Card>
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="lg:col-span-1 space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>{t('profile.personalInfo.picture')}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center gap-4">
+                     <Avatar className="h-32 w-32">
+                        <AvatarImage src={previewImage || user.avatar} />
+                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <Input id="picture" type="file" accept="image/*" onChange={handlePictureChange} className="max-w-xs" />
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handlePictureUpload} disabled={!previewImage} className="w-full">Upload Picture</Button>
+                </CardFooter>
+            </Card>
+        </div>
+        <div className="lg:col-span-2 space-y-6">
+            <Card>
+            <CardHeader>
+                <CardTitle>{t('profile.personalInfo.title')}</CardTitle>
+                <CardDescription>
+                {t('profile.personalInfo.description')}
+                </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                <Label htmlFor="name">{t('profile.personalInfo.fullName')}</Label>
+                <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                <Label htmlFor="email">{t('profile.personalInfo.email')}</Label>
+                <Input id="email" type="email" defaultValue={user.email} disabled />
+                </div>
+            </CardContent>
+            <CardFooter>
+                <Button onClick={handleSaveChanges}>{t('profile.personalInfo.save')}</Button>
+            </CardFooter>
+            </Card>
+        </div>
+        <Card className="md:col-span-2 lg:col-span-3">
           <CardHeader>
             <CardTitle>{t('profile.preferences.title')}</CardTitle>
             <CardDescription>
@@ -160,7 +216,7 @@ export default function ProfilePage() {
             <Button onClick={handleSavePreferences}>{t('profile.preferences.save')}</Button>
           </CardFooter>
         </Card>
-        <Card className="md:col-span-2">
+        <Card className="md:col-span-2 lg:col-span-3">
           <CardHeader>
             <CardTitle>{t('profile.account.title')}</CardTitle>
             <CardDescription>
