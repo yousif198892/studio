@@ -54,6 +54,7 @@ export function EditWordForm({ word }: { word: Word }) {
   const [units, setUnits] = useState<Unit[]>([]);
   
   const userId = searchParams.get("userId");
+  const lessons = Array.from({ length: 8 }, (_, i) => `Lesson ${i + 1}`);
 
   useEffect(() => {
     if (userId) {
@@ -82,6 +83,7 @@ export function EditWordForm({ word }: { word: Word }) {
                     definition: state.updatedWord.definition || w.definition,
                     imageUrl: state.updatedWord.imageUrl || w.imageUrl,
                     unitId: state.updatedWord.unitId || w.unitId,
+                    lesson: state.updatedWord.lesson || w.lesson,
                 };
             }
             return w;
@@ -139,6 +141,22 @@ export function EditWordForm({ word }: { word: Word }) {
             </Select>
             {state?.errors?.unitId && (
                 <p className="text-sm text-destructive">{state.errors.unitId[0]}</p>
+            )}
+       </div>
+       <div className="grid gap-2">
+            <Label htmlFor="lesson">Lesson</Label>
+            <Select name="lesson" defaultValue={word.lesson}>
+                <SelectTrigger>
+                    <SelectValue placeholder="Select a Lesson" />
+                </SelectTrigger>
+                <SelectContent>
+                    {lessons.map(lesson => (
+                        <SelectItem key={lesson} value={lesson}>{lesson}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+             {state?.errors?.lesson && (
+                <p className="text-sm text-destructive">{state.errors.lesson[0]}</p>
             )}
        </div>
       <div className="grid gap-2">
