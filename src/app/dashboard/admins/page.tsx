@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { createSupervisor, deleteSupervisor } from "@/lib/actions";
@@ -43,10 +42,9 @@ const initialState = {
   message: "",
   errors: {},
   success: false,
-  newUser: undefined,
 };
 
-function SubmitButton() {
+function CreateSupervisorButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending} className="w-full">
@@ -64,7 +62,6 @@ function SubmitButton() {
 
 export default function AdminsPage() {
   const { t } = useLanguage();
-  const [state, formAction] = useActionState(createSupervisor, initialState);
   const { toast } = useToast();
   const [password, setPassword] = useState("");
   const [supervisors, setSupervisors] = useState<User[]>([]);
@@ -80,37 +77,38 @@ export default function AdminsPage() {
     fetchSupervisors();
   }, []);
 
-  useEffect(() => {
-    if (state.success && state.newUser) {
-      toast({
+  const handleFormAction = async (formData: FormData) => {
+    const result = await createSupervisor(null, formData);
+
+    if (result.success && result.newUser) {
+       toast({
         title: t("toasts.success"),
         description: "Supervisor account created successfully!",
       });
-
-      // Correctly add the new user to localStorage
+      
       try {
         const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-        // Prevent adding duplicates
-        if (!existingUsers.find(u => u.id === state.newUser?.id)) {
-            const updatedUsers = [...existingUsers, state.newUser];
-            localStorage.setItem('users', JSON.stringify(updatedUsers));
-        }
-      } catch (e) {
+        const updatedUsers = [...existingUsers, result.newUser];
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        
+        // This is crucial: after updating localStorage, re-fetch the list
+        // which will now correctly include the new user.
+        fetchSupervisors();
+
+      } catch(e) {
         console.error("Could not save new supervisor to localStorage", e);
       }
-      
-      // Refetch from the updated localStorage
-      fetchSupervisors(); 
+
       formRef.current?.reset();
       setPassword("");
-    } else if (state.message && !state.success && Object.keys(state.errors || {}).length > 0) {
-      toast({
+    } else if (result.message) {
+       toast({
         title: t("toasts.error"),
-        description: state.message,
+        description: result.message,
         variant: "destructive",
       });
     }
-  }, [state, toast, t]);
+  }
 
   const generatePassword = () => {
     const newPassword = Math.random().toString(36).slice(-10);
@@ -127,10 +125,8 @@ export default function AdminsPage() {
   };
 
   const handleDelete = async (userId: string) => {
-    // Optimistically update the UI
     setSupervisors(prev => prev.filter(s => s.id !== userId));
 
-    // Remove from localStorage
     try {
         const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
         const updatedUsers = existingUsers.filter(u => u.id !== userId);
@@ -146,7 +142,6 @@ export default function AdminsPage() {
             description: "Could not delete supervisor from local storage.",
             variant: 'destructive'
         });
-        // Revert UI if deletion failed
         fetchSupervisors();
     }
   };
@@ -167,7 +162,7 @@ export default function AdminsPage() {
             </CardDescription>
             </CardHeader>
             <CardContent>
-            <form ref={formRef} action={formAction} className="space-y-4">
+            <form ref={formRef} action={handleFormAction} className="space-y-4">
                 <div className="grid gap-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input
@@ -176,9 +171,6 @@ export default function AdminsPage() {
                     placeholder="Dr. Jane Doe"
                     required
                 />
-                {state.errors?.name && (
-                    <p className="text-sm text-destructive">{state.errors.name[0]}</p>
-                )}
                 </div>
                 <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
@@ -188,11 +180,6 @@ export default function AdminsPage() {
                     placeholder="supervisor@example.com"
                     required
                 />
-                {state.errors?.email && (
-                    <p className="text-sm text-destructive">
-                    {state.errors.email[0]}
-                    </p>
-                )}
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="password">Generated Password</Label>
@@ -201,7 +188,7 @@ export default function AdminsPage() {
                         id="password"
                         name="password"
                         value={password}
-                        readOnly
+                        onChange={(e) => setPassword(e.target.value)}
                         required
                         placeholder="Click 'Generate' to create a password"
                         />
@@ -218,11 +205,8 @@ export default function AdminsPage() {
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Generate
                     </Button>
-                    {state.errors?.password && (
-                        <p className="text-sm text-destructive">{state.errors.password[0]}</p>
-                    )}
                 </div>
-                <SubmitButton />
+                <CreateSupervisorButton />
             </form>
             </CardContent>
         </Card>
