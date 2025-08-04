@@ -9,10 +9,10 @@ import {
 import { getWordsBySupervisor, Word, Unit, getUnitsBySupervisor } from "@/lib/data";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Loader2, Volume2 } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,6 +28,13 @@ import { useLanguage } from "@/hooks/use-language";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
+import { useToast } from "@/hooks/use-toast";
+
+type PlaybackState = {
+  wordId: string;
+  speed: number;
+};
 
 export default function WordsPage() {
   const searchParams = useSearchParams();
@@ -36,6 +43,11 @@ export default function WordsPage() {
   const [units, setUnits] = useState<Unit[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<string>("all");
   const { t } = useLanguage();
+  const { toast } = useToast();
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
+  const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
+  const [lastPlayback, setLastPlayback] = useState<PlaybackState | null>(null);
 
   useEffect(() => {
     const supervisorWords = getWordsBySupervisor(userId);
@@ -65,11 +77,47 @@ export default function WordsPage() {
     ? words 
     : words.filter(word => word.unitId === selectedUnit);
 
+  const handlePlayAudio = async (word: Word) => {
+    const wordId = word.id;
+    if (loadingAudio === wordId) return;
+
+    // Determine speed: if the last played word is this one and it was normal speed, play slow. Otherwise, play normal.
+    const isSameWordAsLast = lastPlayback?.wordId === wordId;
+    const nextSpeed = isSameWordAsLast && lastPlayback?.speed === 1.0 ? 0.75 : 1.0;
+    
+    setLoadingAudio(wordId);
+    try {
+      const { audioDataUri } = await generateSpeech({ text: word.word, speed: nextSpeed });
+      
+      if (audioRef.current) {
+        audioRef.current.src = audioDataUri;
+        audioRef.current.play();
+        setCurrentlyPlaying(wordId);
+        setLastPlayback({ wordId, speed: nextSpeed });
+        audioRef.current.onended = () => {
+          setCurrentlyPlaying(null);
+        };
+      }
+    } catch (error) {
+      console.error("Failed to generate or play speech:", error);
+      toast({
+        title: t('toasts.error'),
+        description: "Failed to generate audio for the word.",
+        variant: "destructive",
+      });
+       setLastPlayback(null);
+    } finally {
+      setLoadingAudio(null);
+    }
+  };
+
+
   return (
     <div className="space-y-6">
+      <audio ref={audioRef} onEnded={() => setCurrentlyPlaying(null)} />
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold font-headline">{t('wordsPage.table.title')}</h1>
+          <h1 className="text-3xl font-bold font-headline">{t('wordsPage.title')}</h1>
           <p className="text-muted-foreground">{t('wordsPage.table.description')}</p>
         </div>
         <Button asChild>
@@ -108,7 +156,19 @@ export default function WordsPage() {
                   </div>
               </CardHeader>
               <CardContent className="p-4 flex-grow">
-                <h3 className="text-lg font-bold font-headline">{word.word}</h3>
+                <div className="flex items-center gap-2">
+                    <h3 className="text-lg font-bold font-headline">{word.word}</h3>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={() => handlePlayAudio(word)} 
+                      disabled={!!loadingAudio}
+                      aria-label="Play audio"
+                      className="h-6 w-6"
+                    >
+                      {loadingAudio === word.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+                    </Button>
+                </div>
                 <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{word.definition}</p>
                 <div className="flex gap-2 mt-4">
                     <Badge variant="outline">{getUnitName(word.unitId)}</Badge>
