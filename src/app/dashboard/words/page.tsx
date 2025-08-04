@@ -115,25 +115,25 @@ export default function WordsPage() {
                     {word.lesson && <Badge variant="secondary">{word.lesson}</Badge>}
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0 flex gap-2">
-                <Button variant="outline" size="sm" asChild className="flex-1">
+              <CardFooter className="p-4 pt-0 flex justify-end gap-2">
+                <Button variant="outline" size="icon" asChild>
                   <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
-                    <Pencil className="h-4 w-4 mr-2" />
-                    Edit
+                    <Pencil className="h-4 w-4" />
+                    <span className="sr-only">Edit</span>
                   </Link>
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
-                    <Button variant="destructive" size="sm" className="flex-1">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                    <Button variant="destructive" size="icon">
+                        <Trash2 className="h-4 w-4" />
+                        <span className="sr-only">Delete</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
                       <AlertDialogDescription>
-                      {t('wordsPage.deleteDialog.description', word.word)}
+                       {t('wordsPage.deleteDialog.description', word.word)}
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
