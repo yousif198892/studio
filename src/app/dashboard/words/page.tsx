@@ -134,7 +134,7 @@ export default function WordsPage() {
                         <AlertDialogHeader>
                           <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
                           <AlertDialogDescription>
-                            {t('wordsPage.deleteDialog.description', word.word)}
+                           {t('wordsPage.deleteDialog.description', word.word)}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
