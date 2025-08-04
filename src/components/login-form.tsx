@@ -17,7 +17,7 @@ import { useFormStatus } from "react-dom";
 import { useActionState, useEffect, useState } from "react";
 import { login } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { getAllUsers, User } from "@/lib/data";
 
@@ -50,6 +50,7 @@ export function LoginForm() {
     const { toast } = useToast();
     const { t } = useLanguage();
     const [dynamicUsers, setDynamicUsers] = useState<User[]>([]);
+    const [showPassword, setShowPassword] = useState(false);
 
     useEffect(() => {
       // On the client, read all users which includes those from localStorage.
@@ -111,7 +112,17 @@ export function LoginForm() {
                 {t('login.forgotPassword')}
               </Link>
             </div>
-            <Input id="password" name="password" type="password" required />
+            <div className="relative">
+              <Input id="password" name="password" type={showPassword ? "text" : "password"} required />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
             {state.errors?.password && (
                 <p className="text-sm text-destructive">{state.errors.password[0]}</p>
             )}
