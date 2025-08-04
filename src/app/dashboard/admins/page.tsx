@@ -163,7 +163,7 @@ export default function AdminsPage() {
                         type="button"
                         variant="secondary"
                         onClick={generatePassword}
-                        className="w-full"
+                        className="w-full mt-2"
                     >
                         <RefreshCw className="mr-2 h-4 w-4" />
                         Generate
@@ -185,15 +185,16 @@ export default function AdminsPage() {
                  <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Name</TableHead>
-                            <TableHead>Email</TableHead>
+                            <TableHead>Supervisor</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {supervisors.map((supervisor) => (
                             <TableRow key={supervisor.id}>
-                                <TableCell className="font-medium">{supervisor.name}</TableCell>
-                                <TableCell>{supervisor.email}</TableCell>
+                                <TableCell>
+                                    <div className="font-medium">{supervisor.name}</div>
+                                    <div className="text-sm text-muted-foreground">{supervisor.email}</div>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
