@@ -127,7 +127,7 @@ export function EditWordForm({ word }: { word: Word }) {
       </div>
        <div className="grid gap-2">
             <Label htmlFor="unitId">{t('addWord.form.unitLabel')}</Label>
-            <Select name="unitId" defaultValue={word.unitId}>
+            <Select name="unitId" defaultValue={word.unitId} required>
                 <SelectTrigger>
                     <SelectValue placeholder={t('addWord.form.selectUnit')} />
                 </SelectTrigger>

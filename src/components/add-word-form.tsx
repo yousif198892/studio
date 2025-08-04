@@ -118,7 +118,7 @@ export function AddWordForm() {
       </div>
        <div className="grid gap-2">
             <Label htmlFor="unitId">{t('addWord.form.unitLabel')}</Label>
-            <Select name="unitId">
+            <Select name="unitId" required>
                 <SelectTrigger>
                     <SelectValue placeholder={t('addWord.form.selectUnit')} />
                 </SelectTrigger>
