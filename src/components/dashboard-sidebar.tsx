@@ -100,10 +100,13 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   ];
 
   const filteredMenuItems = menuItems.filter((item) => {
-    if (item.isMainAdmin) {
-        return user.isMainAdmin && item.roles.includes(userRole);
+    if (!item.roles.includes(userRole)) {
+      return false;
     }
-    return item.roles.includes(userRole);
+    if (item.isMainAdmin) {
+      return user.isMainAdmin;
+    }
+    return true;
   });
 
   return (
