@@ -27,7 +27,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
   useEffect(() => {
     // Shuffling options on the client-side to avoid hydration mismatch
     const opts = word.options || [];
-    setShuffledOptions([...opts, word.correctOption].filter(Boolean).sort(() => Math.random() - 0.5));
+    setShuffledOptions([...opts].sort(() => Math.random() - 0.5));
     setSelectedOption(null);
     setIsAnswered(false);
   }, [word]);
@@ -79,9 +79,9 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
           {t('learn.question', word.definition)}
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {shuffledOptions.map((option) => (
+          {shuffledOptions.map((option, index) => (
             <Button
-              key={option}
+              key={`${option}-${index}`}
               onClick={() => handleOptionClick(option)}
               className={cn("text-lg h-auto py-4 whitespace-normal", {
                 "bg-green-500 hover:bg-green-600 text-white": isAnswered && option === word.correctOption,

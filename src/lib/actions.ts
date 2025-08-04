@@ -66,12 +66,16 @@ export async function addWord(prevState: any, formData: FormData) {
         throw new Error("AI did not return valid options.");
     }
 
+    const combinedOptions = [...aiResponse.options, word];
+    const uniqueOptions = Array.from(new Set(combinedOptions));
+
+
     const newWord: Word = {
         id: `word${Date.now()}`,
         word,
         definition,
         imageUrl: dataUri, 
-        options: [...aiResponse.options, word],
+        options: uniqueOptions,
         correctOption: word,
         supervisorId: userId,
         unitId: unitId,
