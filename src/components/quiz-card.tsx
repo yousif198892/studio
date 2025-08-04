@@ -26,7 +26,8 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
 
   useEffect(() => {
     // Shuffling options on the client-side to avoid hydration mismatch
-    setShuffledOptions([...word.options].sort(() => Math.random() - 0.5));
+    const opts = word.options || [];
+    setShuffledOptions([...opts].sort(() => Math.random() - 0.5));
     setSelectedOption(null);
     setIsAnswered(false);
   }, [word]);
@@ -108,3 +109,4 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
     </Card>
   );
 }
+
