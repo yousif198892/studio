@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getWordsForStudent, Word, getUserById, getWordsBySupervisor } from "@/lib/data";
+import { getWordsForStudent, Word, getUserById } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -82,7 +82,7 @@ export default function LearnPage() {
     }
   }
 
-  const handleCorrect = () => {
+  const handleCorrect = (isOverride = false) => {
     const word = reviewWords[currentWordIndex];
     if (!word) return;
 
@@ -100,6 +100,10 @@ export default function LearnPage() {
     setReviewWords(updatedReviewWords);
 
     updateWordInStorage(updatedWord);
+
+    if (isOverride) {
+      handleNextWord();
+    }
   };
 
   const handleIncorrect = () => {
@@ -124,7 +128,14 @@ export default function LearnPage() {
   const currentWord = reviewWords[currentWordIndex];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary relative">
+        <div className="absolute top-4 right-4">
+            <Button variant="ghost" size="icon" asChild>
+                <Link href={`/dashboard?userId=${userId}`}>
+                    <LayoutDashboard className="h-6 w-6" />
+                </Link>
+            </Button>
+        </div>
       {!sessionCompleted && currentWord ? (
         <div key={currentWord.id} className="w-full max-w-2xl animate-in fade-in-50 duration-500">
           <h1 className="text-3xl font-bold font-headline mb-4 text-center">{t('learn.title')}</h1>
@@ -133,6 +144,7 @@ export default function LearnPage() {
             onCorrect={handleCorrect}
             onIncorrect={handleIncorrect}
             onNextWord={handleNextWord}
+            onOverrideCorrect={() => handleCorrect(true)}
           />
         </div>
       ) : (
