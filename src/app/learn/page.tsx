@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { getWordsForStudent, Word } from "@/lib/data";
+import { getWordsForStudent, Word, getUserById, getWordsBySupervisor } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,16 +39,18 @@ export default function LearnPage() {
   const updateWordInStorage = (updatedWord: Word) => {
     try {
       const allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-      const supervisorId = getUserSupervisorId();
-      const supervisorWords = getWordsBySupervisor(supervisorId);
+      const student = getUserById(userId);
+      if (!student?.supervisorId) return;
+
+      const supervisorId = student.supervisorId;
       const otherSupervisorWords = allWords.filter(w => w.supervisorId !== supervisorId);
+      const supervisorWords = allWords.filter(w => w.supervisorId === supervisorId);
       
       const wordIndex = supervisorWords.findIndex(w => w.id === updatedWord.id);
       
       if (wordIndex > -1) {
         supervisorWords[wordIndex] = updatedWord;
       } else {
-        // This case handles if the word is a mock word not yet in localStorage
         supervisorWords.push(updatedWord);
       }
       
@@ -104,9 +106,9 @@ export default function LearnPage() {
     if (!word) return;
     
     const newStrength = Math.max(0, word.strength - 1);
-    const intervalDays = srsIntervals[newStrength];
+    // On incorrect, always schedule for review tomorrow to reinforce it.
     const newNextReview = new Date();
-    newNextReview.setDate(newNextReview.getDate() + intervalDays);
+    newNextReview.setDate(newNextReview.getDate() + 1);
 
     const updatedWord: Word = { ...word, strength: newStrength, nextReview: newNextReview };
 
@@ -117,19 +119,6 @@ export default function LearnPage() {
     
     updateWordInStorage(updatedWord);
   };
-  
-  // Helper functions to avoid repeating logic from data.ts on client if possible
-  const getUserSupervisorId = () => {
-      const allUsers = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
-      const currentUser = allUsers.find((u: any) => u.id === userId);
-      return currentUser?.supervisorId;
-  }
-  
-  const getWordsBySupervisor = (supervisorId: string) => {
-    const allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-    return allWords.filter(w => w.supervisorId === supervisorId);
-  }
-
 
   const currentWord = reviewWords[currentWordIndex];
 

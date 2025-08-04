@@ -122,7 +122,7 @@ export const translations = {
             description: "Here's a summary of your learning progress. Keep up the great work!",
             reviewTitle: "Words to Review",
             reviewDescription: "Ready for your next session",
-            learnedTitle: "Words Learned",
+            learnedTitle: "Learned Words",
             learnedDescription: "Total vocabulary words acquired",
         },
         supervisor: {
@@ -172,6 +172,7 @@ export const translations = {
     },
     wordsPage: {
         title: "My Words",
+        myLearnedWordsDesc: "Review and manage the words you've already learned.",
         description: "Manage your vocabulary list.",
         addNew: "Add New Word",
         table: {
@@ -228,6 +229,8 @@ export const translations = {
         addUnitExists: "Unit already exists.",
         addWordSuccess: "Word created!",
         updateWordSuccess: "Word updated successfully!",
+        deleteWordSuccess: "Word deleted successfully.",
+        rescheduleSuccess: "“{0}” has been rescheduled.",
         validationFailed: "Validation failed.",
         aiError: "Failed to add word. AI Generation Error: {0}",
         registerSuccess: "Success!",
@@ -416,6 +419,7 @@ export const translations = {
     },
     wordsPage: {
         title: "كلماتي",
+        myLearnedWordsDesc: "راجع وأدر الكلمات التي تعلمتها بالفعل.",
         description: "إدارة قائمة المفردات الخاصة بك.",
         addNew: "إضافة كلمة جديدة",
         table: {
@@ -472,6 +476,8 @@ export const translations = {
         addUnitExists: "الوحدة موجودة بالفعل.",
         addWordSuccess: "تم إنشاء الكلمة!",
         updateWordSuccess: "تم تحديث الكلمة بنجاح!",
+        deleteWordSuccess: "تم حذف الكلمة بنجاح.",
+        rescheduleSuccess: "تمت إعادة جدولة “{0}”.",
         validationFailed: "فشل التحقق.",
         aiError: "فشل إضافة الكلمة. خطأ في إنشاء الذكاء الاصطناعي: {0}",
         registerSuccess: "نجاح!",
@@ -510,7 +516,7 @@ export type TranslationKey =
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'
     | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.unitLabel' | 'addWord.form.selectUnit' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'
-    | 'wordsPage.title' | 'wordsPage.description' | 'wordsPage.addNew'
+    | 'wordsPage.title' | 'wordsPage.myLearnedWordsDesc' | 'wordsPage.description' | 'wordsPage.addNew'
     | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.unit' | 'wordsPage.table.actions'
     | 'wordsPage.deleteDialog.title' | 'wordsPage.deleteDialog.description' | 'wordsPage.deleteDialog.cancel' | 'wordsPage.deleteDialog.continue'
     | 'unitsPage.title' | 'unitsPage.description'
@@ -520,4 +526,4 @@ export type TranslationKey =
     | 'unitsPage.deleteDialog.description'
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
-    | 'toasts.error' | 'toasts.success' | 'toasts.addUnitSuccess' | 'toasts.addUnitExists' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.unitRequired' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+    | 'toasts.error' | 'toasts.success' | 'toasts.addUnitSuccess' | 'toasts.addUnitExists' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.unitRequired' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
