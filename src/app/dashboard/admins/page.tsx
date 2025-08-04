@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { createSupervisor, deleteSupervisor } from "@/lib/actions";
@@ -85,7 +86,17 @@ export default function AdminsPage() {
         title: t("toasts.success"),
         description: "Supervisor account created successfully!",
       });
-      // The action now saves the user, so we can just refetch.
+
+      // Correctly add the new user to localStorage
+      try {
+        const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+        const updatedUsers = [...existingUsers, state.newUser];
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+      } catch (e) {
+        console.error("Could not save new supervisor to localStorage", e);
+      }
+      
+      // Refetch from the updated localStorage
       fetchSupervisors(); 
       formRef.current?.reset();
       setPassword("");
@@ -116,8 +127,7 @@ export default function AdminsPage() {
     // Optimistically update the UI
     setSupervisors(prev => prev.filter(s => s.id !== userId));
 
-    // In a real app, this would be a server action.
-    // For this demo, we'll remove it from localStorage directly on the client.
+    // Remove from localStorage
     try {
         const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
         const updatedUsers = existingUsers.filter(u => u.id !== userId);

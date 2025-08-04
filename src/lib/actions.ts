@@ -340,8 +340,9 @@ export async function createSupervisor(prevState: any, formData: FormData) {
 
     const { name, email, password } = validatedFields.data;
     
-    const allUsers = getAllUsers();
-    if (allUsers.find(u => u.email === email)) {
+    // Server-side check for existing user (can't check localStorage here)
+    const serverUsers = mockUsers; // In a real app, this would be a DB query
+    if (serverUsers.find(u => u.email === email)) {
         return {
             errors: { email: ["User with this email already exists."] },
             message: "User with this email already exists.",
@@ -357,11 +358,10 @@ export async function createSupervisor(prevState: any, formData: FormData) {
         role: 'supervisor' as const,
         avatar: "https://placehold.co/100x100.png",
     };
-
-    // Since we're using localStorage as a mock DB, we can't update it from a server action.
-    // We return the newUser object, and the client component will handle adding it to localStorage.
-    // In a real app with a database, you would save newUser to the DB here.
     
+    // We cannot save to localStorage here.
+    // Instead, we just return a success state.
+    // The client will handle adding the user to localStorage.
     return { success: true, message: "Supervisor created successfully!", newUser };
 }
 
