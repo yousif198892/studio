@@ -103,9 +103,11 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     if (!item.roles.includes(userRole)) {
       return false;
     }
+    // If the item requires main admin, check the user's status
     if (item.isMainAdmin) {
-      return user.isMainAdmin;
+      return !!user.isMainAdmin;
     }
+    // Otherwise, if it's a regular item for the role, show it
     return true;
   });
 

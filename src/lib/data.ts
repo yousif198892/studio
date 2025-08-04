@@ -138,8 +138,9 @@ export function getAllUsers(): User[] {
   // If on the client, merge with localStorage.
   if (typeof window !== 'undefined') {
     const storedUsers = JSON.parse(localStorage.getItem('users') || '[]');
+    const storedCombinedUsers = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
     // Use a Map to ensure no duplicates from the mock list if they were also stored.
-    const combinedUsers = [...mockUsers, ...storedUsers];
+    const combinedUsers = [...mockUsers, ...storedUsers, ...storedCombinedUsers];
     const uniqueUsers = Array.from(new Map(combinedUsers.map(user => [user.id, user])).values());
     return uniqueUsers;
   }
@@ -151,19 +152,12 @@ export function getAllUsers(): User[] {
 
 // Helper functions to simulate data fetching
 export const getUserById = (id: string): User | undefined => {
-    let allUsers: User[] = mockUsers;
-     if (typeof window !== 'undefined') {
-        const storedUsers = localStorage.getItem('combinedUsers');
-        allUsers = storedUsers ? JSON.parse(storedUsers) : mockUsers;
-    }
+    const allUsers = getAllUsers();
     return allUsers.find(u => u.id === id);
 }
 
 export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
-    let allUsers: User[] = mockUsers;
-     if (typeof window !== 'undefined') {
-        allUsers = JSON.parse(localStorage.getItem('combinedUsers') || JSON.stringify(mockUsers));
-    }
+    let allUsers: User[] = getAllUsers();
     return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 
