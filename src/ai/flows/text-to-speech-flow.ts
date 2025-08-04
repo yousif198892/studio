@@ -60,9 +60,7 @@ const generateSpeechFlow = ai.defineFlow(
       config: {
         responseModalities: ['AUDIO'],
         speechConfig: {
-          speakingRate: speed,
           voiceConfig: {
-            // Using a standard voice.
             prebuiltVoiceConfig: { voiceName: 'algenib' },
           },
         },
