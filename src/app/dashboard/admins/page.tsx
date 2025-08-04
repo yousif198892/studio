@@ -12,16 +12,26 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Copy } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
+import { getAllUsers, User } from "@/lib/data";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+  } from "@/components/ui/table"
 
 const initialState = {
   message: "",
   errors: {},
   success: false,
+  newUser: undefined,
 };
 
 function SubmitButton() {
@@ -45,14 +55,31 @@ export default function AdminsPage() {
   const [state, formAction] = useActionState(createSupervisor, initialState);
   const { toast } = useToast();
   const [password, setPassword] = useState("");
+  const [supervisors, setSupervisors] = useState<User[]>([]);
+  const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (state.success) {
+    const allUsers = getAllUsers();
+    const supervisorUsers = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin);
+    setSupervisors(supervisorUsers);
+  }, []);
+
+  useEffect(() => {
+    if (state.success && state.newUser) {
       toast({
         title: t("toasts.success"),
         description: "Supervisor account created successfully!",
       });
-    } else if (state.message) {
+      // Add new supervisor to the list
+      setSupervisors(prev => [...prev, state.newUser!]);
+      // Reset form
+      formRef.current?.reset();
+      setPassword("");
+      // Reset state
+      state.success = false;
+      state.newUser = undefined;
+
+    } else if (state.message && !state.success) {
       toast({
         title: t("toasts.error"),
         description: state.message,
@@ -81,72 +108,98 @@ export default function AdminsPage() {
       <p className="text-muted-foreground">
         Create and manage supervisor accounts.
       </p>
-      <Card className="max-w-2xl">
-        <CardHeader>
-          <CardTitle>Create New Supervisor</CardTitle>
-          <CardDescription>
-            Enter the details for the new supervisor. A password will be
-            generated for them.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form action={formAction} className="space-y-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">Full Name</Label>
-              <Input
-                id="name"
-                name="name"
-                placeholder="Dr. Jane Doe"
-                required
-              />
-              {state.errors?.name && (
-                <p className="text-sm text-destructive">{state.errors.name[0]}</p>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                name="email"
-                placeholder="supervisor@example.com"
-                required
-              />
-              {state.errors?.email && (
-                <p className="text-sm text-destructive">
-                  {state.errors.email[0]}
-                </p>
-              )}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="password">Generated Password</Label>
-              <div className="flex gap-2">
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+            <CardHeader>
+            <CardTitle>Create New Supervisor</CardTitle>
+            <CardDescription>
+                Enter the details for the new supervisor. A password will be
+                generated for them.
+            </CardDescription>
+            </CardHeader>
+            <CardContent>
+            <form ref={formRef} action={formAction} className="space-y-4">
+                <div className="grid gap-2">
+                <Label htmlFor="name">Full Name</Label>
                 <Input
-                  id="password"
-                  name="password"
-                  value={password}
-                  readOnly
-                  placeholder="Click 'Generate' to create a password"
+                    id="name"
+                    name="name"
+                    placeholder="Dr. Jane Doe"
+                    required
                 />
-                <Button type="button" variant="outline" size="icon" onClick={() => copyToClipboard(password)} disabled={!password}>
-                    <Copy className="h-4 w-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={generatePassword}
-                >
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                  Generate
-                </Button>
-              </div>
-               {state.errors?.password && (
-                <p className="text-sm text-destructive">{state.errors.password[0]}</p>
-              )}
-            </div>
-            <SubmitButton />
-          </form>
-        </CardContent>
-      </Card>
+                {state.errors?.name && (
+                    <p className="text-sm text-destructive">{state.errors.name[0]}</p>
+                )}
+                </div>
+                <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                    id="email"
+                    name="email"
+                    placeholder="supervisor@example.com"
+                    required
+                />
+                {state.errors?.email && (
+                    <p className="text-sm text-destructive">
+                    {state.errors.email[0]}
+                    </p>
+                )}
+                </div>
+                <div className="grid gap-2">
+                <Label htmlFor="password">Generated Password</Label>
+                <div className="flex gap-2">
+                    <Input
+                    id="password"
+                    name="password"
+                    value={password}
+                    readOnly
+                    placeholder="Click 'Generate' to create a password"
+                    />
+                    <Button type="button" variant="outline" size="icon" onClick={() => copyToClipboard(password)} disabled={!password}>
+                        <Copy className="h-4 w-4" />
+                    </Button>
+                    <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={generatePassword}
+                    >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Generate
+                    </Button>
+                </div>
+                {state.errors?.password && (
+                    <p className="text-sm text-destructive">{state.errors.password[0]}</p>
+                )}
+                </div>
+                <SubmitButton />
+            </form>
+            </CardContent>
+        </Card>
+        <Card>
+            <CardHeader>
+                <CardTitle>Existing Supervisors</CardTitle>
+                <CardDescription>A list of all supervisor accounts.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                 <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Email</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {supervisors.map((supervisor) => (
+                            <TableRow key={supervisor.id}>
+                                <TableCell className="font-medium">{supervisor.name}</TableCell>
+                                <TableCell>{supervisor.email}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

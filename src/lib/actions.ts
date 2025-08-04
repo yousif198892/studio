@@ -5,7 +5,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, Word, Unit, mockUnits, getUnitsBySupervisor, getAllUsers } from "./data";
+import { mockUsers, Word, Unit, mockUnits, getUnitsBySupervisor, getAllUsers, User } from "./data";
 import { redirect } from "next/navigation";
 import { translations } from "./i18n";
 
@@ -349,7 +349,7 @@ export async function createSupervisor(prevState: any, formData: FormData) {
         };
     }
     
-    const newUser = {
+    const newUser: User = {
         id: `sup${Date.now()}`,
         name,
         email,
@@ -359,12 +359,13 @@ export async function createSupervisor(prevState: any, formData: FormData) {
     };
 
     // In a real app, this would save to a persistent database.
-    // For this demo, we can't update the mockUsers array directly on the server,
-    // but the success message will indicate the action was processed.
-    // The new user would need to be added to localStorage on the client-side
-    // or the page would need to be reloaded to see them in a list if one existed.
+    // For this demo, we'll simulate it by returning the new user
+    // so the client can update the state.
+    const allCurrentUsers = getAllUsers();
+    const updatedUsers = [...allCurrentUsers, newUser];
+
+    // This is a server action, so we can't directly update localStorage.
+    // We will return the newUser object in the state so the client component can handle it.
     
-    console.log("New supervisor created (simulated):", newUser);
-    
-    return { success: true, message: "Supervisor created successfully!" };
+    return { success: true, message: "Supervisor created successfully!", newUser };
 }
