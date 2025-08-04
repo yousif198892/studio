@@ -146,30 +146,31 @@ export default function AdminsPage() {
                 )}
                 </div>
                 <div className="grid gap-2">
-                <Label htmlFor="password">Generated Password</Label>
-                <div className="flex gap-2">
-                    <Input
-                    id="password"
-                    name="password"
-                    value={password}
-                    readOnly
-                    placeholder="Click 'Generate' to create a password"
-                    />
-                    <Button type="button" variant="outline" size="icon" onClick={() => copyToClipboard(password)} disabled={!password}>
-                        <Copy className="h-4 w-4" />
-                    </Button>
+                    <Label htmlFor="password">Generated Password</Label>
+                    <div className="flex gap-2">
+                        <Input
+                        id="password"
+                        name="password"
+                        value={password}
+                        readOnly
+                        placeholder="Click 'Generate' to create a password"
+                        />
+                        <Button type="button" variant="outline" size="icon" onClick={() => copyToClipboard(password)} disabled={!password}>
+                            <Copy className="h-4 w-4" />
+                        </Button>
+                    </div>
                     <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={generatePassword}
+                        type="button"
+                        variant="secondary"
+                        onClick={generatePassword}
+                        className="w-full"
                     >
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Generate
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Generate
                     </Button>
-                </div>
-                {state.errors?.password && (
-                    <p className="text-sm text-destructive">{state.errors.password[0]}</p>
-                )}
+                    {state.errors?.password && (
+                        <p className="text-sm text-destructive">{state.errors.password[0]}</p>
+                    )}
                 </div>
                 <SubmitButton />
             </form>
