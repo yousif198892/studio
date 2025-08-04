@@ -21,7 +21,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Trash2 } from "lucide-react";
+import { MoreHorizontal, RotateCcw } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -87,26 +87,22 @@ export default function MyWordsPage() {
     }
   };
 
-  const handleDelete = (wordId: string) => {
-    const student = getUserById(userId);
-    if (!student?.supervisorId) return;
+  const handleReset = (wordToReset: Word) => {
+    const updatedWord = {
+        ...wordToReset,
+        strength: 0,
+        nextReview: new Date(),
+    };
 
-    // Remove from component state
-    const updatedWords = words.filter(w => w.id !== wordId);
-    setWords(updatedWords);
+    // Remove from component state as it's no longer "learned"
+    setWords(words.filter(w => w.id !== wordToReset.id));
 
-    // Remove from localStorage
-    const allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-    const supervisorId = student.supervisorId;
-    const otherSupervisorWords = allWords.filter(w => w.supervisorId !== supervisorId);
-    let supervisorWords = allWords.filter(w => w.supervisorId === supervisorId);
+    // Update in localStorage
+    updateWordInStorage(updatedWord);
 
-    supervisorWords = supervisorWords.filter(w => w.id !== wordId);
-    
-    localStorage.setItem('userWords', JSON.stringify([...otherSupervisorWords, ...supervisorWords]));
+    toast({ title: t('toasts.success'), description: t('toasts.resetWordSuccess', wordToReset.word) });
+  };
 
-    toast({ title: t('toasts.success'), description: t('toasts.deleteWordSuccess') });
-  }
 
   const handleReschedule = (word: Word, days: number) => {
     const newNextReview = new Date();
@@ -198,20 +194,20 @@ export default function MyWordsPage() {
                          <AlertDialog>
                             <AlertDialogTrigger asChild>
                                 <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                    <Trash2 className="mr-2 h-4 w-4" />
-                                    Delete
+                                    <RotateCcw className="mr-2 h-4 w-4" />
+                                    Reset Progress
                                 </DropdownMenuItem>
                             </AlertDialogTrigger>
                             <AlertDialogContent>
                                 <AlertDialogHeader>
-                                <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
+                                <AlertDialogTitle>{t('wordsPage.resetDialog.title')}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    {t('wordsPage.deleteDialog.description', word.word)}
+                                    {t('wordsPage.resetDialog.description', word.word)}
                                 </AlertDialogDescription>
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDelete(word.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
+                                <AlertDialogAction onClick={() => handleReset(word)}>{t('wordsPage.resetDialog.continue')}</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>
