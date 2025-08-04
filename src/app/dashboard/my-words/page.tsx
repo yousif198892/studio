@@ -42,6 +42,7 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu"
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 export default function MyWordsPage() {
   const searchParams = useSearchParams();
@@ -131,6 +132,14 @@ export default function MyWordsPage() {
     { label: "After a month", days: 30 },
   ];
 
+  const getDaysUntilReview = (nextReviewDate: Date) => {
+      const now = new Date();
+      const reviewDate = new Date(nextReviewDate);
+      const diffTime = reviewDate.getTime() - now.getTime();
+      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      return diffDays;
+  }
+
   return (
     <div className="space-y-6">
       <div>
@@ -159,63 +168,72 @@ export default function MyWordsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {words.map((word) => (
-                <TableRow key={word.id}>
-                  <TableCell className="hidden sm:table-cell">
-                    <Image
-                      alt="Word image"
-                      className="aspect-square rounded-md object-cover"
-                      height="64"
-                      src={word.imageUrl}
-                      width="64"
-                    />
-                  </TableCell>
-                  <TableCell className="font-medium">{word.word}</TableCell>
-                  <TableCell>{word.definition}</TableCell>
-                  <TableCell>{getUnitName(word.unitId)}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <span className="sr-only">Open menu</span>
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuLabel>Reschedule Review</DropdownMenuLabel>
-                        {reviewOptions.map(opt => (
-                            <DropdownMenuItem key={opt.days} onClick={() => handleReschedule(word, opt.days)}>
-                                {opt.label}
-                            </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                         <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                                <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                    <RotateCcw className="mr-2 h-4 w-4" />
-                                    Reset Progress
-                                </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                                <AlertDialogHeader>
-                                <AlertDialogTitle>{t('wordsPage.resetDialog.title')}</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                    {t('wordsPage.resetDialog.description', word.word)}
-                                </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleReset(word)}>{t('wordsPage.resetDialog.continue')}</AlertDialogAction>
-                                </AlertDialogFooter>
-                            </AlertDialogContent>
-                        </AlertDialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {words.map((word) => {
+                const daysUntilReview = getDaysUntilReview(word.nextReview);
+                return (
+                  <TableRow key={word.id}>
+                    <TableCell className="hidden sm:table-cell">
+                      <Image
+                        alt="Word image"
+                        className="aspect-square rounded-md object-cover"
+                        height="64"
+                        src={word.imageUrl}
+                        width="64"
+                      />
+                    </TableCell>
+                    <TableCell className="font-medium">{word.word}</TableCell>
+                    <TableCell>{word.definition}</TableCell>
+                    <TableCell>{getUnitName(word.unitId)}</TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Open menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuLabel>Reschedule Review</DropdownMenuLabel>
+                          {reviewOptions.map(opt => (
+                              <DropdownMenuItem 
+                                key={opt.days} 
+                                onClick={() => handleReschedule(word, opt.days)}
+                                className={cn({
+                                    'text-red-500 focus:text-red-500': daysUntilReview === opt.days
+                                })}
+                              >
+                                  {opt.label}
+                              </DropdownMenuItem>
+                          ))}
+                          <DropdownMenuSeparator />
+                           <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                      <RotateCcw className="mr-2 h-4 w-4" />
+                                      Reset Progress
+                                  </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                  <AlertDialogHeader>
+                                  <AlertDialogTitle>{t('wordsPage.resetDialog.title')}</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                      {t('wordsPage.resetDialog.description', word.word)}
+                                  </AlertDialogDescription>
+                                  </AlertDialogHeader>
+                                  <AlertDialogFooter>
+                                  <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleReset(word)}>{t('wordsPage.resetDialog.continue')}</AlertDialogAction>
+                                  </AlertDialogFooter>
+                              </AlertDialogContent>
+                          </AlertDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
             </TableBody>
           </Table>
         </CardContent>
