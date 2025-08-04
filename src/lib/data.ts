@@ -90,7 +90,7 @@ export let mockWords: Word[] = [
         word: "Ephemeral",
         definition: "Lasting for a very short time.",
         imageUrl: "https://placehold.co/600x400.png",
-        options: ["Ephemeral", "Permanent", "Eternal", "Enduring"],
+        options: ["Permanent", "Eternal", "Enduring"],
         correctOption: "Ephemeral",
         supervisorId: "sup1",
         unitId: "unit3",
@@ -102,7 +102,7 @@ export let mockWords: Word[] = [
         word: "Ubiquitous",
         definition: "Present, appearing, or found everywhere.",
         imageUrl: "https://placehold.co/600x400.png",
-        options: ["Rare", "Scarce", "Ubiquitous", "Limited"],
+        options: ["Rare", "Scarce", "Limited"],
         correctOption: "Ubiquitous",
         supervisorId: "sup1",
         unitId: "unit3",
@@ -114,7 +114,7 @@ export let mockWords: Word[] = [
         word: "Mellifluous",
         definition: "A sound that is sweet and smooth, pleasing to hear.",
         imageUrl: "https://placehold.co/600x400.png",
-        options: ["Mellifluous", "Cacophonous", "Harsh", "Grating"],
+        options: ["Cacophonous", "Harsh", "Grating"],
         correctOption: "Mellifluous",
         supervisorId: "sup1",
         unitId: "unit3",
@@ -198,3 +198,4 @@ export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
     }
     return baseUnits;
 }
+

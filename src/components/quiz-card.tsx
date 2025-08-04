@@ -27,7 +27,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
   useEffect(() => {
     // Shuffling options on the client-side to avoid hydration mismatch
     const opts = word.options || [];
-    setShuffledOptions([...opts].sort(() => Math.random() - 0.5));
+    setShuffledOptions([...opts, word.correctOption].filter(Boolean).sort(() => Math.random() - 0.5));
     setSelectedOption(null);
     setIsAnswered(false);
   }, [word]);
@@ -41,6 +41,10 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
 
     if (option === word.correctOption) {
       onCorrect();
+      // Automatically move to the next word after a short delay for feedback
+      setTimeout(() => {
+        onNextWord();
+      }, 1000);
     } else {
       onIncorrect();
     }
@@ -64,8 +68,8 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
             <Image
                 src={word.imageUrl}
                 alt={`Image for ${word.word}`}
-                layout="fill"
-                objectFit="contain"
+                fill
+                style={{objectFit: 'contain'}}
                 data-ai-hint="abstract vocabulary"
             />
         </div>
@@ -93,7 +97,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
         </div>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-4 p-6 bg-secondary/50">
-        {isAnswered && (
+        {isAnswered && selectedOption !== word.correctOption && (
              <Button onClick={onNextWord} size="lg" className="w-full">
                 {t('learn.nextWord')} <ArrowRight className="ms-2 h-5 w-5" />
             </Button>
@@ -109,4 +113,3 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
     </Card>
   );
 }
-
