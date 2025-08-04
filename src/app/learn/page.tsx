@@ -6,9 +6,10 @@ import { getWordsForStudent, Word } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LayoutDashboard } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 
 export default function LearnPage() {
   const { t } = useLanguage();
@@ -87,10 +88,18 @@ export default function LearnPage() {
             <CardContent>
                 <p className="text-muted-foreground">{t('learn.finishedDescription1')}</p>
                 <p className="text-muted-foreground mt-2">{t('learn.finishedDescription2')}</p>
-                <Button onClick={handleRestartSession} className="mt-6">
-                    {t('learn.startNewSession')}
-                    <ArrowRight className="ms-2 h-4 w-4" />
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
+                    <Button onClick={handleRestartSession}>
+                        {t('learn.startNewSession')}
+                        <ArrowRight className="ms-2 h-4 w-4" />
+                    </Button>
+                     <Button variant="outline" asChild>
+                        <Link href={`/dashboard?userId=${userId}`}>
+                            <LayoutDashboard className="me-2 h-4 w-4" />
+                            Go to Dashboard
+                        </Link>
+                    </Button>
+                </div>
             </CardContent>
         </Card>
       )}
