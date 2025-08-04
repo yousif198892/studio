@@ -5,7 +5,7 @@ import { redirect, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { getUserById, type User, getAllUsers, mockUsers } from "@/lib/data";
+import { getUserById, type User, getAllUsers } from "@/lib/data";
 import { useEffect, useState } from "react";
 
 export default function DashboardLayout({
@@ -18,22 +18,27 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchUser = () => {
       // In a real app, this would come from a session or a more robust user management system.
-      const userId = searchParams?.get('userId') as string || "sup1";
+      const userId = searchParams?.get('userId') as string;
       
-      const allUsers = getAllUsers();
+      if (!userId) {
+        console.error("No user ID found, redirecting to login.")
+        redirect("/login");
+        return;
+      }
       
-      // Store combined users for other components to access without re-fetching
-      localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
-      
-      const foundUser = allUsers.find(u => u.id === userId);
+      const foundUser = getUserById(userId);
       
       if (foundUser) {
         setUser(foundUser);
+        // Persist the combined user list if it's not already there or needs updating
+        // This is a simplified approach for the mock data setup.
+        if (typeof window !== 'undefined') {
+          const allUsers = getAllUsers();
+          localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+        }
       } else {
-         // In a real app with proper auth, you might redirect to /login
-         // For this demo, we'll handle it client-side.
          console.error("User not found, redirecting to login.")
          redirect("/login");
       }
