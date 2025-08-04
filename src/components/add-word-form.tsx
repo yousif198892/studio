@@ -51,9 +51,17 @@ export function AddWordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const lessons = Array.from({ length: 8 }, (_, i) => `Lesson ${i + 1}`);
-
+  const [units, setUnits] = useState<Unit[]>([]);
+  
   const userId = searchParams.get("userId") || "sup1";
+
+  useEffect(() => {
+    if (userId) {
+        const supervisorUnits = getUnitsBySupervisor(userId);
+        setUnits(supervisorUnits);
+    }
+  }, [userId]);
+
 
   useEffect(() => {
     if (state.success && state.newWord) {
@@ -109,14 +117,14 @@ export function AddWordForm() {
         )}
       </div>
        <div className="grid gap-2">
-            <Label htmlFor="unitId">Lessons</Label>
+            <Label htmlFor="unitId">{t('addWord.form.unitLabel')}</Label>
             <Select name="unitId" required>
                 <SelectTrigger>
-                    <SelectValue placeholder="Select a Lesson" />
+                    <SelectValue placeholder={t('addWord.form.selectUnit')} />
                 </SelectTrigger>
                 <SelectContent>
-                    {lessons.map(lesson => (
-                        <SelectItem key={lesson} value={lesson}>{lesson}</SelectItem>
+                    {units.map(unit => (
+                        <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
                     ))}
                 </SelectContent>
             </Select>
