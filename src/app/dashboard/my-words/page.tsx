@@ -35,7 +35,8 @@ export default function MyWordsPage() {
       if (student?.supervisorId) {
         setSupervisorId(student.supervisorId);
         const studentWords = getWordsForStudent(userId);
-        setWords(studentWords);
+        const learnedWords = studentWords.filter(w => w.strength > 0);
+        setWords(learnedWords);
         const supervisorUnits = getUnitsBySupervisor(student.supervisorId);
         setUnits(supervisorUnits);
       }
@@ -50,7 +51,7 @@ export default function MyWordsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold font-headline">{t('wordsPage.title')}</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.learnedTitle')}</h1>
         <p className="text-muted-foreground">{t('wordsPage.description')}</p>
       </div>
 
@@ -58,7 +59,7 @@ export default function MyWordsPage() {
         <CardHeader>
           <CardTitle>{t('wordsPage.table.title')}</CardTitle>
           <CardDescription>
-            {t('wordsPage.table.description')}
+            {t('dashboard.student.learnedDescription')}
           </CardDescription>
         </CardHeader>
         <CardContent>

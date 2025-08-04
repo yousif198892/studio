@@ -366,7 +366,7 @@ export const translations = {
             description: "إليك ملخص لتقدمك في التعلم. استمر في العمل الرائع!",
             reviewTitle: "كلمات للمراجعة",
             reviewDescription: "جاهز لجلستك التالية",
-            learnedTitle: "الكلمات المكتسبة",
+            learnedTitle: "الكلمات المتعلمة",
             learnedDescription: "إجمالي كلمات المفردات المكتسبة",
         },
         supervisor: {
@@ -461,8 +461,8 @@ export const translations = {
         title: "طلابي",
         description: "مرحبًا، {0}. إليك طلابك.",
         allStudents: {
-            title: "جميع الطلاب",
-            description: "قائمة الطلاب تحت إشرافك.",
+            title: "All Students",
+            description: "A list of students under your supervision.",
         },
     },
     toasts: {

@@ -11,6 +11,7 @@ import {
   LogOut,
   Users,
   Layers,
+  GraduationCap
 } from "lucide-react";
 
 import {
@@ -52,8 +53,8 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     },
     {
       href: `/dashboard/my-words?userId=${user.id}`,
-      label: t('sidebar.myWords'),
-      icon: <BookOpen />,
+      label: t('dashboard.student.learnedTitle'),
+      icon: <GraduationCap />,
       roles: ["student"],
     },
     {
