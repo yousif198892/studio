@@ -36,6 +36,24 @@ export type Word = {
   strength: number;
 };
 
+export type Message = {
+    id: string;
+    name: string;
+    email: string;
+    message: string;
+    createdAt: Date;
+}
+
+export const mockMessages: Message[] = [
+    {
+        id: 'msg1',
+        name: 'John Doe',
+        email: 'j.doe@corp.com',
+        message: "Hello, I am a teacher at a local high school and I would be very interested in using your platform for my students. Could you please provide me with supervisor access? Thank you!",
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+    }
+];
+
 export const mockUsers: User[] = [
   {
     id: "user1",
@@ -223,4 +241,15 @@ export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
         return uniqueUnits;
     }
     return baseUnits;
+}
+
+export const getMessages = (): Message[] => {
+    const baseMessages = mockMessages;
+    if (typeof window !== 'undefined') {
+        const storedMessages: Message[] = JSON.parse(localStorage.getItem('adminMessages') || '[]');
+        const allMessages = [...baseMessages, ...storedMessages];
+        const uniqueMessages = Array.from(new Map(allMessages.map(item => [item.id, item])).values());
+        return uniqueMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }
+    return baseMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }

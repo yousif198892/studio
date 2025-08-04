@@ -15,6 +15,7 @@ import {
   GraduationCap,
   BrainCircuit,
   Shield,
+  Mail,
 } from "lucide-react";
 
 import {
@@ -88,6 +89,13 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         href: `/dashboard/admins?userId=${user.id}`,
         label: 'Admins',
         icon: <Shield />,
+        roles: ["supervisor"],
+        isMainAdmin: true,
+    },
+    {
+        href: `/dashboard/messages?userId=${user.id}`,
+        label: 'Messages',
+        icon: <Mail />,
         roles: ["supervisor"],
         isMainAdmin: true,
     },
