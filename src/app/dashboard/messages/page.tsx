@@ -61,7 +61,7 @@ export default function MessagesPage() {
                     </div>
                   </TableCell>
                   <TableCell className="max-w-md">
-                    <p className="truncate">{message.message}</p>
+                    <p>{message.message}</p>
                   </TableCell>
                   <TableCell className="text-right">
                     {formatDistanceToNow(new Date(message.createdAt), { addSuffix: true })}
