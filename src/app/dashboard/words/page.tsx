@@ -96,7 +96,7 @@ export default function WordsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredWords.map((word) => (
-            <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 border border-primary/20">
+            <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 border border-primary">
               <CardHeader className="p-0">
                   <div className="aspect-video relative bg-muted rounded-t-lg">
                      <Image
@@ -118,14 +118,14 @@ export default function WordsPage() {
               <CardFooter className="p-4 pt-0 flex justify-end gap-2">
                 <Button variant="outline" size="icon" asChild>
                   <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
-                    <Pencil className="h-4 w-4" />
+                    <Pencil />
                     <span className="sr-only">Edit</span>
                   </Link>
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" size="icon">
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 />
                         <span className="sr-only">Delete</span>
                     </Button>
                   </AlertDialogTrigger>
