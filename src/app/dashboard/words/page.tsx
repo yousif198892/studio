@@ -117,7 +117,7 @@ export default function WordsPage() {
               </CardContent>
               <CardFooter className="p-4 pt-0">
                  <div className="flex gap-2 w-full">
-                    <Button variant="outline" size="sm" asChild className="w-full">
+                    <Button variant="outline" size="sm" asChild className="flex-1">
                       <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
                         <Pencil className="h-4 w-4 mr-2" />
                         Edit
@@ -125,7 +125,7 @@ export default function WordsPage() {
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" className="w-full">
+                        <Button variant="destructive" size="sm" className="flex-1">
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete
                         </Button>
