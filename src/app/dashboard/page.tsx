@@ -68,7 +68,7 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </Link>
-          <Link href={`/dashboard/words?userId=${user.supervisorId}`}>
+          <Link href={`/dashboard/my-words?userId=${user.id}`}>
             <Card className="hover:bg-muted/50 transition-colors">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{t('dashboard.student.learnedTitle')}</CardTitle>
