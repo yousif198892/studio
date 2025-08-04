@@ -69,8 +69,8 @@ export default function WordsPage() {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold font-headline">{t('wordsPage.title')}</h1>
-          <p className="text-muted-foreground">{t('wordsPage.description')}</p>
+          <h1 className="text-3xl font-bold font-headline">{t('wordsPage.table.title')}</h1>
+          <p className="text-muted-foreground">{t('wordsPage.table.description')}</p>
         </div>
         <Button asChild>
             <Link href={`/dashboard/add-word?userId=${userId}`}>{t('wordsPage.addNew')}</Link>
@@ -115,37 +115,33 @@ export default function WordsPage() {
                     {word.lesson && <Badge variant="secondary">{word.lesson}</Badge>}
                 </div>
               </CardContent>
-              <CardFooter className="p-4 pt-0">
-                 <div className="flex gap-2 w-full">
-                    <Button variant="outline" size="sm" asChild className="flex-1">
-                      <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Edit
-                      </Link>
+              <CardFooter className="p-4 pt-0 flex gap-2">
+                <Button variant="outline" size="sm" asChild className="flex-1">
+                  <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
+                    <Pencil className="h-4 w-4 mr-2" />
+                    Edit
+                  </Link>
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" className="flex-1">
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
                     </Button>
-                    <div className="flex-1">
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="destructive" size="sm" className="w-full">
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
-                            <AlertDialogDescription>
-                            {t('wordsPage.deleteDialog.description', word.word)}
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => handleDelete(word.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                </div>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                      {t('wordsPage.deleteDialog.description', word.word)}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => handleDelete(word.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               </CardFooter>
             </Card>
           ))}
