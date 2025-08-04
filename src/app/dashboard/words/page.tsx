@@ -123,26 +123,28 @@ export default function WordsPage() {
                         Edit
                       </Link>
                     </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="sm" className="flex-1">
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
-                          <AlertDialogDescription>
-                           {t('wordsPage.deleteDialog.description', word.word)}
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDelete(word.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <div className="flex-1">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="sm" className="w-full">
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>{t('wordsPage.deleteDialog.title')}</AlertDialogTitle>
+                            <AlertDialogDescription>
+                            {t('wordsPage.deleteDialog.description', word.word)}
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(word.id)}>{t('wordsPage.deleteDialog.continue')}</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                 </div>
               </CardFooter>
             </Card>
