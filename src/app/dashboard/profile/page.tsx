@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -20,9 +21,25 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLanguage } from "@/hooks/use-language";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { getUserById, User } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProfilePage() {
   const { t, language, setLanguage } = useLanguage();
+  const searchParams = useSearchParams();
+  const { toast } = useToast();
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    const userId = searchParams.get("userId");
+    if (userId) {
+      const foundUser = getUserById(userId);
+      setUser(foundUser || null);
+    }
+  }, [searchParams]);
+
   const timezones = [
     "America/New_York",
     "America/Los_Angeles",
@@ -33,6 +50,26 @@ export default function ProfilePage() {
 
   const handleLanguageChange = (value: "en" | "ar") => {
     setLanguage(value);
+  };
+  
+  const handleSaveChanges = () => {
+      // In a real app, this would call a server action to update the user data.
+      toast({
+        title: t('toasts.success'),
+        description: "Personal information saved!",
+      });
+  }
+  
+  const handleSavePreferences = () => {
+       // In a real app, this would call a server action to update the user data.
+      toast({
+        title: t('toasts.success'),
+        description: "Preferences saved!",
+      });
+  }
+
+  if (!user) {
+    return <div>{t('dashboard.loading')}</div>;
   }
 
   return (
@@ -49,8 +86,8 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src="https://placehold.co/100x100.png" />
-                <AvatarFallback>AJ</AvatarFallback>
+                <AvatarImage src={user.avatar} />
+                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
               </Avatar>
               <div className="grid gap-1.5">
                 <Label htmlFor="picture">{t('profile.personalInfo.picture')}</Label>
@@ -59,15 +96,15 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="name">{t('profile.personalInfo.fullName')}</Label>
-              <Input id="name" defaultValue="Alex Johnson" />
+              <Input id="name" defaultValue={user.name} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">{t('profile.personalInfo.email')}</Label>
-              <Input id="email" type="email" defaultValue="alex@example.com" disabled />
+              <Input id="email" type="email" defaultValue={user.email} disabled />
             </div>
           </CardContent>
           <CardFooter>
-            <Button>{t('profile.personalInfo.save')}</Button>
+            <Button onClick={handleSaveChanges}>{t('profile.personalInfo.save')}</Button>
           </CardFooter>
         </Card>
         <Card>
@@ -92,7 +129,7 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="timezone">{t('profile.preferences.timezone')}</Label>
-              <Select defaultValue="America/New_York">
+              <Select defaultValue={user.timezone}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('profile.preferences.selectTimezone')} />
                 </SelectTrigger>
@@ -107,7 +144,7 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="font-size">{t('profile.preferences.fontSize')}</Label>
-              <Select defaultValue="base">
+              <Select defaultValue={user.fontSize}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('profile.preferences.selectFontSize')} />
                 </SelectTrigger>
@@ -120,7 +157,7 @@ export default function ProfilePage() {
             </div>
           </CardContent>
           <CardFooter>
-            <Button>{t('profile.preferences.save')}</Button>
+            <Button onClick={handleSavePreferences}>{t('profile.preferences.save')}</Button>
           </CardFooter>
         </Card>
         <Card className="md:col-span-2">
