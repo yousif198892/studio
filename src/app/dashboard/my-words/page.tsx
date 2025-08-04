@@ -134,9 +134,13 @@ export default function MyWordsPage() {
 
   const getDaysUntilReview = (nextReviewDate: Date) => {
       const now = new Date();
+      now.setHours(0, 0, 0, 0); // Normalize current date to midnight
+      
       const reviewDate = new Date(nextReviewDate);
+      reviewDate.setHours(0, 0, 0, 0); // Normalize review date to midnight
+      
       const diffTime = reviewDate.getTime() - now.getTime();
-      const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays;
   }
 
@@ -201,7 +205,7 @@ export default function MyWordsPage() {
                                 key={opt.days} 
                                 onClick={() => handleReschedule(word, opt.days)}
                                 className={cn({
-                                    'text-red-500 focus:text-red-500': daysUntilReview === opt.days
+                                    'text-destructive focus:bg-destructive/10 focus:text-destructive': daysUntilReview === opt.days
                                 })}
                               >
                                   {opt.label}
