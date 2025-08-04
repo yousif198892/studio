@@ -34,12 +34,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useLanguage } from "@/hooks/use-language";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 export default function WordsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "sup1";
   const [words, setWords] = useState<Word[]>([]);
   const [units, setUnits] = useState<Unit[]>([]);
+  const [selectedUnit, setSelectedUnit] = useState<string>("all");
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -66,6 +69,10 @@ export default function WordsPage() {
     return unit ? unit.name : "N/A";
   }
 
+  const filteredWords = selectedUnit === 'all' 
+    ? words 
+    : words.filter(word => word.unitId === selectedUnit);
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -76,6 +83,21 @@ export default function WordsPage() {
         <Button asChild>
             <Link href={`/dashboard/add-word?userId=${userId}`}>{t('wordsPage.addNew')}</Link>
         </Button>
+      </div>
+      
+      <div className="max-w-sm">
+        <Label htmlFor="lesson-filter">Lesson</Label>
+        <Select value={selectedUnit} onValueChange={setSelectedUnit}>
+            <SelectTrigger id="lesson-filter">
+                <SelectValue placeholder="Filter by unit" />
+            </SelectTrigger>
+            <SelectContent>
+                <SelectItem value="all">All Units</SelectItem>
+                {units.map(unit => (
+                    <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
+                ))}
+            </SelectContent>
+        </Select>
       </div>
 
       <Card>
@@ -101,7 +123,7 @@ export default function WordsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {words.map((word) => (
+              {filteredWords.map((word) => (
                 <TableRow key={word.id}>
                   <TableCell className="hidden sm:table-cell">
                     <Image
