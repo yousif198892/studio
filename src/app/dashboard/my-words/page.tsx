@@ -21,7 +21,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, RotateCcw, Loader2, Volume2, Wind } from "lucide-react";
+import { MoreHorizontal, RotateCcw, Loader2, Volume2 } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -45,6 +45,11 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
 
+type PlaybackState = {
+  wordId: string;
+  speed: number;
+};
+
 export default function MyWordsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "user1";
@@ -55,6 +60,7 @@ export default function MyWordsPage() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null);
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
+  const [lastPlayback, setLastPlayback] = useState<PlaybackState | null>(null);
 
   useEffect(() => {
     if (userId) {
@@ -69,18 +75,23 @@ export default function MyWordsPage() {
     }
   }, [userId]);
 
-  const handlePlayAudio = async (word: string, speed: number) => {
-    const audioKey = `${word}-${speed}`;
-    if (loadingAudio === audioKey || currentlyPlaying === audioKey) return;
+  const handlePlayAudio = async (word: Word) => {
+    const wordId = word.id;
+    if (loadingAudio === wordId) return;
 
-    setLoadingAudio(audioKey);
+    // Determine speed: if the last played word is this one and it was normal speed, play slow. Otherwise, play normal.
+    const isSameWordAsLast = lastPlayback?.wordId === wordId;
+    const nextSpeed = isSameWordAsLast && lastPlayback?.speed === 1.0 ? 0.75 : 1.0;
+    
+    setLoadingAudio(wordId);
     try {
-      const { audioDataUri } = await generateSpeech({ text: word, speed });
+      const { audioDataUri } = await generateSpeech({ text: word.word, speed: nextSpeed });
       
       if (audioRef.current) {
         audioRef.current.src = audioDataUri;
         audioRef.current.play();
-        setCurrentlyPlaying(audioKey);
+        setCurrentlyPlaying(wordId);
+        setLastPlayback({ wordId, speed: nextSpeed });
         audioRef.current.onended = () => {
           setCurrentlyPlaying(null);
         };
@@ -92,6 +103,7 @@ export default function MyWordsPage() {
         description: "Failed to generate audio for the word.",
         variant: "destructive",
       });
+       setLastPlayback(null);
     } finally {
       setLoadingAudio(null);
     }
@@ -179,7 +191,7 @@ export default function MyWordsPage() {
 
   return (
     <div className="space-y-6">
-      <audio ref={audioRef} />
+      <audio ref={audioRef} onEnded={() => setCurrentlyPlaying(null)} />
       <div>
         <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.learnedTitle')}</h1>
         <p className="text-muted-foreground">{t('wordsPage.myLearnedWordsDesc')}</p>
@@ -222,26 +234,15 @@ export default function MyWordsPage() {
                     <TableCell className="font-medium">
                       <div className="flex items-center gap-2">
                         <span>{word.word}</span>
-                        <div className="flex gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => handlePlayAudio(word.word, 1.0)} 
-                            disabled={!!loadingAudio}
-                            aria-label="Play normal speed"
-                          >
-                            {loadingAudio === `${word.word}-1.0` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
-                          </Button>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            onClick={() => handlePlayAudio(word.word, 0.75)} 
-                            disabled={!!loadingAudio}
-                            aria-label="Play slow speed"
-                          >
-                            {loadingAudio === `${word.word}-0.75` ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wind className="h-4 w-4" />}
-                          </Button>
-                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={() => handlePlayAudio(word)} 
+                          disabled={!!loadingAudio}
+                          aria-label="Play audio"
+                        >
+                          {loadingAudio === word.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+                        </Button>
                       </div>
                     </TableCell>
                     <TableCell>{word.definition}</TableCell>
