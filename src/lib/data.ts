@@ -29,6 +29,7 @@ export type Word = {
   correctOption: string;
   supervisorId: string;
   unitId: string;
+  lesson?: string;
   nextReview: Date;
   strength: number;
 };
@@ -94,6 +95,7 @@ export let mockWords: Word[] = [
         correctOption: "Ephemeral",
         supervisorId: "sup1",
         unitId: "unit3",
+        lesson: "Lesson 1",
         nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
         strength: 2,
     },
@@ -106,6 +108,7 @@ export let mockWords: Word[] = [
         correctOption: "Ubiquitous",
         supervisorId: "sup1",
         unitId: "unit3",
+        lesson: "Lesson 2",
         nextReview: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
         strength: 3,
     },
@@ -118,6 +121,7 @@ export let mockWords: Word[] = [
         correctOption: "Mellifluous",
         supervisorId: "sup1",
         unitId: "unit3",
+        lesson: "Lesson 1",
         nextReview: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago (due for review)
         strength: 1,
     }

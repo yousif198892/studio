@@ -17,6 +17,7 @@ const addWordSchema = z.object({
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
   unitId: z.string().min(1, "Please select a unit."),
+  lesson: z.string().optional(),
   image: z.any(),
 });
 
@@ -26,6 +27,7 @@ export async function addWord(prevState: any, formData: FormData) {
     definition: formData.get("definition"),
     userId: formData.get("userId"),
     unitId: formData.get("unitId"),
+    lesson: formData.get("lesson"),
     image: formData.get("image"),
   });
 
@@ -40,7 +42,7 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId, unitId } = validatedFields.data;
+  const { word, definition, userId, unitId, lesson } = validatedFields.data;
   const imageFile = formData.get("image") as File;
 
   if (!imageFile || imageFile.size === 0) {
@@ -79,6 +81,7 @@ export async function addWord(prevState: any, formData: FormData) {
         correctOption: word,
         supervisorId: userId,
         unitId: unitId,
+        lesson: lesson,
         nextReview: new Date(),
         strength: 0,
     };
