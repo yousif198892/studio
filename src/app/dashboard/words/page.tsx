@@ -96,21 +96,21 @@ export default function WordsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredWords.map((word) => (
-            <Card key={word.id} className="flex flex-col">
+            <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105">
               <CardHeader className="p-0">
                   <div className="aspect-video relative bg-muted rounded-t-lg">
                      <Image
                         src={word.imageUrl}
                         alt={`Image for ${word.word}`}
                         fill
-                        className="object-contain rounded-t-lg"
+                        className="object-contain rounded-t-lg p-2"
                       />
                   </div>
               </CardHeader>
               <CardContent className="p-4 flex-grow">
                 <h3 className="text-lg font-bold font-headline">{word.word}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{word.definition}</p>
-                <div className="flex gap-2 mt-2">
+                <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{word.definition}</p>
+                <div className="flex gap-2 mt-4">
                     <Badge variant="outline">{getUnitName(word.unitId)}</Badge>
                     {word.lesson && <Badge variant="secondary">{word.lesson}</Badge>}
                 </div>
