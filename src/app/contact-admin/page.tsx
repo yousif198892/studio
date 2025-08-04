@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 export default function ContactAdminPage() {
@@ -35,7 +36,7 @@ export default function ContactAdminPage() {
     }
 
   return (
-    <div className="flex items-center justify-center min-h-screen">
+    <div className="flex items-center justify-center min-h-screen w-full">
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Contact Administrator</CardTitle>
@@ -62,6 +63,11 @@ export default function ContactAdminPage() {
                 {loading ? <Loader2 className="animate-spin" /> : "Send Message"}
             </Button>
           </form>
+           <div className="mt-4 text-center text-sm">
+                <Link href="/login" className="underline">
+                    Back to Login
+                </Link>
+            </div>
         </CardContent>
       </Card>
     </div>
