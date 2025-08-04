@@ -64,9 +64,7 @@ const generateSpeechFlow = ai.defineFlow(
             // Using a standard British English voice.
             prebuiltVoiceConfig: { voiceName: 'en-GB-Standard-A' },
           },
-          requestConfig: {
-            speakingRate: speed,
-          }
+          speakingRate: speed,
         },
       },
     });
