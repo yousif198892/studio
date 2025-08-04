@@ -358,14 +358,9 @@ export async function createSupervisor(prevState: any, formData: FormData) {
         avatar: "https://placehold.co/100x100.png",
     };
 
-    // In a real app, this would save to a persistent database.
-    // For this demo, we'll simulate it by returning the new user
-    // so the client can update the state.
-    const allCurrentUsers = getAllUsers();
-    const updatedUsers = [...allCurrentUsers, newUser];
-
-    // This is a server action, so we can't directly update localStorage.
-    // We will return the newUser object in the state so the client component can handle it.
+    // Since we're using localStorage as a mock DB, we can't update it from a server action.
+    // We return the newUser object, and the client component will handle adding it to localStorage.
+    // In a real app with a database, you would save newUser to the DB here.
     
     return { success: true, message: "Supervisor created successfully!", newUser };
 }

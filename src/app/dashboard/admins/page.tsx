@@ -69,10 +69,14 @@ export default function AdminsPage() {
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
 
-  useEffect(() => {
+  const fetchSupervisors = () => {
     const allUsers = getAllUsers();
     const supervisorUsers = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin);
     setSupervisors(supervisorUsers);
+  };
+
+  useEffect(() => {
+    fetchSupervisors();
   }, []);
 
   useEffect(() => {
@@ -81,16 +85,11 @@ export default function AdminsPage() {
         title: t("toasts.success"),
         description: "Supervisor account created successfully!",
       });
-      // Add new supervisor to the list
-      setSupervisors(prev => [...prev, state.newUser!]);
-      // Reset form
+      // The action now saves the user, so we can just refetch.
+      fetchSupervisors(); 
       formRef.current?.reset();
       setPassword("");
-      // Reset state
-      state.success = false;
-      state.newUser = undefined;
-
-    } else if (state.message && !state.success) {
+    } else if (state.message && !state.success && Object.keys(state.errors || {}).length > 0) {
       toast({
         title: t("toasts.error"),
         description: state.message,
@@ -117,23 +116,25 @@ export default function AdminsPage() {
     // Optimistically update the UI
     setSupervisors(prev => prev.filter(s => s.id !== userId));
 
-    const result = await deleteSupervisor(userId);
-    
-    if (result.success) {
+    // In a real app, this would be a server action.
+    // For this demo, we'll remove it from localStorage directly on the client.
+    try {
+        const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+        const updatedUsers = existingUsers.filter(u => u.id !== userId);
+        localStorage.setItem('users', JSON.stringify(updatedUsers));
+        
         toast({
             title: "Success!",
             description: "Supervisor deleted successfully.",
         });
-    } else {
+    } catch (error) {
         toast({
             title: "Error!",
-            description: result.message,
+            description: "Could not delete supervisor from local storage.",
             variant: 'destructive'
         });
         // Revert UI if deletion failed
-        const allUsers = getAllUsers();
-        const supervisorUsers = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin);
-        setSupervisors(supervisorUsers);
+        fetchSupervisors();
     }
   };
 
@@ -188,6 +189,7 @@ export default function AdminsPage() {
                         name="password"
                         value={password}
                         readOnly
+                        required
                         placeholder="Click 'Generate' to create a password"
                         />
                         <Button type="button" variant="outline" size="icon" onClick={() => copyToClipboard(password)} disabled={!password}>
