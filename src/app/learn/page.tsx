@@ -101,9 +101,8 @@ export default function LearnPage() {
 
     updateWordInStorage(updatedWord);
 
-    if (isOverride) {
-      handleNextWord();
-    }
+    // Note: We don't call handleNextWord() from here anymore.
+    // The user will click the "Next Word" button in the QuizCard.
   };
 
   const handleIncorrect = () => {

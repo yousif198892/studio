@@ -27,7 +27,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Defensive shuffling
+    // Defensive shuffling. Ensure correctOption is always present and options are unique.
     const options = Array.from(new Set([word.correctOption, ...word.options]));
     setShuffledOptions(options.sort(() => Math.random() - 0.5));
     
@@ -74,22 +74,22 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {shuffledOptions.map((option, index) => {
-            const isCorrectAnswer = option === word.correctOption;
-            const isSelected = option === selectedOption;
+            const isTheCorrectAnswer = option === word.correctOption;
+            const isTheSelectedAnswer = option === selectedOption;
 
             return (
                 <Button
-                key={index}
-                onClick={() => handleOptionClick(option)}
-                disabled={isAnswered}
-                className={cn("text-lg h-auto py-4 whitespace-normal", {
-                    "bg-green-500 hover:bg-green-600 text-white": isAnswered && isCorrectAnswer,
-                    "bg-red-500 hover:bg-red-600 text-white": isAnswered && isSelected && !isCorrectAnswer,
-                    "bg-red-500 hover:bg-red-600 text-white opacity-70": isAnswered && !isSelected && !isCorrectAnswer
-                })}
-                variant={isAnswered && !isCorrectAnswer && !isSelected ? 'outline' : 'default'}
+                    key={index}
+                    onClick={() => handleOptionClick(option)}
+                    disabled={isAnswered}
+                    className={cn("text-lg h-auto py-4 whitespace-normal", {
+                        "bg-green-500 hover:bg-green-600 text-white": isAnswered && isTheCorrectAnswer,
+                        "bg-red-500 hover:bg-red-600 text-white": isAnswered && isTheSelectedAnswer && !isTheCorrectAnswer,
+                        "bg-red-500 hover:bg-red-600 text-white opacity-70": isAnswered && !isTheSelectedAnswer && !isTheCorrectAnswer,
+                    })}
+                    variant={isAnswered && !isTheCorrectAnswer ? 'outline' : 'default'}
                 >
-                {option}
+                    {option}
                 </Button>
             )
           })}
@@ -99,7 +99,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
         {isAnswered && (
              <div className="flex flex-col sm:flex-row gap-2">
                 {!isCorrect && (
-                   <Button onClick={onOverrideCorrect} size="lg" className="w-full" variant="secondary">
+                   <Button onClick={() => {onOverrideCorrect(); onNextWord();}} size="lg" className="w-full" variant="secondary">
                        I Know It
                    </Button>
                 )}
