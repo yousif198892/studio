@@ -45,13 +45,6 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
       onIncorrect();
     }
   };
-
-  const getButtonVariant = (option: string) => {
-    if (!isAnswered) return "outline";
-    if (option === word.correctOption) return "default";
-    if (option === selectedOption) return "destructive";
-    return "outline";
-  };
   
   const totalWords = 5; // Mock total words in session
   const progress = (word.strength / totalWords) * 100;
@@ -84,7 +77,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
                 "bg-red-500 hover:bg-red-600 text-white": isAnswered && selectedOption === option && option !== word.correctOption,
                 "opacity-70": isAnswered && selectedOption !== option && option !== word.correctOption,
               })}
-              variant={getButtonVariant(option)}
+              variant="outline"
               disabled={isAnswered}
             >
               {option}
