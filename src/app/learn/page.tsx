@@ -8,18 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-
-// In a real app, this would come from a session
-const MOCK_USER_ID = "user1";
+import { useSearchParams } from "next/navigation";
 
 export default function LearnPage() {
   const [currentWord, setCurrentWord] = useState<Word | undefined>();
   const [sessionCount, setSessionCount] = useState(0);
   const { t } = useLanguage();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId") || "user1";
 
   useEffect(() => {
-    setCurrentWord(getWordForReview(MOCK_USER_ID));
-  }, [sessionCount]);
+    setCurrentWord(getWordForReview(userId));
+  }, [sessionCount, userId]);
 
   const handleNextWord = () => {
     // In a real app, you'd fetch the next word from your backend
