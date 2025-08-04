@@ -41,10 +41,6 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
 
     if (option === word.correctOption) {
       onCorrect();
-      // Automatically move to the next word after a short delay for feedback
-      setTimeout(() => {
-        onNextWord();
-      }, 1000);
     } else {
       onIncorrect();
     }
@@ -86,7 +82,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
               className={cn("text-lg h-auto py-4 whitespace-normal", {
                 "bg-green-500 hover:bg-green-600 text-white": isAnswered && option === word.correctOption,
                 "bg-red-500 hover:bg-red-600 text-white": isAnswered && selectedOption === option && option !== word.correctOption,
-                "opacity-70": isAnswered && selectedOption !== option,
+                "opacity-70": isAnswered && selectedOption !== option && option !== word.correctOption,
               })}
               variant={getButtonVariant(option)}
               disabled={isAnswered}
@@ -97,7 +93,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord }: QuizCardP
         </div>
       </CardContent>
       <CardFooter className="flex-col items-stretch gap-4 p-6 bg-secondary/50">
-        {isAnswered && selectedOption !== word.correctOption && (
+        {isAnswered && (
              <Button onClick={onNextWord} size="lg" className="w-full">
                 {t('learn.nextWord')} <ArrowRight className="ms-2 h-5 w-5" />
             </Button>
