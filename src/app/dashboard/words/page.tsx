@@ -132,7 +132,7 @@ export default function WordsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredWords.map((word) => (
-            <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl hover:scale-105 border border-primary">
+            <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl border-primary">
               <CardHeader className="p-0">
                   <div className="aspect-video relative bg-muted rounded-t-lg">
                      <Image

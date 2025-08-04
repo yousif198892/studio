@@ -46,7 +46,7 @@ async function toWav(
   });
 }
 
-const generateSpeechFlow = ai.defineFlow(
+export const generateSpeech = ai.defineFlow(
   {
     name: 'generateSpeechFlow',
     inputSchema: GenerateSpeechInputSchema,
@@ -82,10 +82,3 @@ const generateSpeechFlow = ai.defineFlow(
     };
   }
 );
-
-
-export async function generateSpeech(
-  input: GenerateSpeechInput
-): Promise<GenerateSpeechOutput> {
-  return generateSpeechFlow(input);
-}
