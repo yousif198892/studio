@@ -22,29 +22,39 @@ type QuizCardProps = {
 export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideCorrect }: QuizCardProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Reset state for new word and shuffle options
+    // Defensively create options array to prevent crashes
     const options = Array.from(new Set([word.correctOption, ...word.options]));
     setShuffledOptions(options.sort(() => Math.random() - 0.5));
+    
+    // Reset state for new word
     setSelectedOption(null);
     setIsAnswered(false);
+    setIsCorrect(false);
   }, [word]);
 
   const handleOptionClick = (option: string) => {
     if (isAnswered) return;
 
-    const isCorrect = option === word.correctOption;
+    const correct = option === word.correctOption;
     setSelectedOption(option);
+    setIsCorrect(correct);
     setIsAnswered(true);
 
-    if (isCorrect) {
+    if (correct) {
       onCorrect();
     } else {
       onIncorrect();
     }
+  };
+
+  const handleNextWithOverride = () => {
+    onOverrideCorrect();
+    onNextWord();
   };
   
   const totalWords = 7; // Corresponds to SRS intervals length
@@ -71,21 +81,17 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
           {shuffledOptions.map((option, index) => {
             const isTheCorrectAnswer = option === word.correctOption;
             const isTheSelectedAnswer = option === selectedOption;
-            let buttonClass = "";
-            if (isAnswered) {
-                if (isTheCorrectAnswer) {
-                    buttonClass = "bg-green-500 hover:bg-green-600 text-white";
-                } else if (isTheSelectedAnswer) {
-                    buttonClass = "bg-red-500 hover:bg-red-600 text-white";
-                }
-            }
 
             return (
                 <Button
                     key={index}
                     onClick={() => handleOptionClick(option)}
                     disabled={isAnswered}
-                    className={cn("text-lg h-auto py-4 whitespace-normal", buttonClass)}
+                    className={cn(
+                        "text-lg h-auto py-4 whitespace-normal",
+                        isAnswered && isTheCorrectAnswer && "bg-green-500 hover:bg-green-600 text-white",
+                        isAnswered && isTheSelectedAnswer && !isTheCorrectAnswer && "bg-red-500 hover:bg-red-600 text-white"
+                    )}
                     variant={isAnswered && !isTheCorrectAnswer ? 'outline' : 'default'}
                 >
                     {option}
@@ -97,9 +103,9 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
       <CardFooter className="flex-col items-stretch gap-4 p-6 bg-secondary/50">
         {isAnswered && (
              <div className="flex flex-col sm:flex-row gap-2">
-                {selectedOption !== word.correctOption && (
-                   <Button onClick={() => {onOverrideCorrect(); onNextWord();}} size="lg" className="w-full" variant="secondary">
-                       {t('I Know It', 'I Know It')}
+                {!isCorrect && (
+                   <Button onClick={handleNextWithOverride} size="lg" className="w-full" variant="secondary">
+                       {t('I Know It', 'اعتبار الإجابة صحيحة')}
                    </Button>
                 )}
                 <Button onClick={onNextWord} size="lg" className="w-full">
