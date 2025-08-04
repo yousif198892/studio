@@ -8,7 +8,7 @@ import { ArrowLeft, LayoutDashboard } from "lucide-react";
 
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
-import { getWordForReview, getWordsForStudent, Word } from "@/lib/data";
+import { getWordsForStudent, Word } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { ClientOnly } from "@/components/client-only";
 
@@ -52,8 +52,6 @@ export default function LearnPage() {
       if (wordIndex > -1) {
         allWords[wordIndex] = updatedWord;
       } else {
-        // This case can happen if the word is from the initial mock data
-        // and not yet in localStorage.
         allWords.push(updatedWord);
       }
       
@@ -103,8 +101,6 @@ export default function LearnPage() {
 
   const handleOverrideCorrect = () => {
      if (!currentWord) return;
-     // This is the key action for "I Know It".
-     // We treat it as a correct answer for scheduling purposes.
      updateWordStrength(currentWord, true);
   };
   
@@ -134,7 +130,7 @@ export default function LearnPage() {
                     </p>
                     <Button asChild>
                     <Link href={`/dashboard?userId=${userId}`}>
-                        <ArrowLeft className="me-2 h-4 w-4" /> {t('wordsPage.deleteDialog.cancel')}
+                        <ArrowLeft className="me-2 h-4 w-4" /> {t('learn.backToDashboard')}
                     </Link>
                     </Button>
                 </div>

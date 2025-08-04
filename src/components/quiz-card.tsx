@@ -27,11 +27,9 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Defensively create options array to prevent crashes
     const options = Array.from(new Set([word.correctOption, ...word.options]));
     setShuffledOptions(options.sort(() => Math.random() - 0.5));
     
-    // Reset state for new word
     setSelectedOption(null);
     setIsAnswered(false);
     setIsCorrect(false);
@@ -57,7 +55,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
     onNextWord();
   };
   
-  const totalWords = 7; // Corresponds to SRS intervals length
+  const totalWords = 7; 
   const progress = (word.strength / totalWords) * 100;
 
   return (
@@ -90,9 +88,10 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
                     className={cn(
                         "text-lg h-auto py-4 whitespace-normal",
                         isAnswered && isTheCorrectAnswer && "bg-green-500 hover:bg-green-600 text-white",
-                        isAnswered && isTheSelectedAnswer && !isTheCorrectAnswer && "bg-red-500 hover:bg-red-600 text-white"
+                        isAnswered && isTheSelectedAnswer && !isTheCorrectAnswer && "bg-red-500 hover:bg-red-600 text-white",
+                        isAnswered && !isTheSelectedAnswer && !isTheCorrectAnswer && "bg-red-500 hover:bg-red-600 text-white"
                     )}
-                    variant={isAnswered && !isTheCorrectAnswer ? 'outline' : 'default'}
+                    variant={'default'}
                 >
                     {option}
                 </Button>
@@ -105,7 +104,7 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
              <div className="flex flex-col sm:flex-row gap-2">
                 {!isCorrect && (
                    <Button onClick={handleNextWithOverride} size="lg" className="w-full" variant="secondary">
-                       {t('I Know It', 'اعتبار الإجابة صحيحة')}
+                       {t('learn.iKnowIt')}
                    </Button>
                 )}
                 <Button onClick={onNextWord} size="lg" className="w-full">

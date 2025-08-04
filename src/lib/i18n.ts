@@ -110,6 +110,8 @@ export const translations = {
         title: "Learning Session",
         question: "Which word means: “{0}”?",
         nextWord: "Next Word",
+        iKnowIt: "I Know It",
+        backToDashboard: "Back to Dashboard",
         finishedTitle: "All done for now!",
         finishedDescription1: "You've reviewed all your due words. Great work!",
         finishedDescription2: "Come back later for your next session.",
@@ -363,6 +365,8 @@ export const translations = {
         title: "جلسة تعلم",
         question: "أي كلمة تعني: “{0}”؟",
         nextWord: "الكلمة التالية",
+        iKnowIt: "اعتبار الإجابة صحيحة",
+        backToDashboard: "العودة إلى لوحة التحكم",
         finishedTitle: "لقد انتهيت من كل شيء في الوقت الحالي!",
         finishedDescription1: "لقد راجعت كل كلماتك المستحقة. عمل رائع!",
         finishedDescription2: "عد لاحقًا لجلستك التالية.",
@@ -521,7 +525,7 @@ export type TranslationKey =
     | 'landing.features.supervisorTools.title' | 'landing.features.supervisorTools.description'
     | 'landing.features.srs.title' | 'landing.features.srs.description'
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
-    | 'learn.title' | 'learn.question' | 'learn.nextWord' | 'learn.finishedTitle' | 'learn.finishedDescription1' | 'learn.finishedDescription2' | 'learn.startNewSession' | 'learn.wordStrength'
+    | 'learn.title' | 'learn.question' | 'learn.nextWord' | 'learn.iKnowIt' | 'learn.backToDashboard' | 'learn.finishedTitle' | 'learn.finishedDescription1' | 'learn.finishedDescription2' | 'learn.startNewSession' | 'learn.wordStrength'
     | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.learnedTitle' | 'dashboard.student.learnedDescription'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
@@ -538,5 +542,5 @@ export type TranslationKey =
     | 'unitsPage.addUnit.form.nameLabel' | 'unitsPage.addUnit.form.namePlaceholder' | 'unitsPage.addUnit.form.addButton' | 'unitsPage.addUnit.form.addingButton'
     | 'unitsPage.deleteDialog.description'
     | 'studentsPage.title' | 'studentsPage.description'
-    | 'studentsPage.allUnits.title' | 'studentsPage.allStudents.description'
+    | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'toasts.error' | 'toasts.success' | 'toasts.addUnitSuccess' | 'toasts.addUnitExists' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.unitRequired' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
