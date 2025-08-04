@@ -27,13 +27,15 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
   const { t } = useLanguage();
 
   useEffect(() => {
-    const allOptions = Array.from(new Set([word.correctOption, ...word.options]));
-    setShuffledOptions(allOptions.sort(() => Math.random() - 0.5));
+    // Defensive shuffling
+    const options = Array.from(new Set([word.correctOption, ...word.options]));
+    setShuffledOptions(options.sort(() => Math.random() - 0.5));
+    
+    // Reset state for new word
     setSelectedOption(null);
     setIsAnswered(false);
     setIsCorrect(false);
   }, [word]);
-
 
   const handleOptionClick = (option: string) => {
     if (isAnswered) return;
@@ -79,13 +81,12 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
                 <Button
                 key={index}
                 onClick={() => handleOptionClick(option)}
+                disabled={isAnswered}
                 className={cn("text-lg h-auto py-4 whitespace-normal", {
                     "bg-green-500 hover:bg-green-600 text-white": isAnswered && isCorrectAnswer,
                     "bg-red-500 hover:bg-red-600 text-white": isAnswered && isSelected && !isCorrectAnswer,
-                    "border-red-500 text-red-500": isAnswered && !isCorrectAnswer && !isSelected,
                 })}
                 variant={isAnswered && !isCorrectAnswer && !isSelected ? 'outline' : 'default'}
-                disabled={isAnswered}
                 >
                 {option}
                 </Button>
