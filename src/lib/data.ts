@@ -78,16 +78,6 @@ export const mockUsers: User[] = [
     fontSize: "lg",
   },
   {
-    id: "sup1",
-    name: "Dr. Evelyn Reed",
-    email: "e.reed@example.com",
-    password: "password123",
-    role: "supervisor",
-    avatar: "https://placehold.co/100x100.png",
-    timezone: "America/Los_Angeles",
-    fontSize: "base",
-  },
-  {
     id: "sup2",
     name: "Yousif",
     email: "warriorwithinyousif@gmail.com",

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { createSupervisor, deleteSupervisor } from "@/lib/actions";
+import { createSupervisor } from "@/lib/actions";
 import {
   Card,
   CardContent,
@@ -12,7 +12,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useActionState, useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Copy, Trash2 } from "lucide-react";
@@ -37,12 +37,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-
-const initialState = {
-  message: "",
-  errors: {},
-  success: false,
-};
 
 function CreateSupervisorButton() {
   const { pending } = useFormStatus();
@@ -91,8 +85,6 @@ export default function AdminsPage() {
         const updatedUsers = [...existingUsers, result.newUser];
         localStorage.setItem('users', JSON.stringify(updatedUsers));
         
-        // This is crucial: after updating localStorage, re-fetch the list
-        // which will now correctly include the new user.
         fetchSupervisors();
 
       } catch(e) {
@@ -168,7 +160,7 @@ export default function AdminsPage() {
                 <Input
                     id="name"
                     name="name"
-                    placeholder="Dr. Jane Doe"
+                    placeholder="Full Name"
                     required
                 />
                 </div>
