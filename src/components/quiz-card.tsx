@@ -119,3 +119,4 @@ export function QuizCard({ word, onCorrect, onIncorrect, onNextWord, onOverrideC
     </Card>
   );
 }
+
