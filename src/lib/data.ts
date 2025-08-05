@@ -13,7 +13,6 @@ export type User = {
   supervisorId?: string;
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
-  isMainAdmin?: boolean;
 };
 
 export type Unit = {
@@ -86,7 +85,6 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
     fontSize: "base",
-    isMainAdmin: true,
   },
   {
     id: "sup2",
@@ -97,7 +95,6 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "Europe/London",
     fontSize: "base",
-    isMainAdmin: false,
   },
 ];
 
@@ -175,7 +172,6 @@ export function getAllUsers(): User[] {
             // Forcefully re-apply critical properties from the base data if it exists.
             if (baseUser) {
                 mergedUser.role = baseUser.role;
-                mergedUser.isMainAdmin = baseUser.isMainAdmin;
             }
             
             usersMap.set(storedUser.id, mergedUser);

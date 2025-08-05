@@ -38,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Copy, Trash2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { User, getAllUsers } from "@/lib/data";
+import { useSearchParams } from "next/navigation";
 
 
 function CreateSupervisorButton() {
@@ -59,15 +60,18 @@ function CreateSupervisorButton() {
 export default function AdminsPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const [password, setPassword] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const [supervisors, setSupervisors] = useState<User[]>([]);
+  const currentUserId = searchParams.get('userId');
 
   useEffect(() => {
     const allUsers = getAllUsers();
-    const allSupervisors = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin);
+    // Show all supervisors except for the currently logged-in one
+    const allSupervisors = allUsers.filter(u => u.role === 'supervisor' && u.id !== currentUserId);
     setSupervisors(allSupervisors);
-  }, []);
+  }, [currentUserId]);
 
   const handleFormAction = async (formData: FormData) => {
     const result = await createSupervisor(null, formData);
