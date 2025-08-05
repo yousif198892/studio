@@ -16,6 +16,7 @@ import {
   BrainCircuit,
   MessageSquare,
   Shield,
+  Trophy,
 } from "lucide-react";
 
 import {
@@ -60,6 +61,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       href: `/dashboard/my-words?userId=${user.id}`,
       label: t('dashboard.student.learnedTitle'),
       icon: <GraduationCap />,
+      roles: ["student"],
+    },
+    {
+      href: `/dashboard/mastered-words?userId=${user.id}`,
+      label: t('sidebar.masteredWords'),
+      icon: <Trophy />,
       roles: ["student"],
     },
     {

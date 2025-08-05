@@ -12,7 +12,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
 import { useLanguage } from "@/hooks/use-language";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, RotateCcw, Loader2, Volume2 } from "lucide-react";
+import { MoreHorizontal, RotateCcw, Loader2, Volume2, Trophy } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,7 +54,7 @@ export default function MyWordsPage() {
       const student = getUserById(userId);
       if (student?.supervisorId) {
         const studentWords = getWordsForStudent(userId);
-        const learnedWords = studentWords.filter(w => w.strength > 0);
+        const learnedWords = studentWords.filter(w => w.strength >= 0); // Only show words in SRS
         setWords(learnedWords);
         const supervisorUnits = getUnitsBySupervisor(student.supervisorId);
         setUnits(supervisorUnits);
@@ -148,6 +148,21 @@ export default function MyWordsPage() {
     toast({ title: t('toasts.success'), description: t('toasts.rescheduleSuccess', word.word) });
   };
   
+  const handleWontForget = (wordToMaster: Word) => {
+    const updatedWord = {
+        ...wordToMaster,
+        strength: -1, // Special value for mastered words
+    };
+
+    // Remove from this page's state
+    setWords(words.filter(w => w.id !== wordToMaster.id));
+
+    // Update in localStorage
+    updateWordInStorage(updatedWord);
+
+    toast({ title: t('toasts.success'), description: t('toasts.wontForgetText', wordToMaster.word) });
+  }
+
   const getUnitName = (unitId: string) => {
     const unit = units.find(u => u.id === unitId);
     return unit ? unit.name : "N/A";
@@ -258,6 +273,26 @@ export default function MyWordsPage() {
                                         <AlertDialogFooter>
                                         <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
                                         <AlertDialogAction onClick={() => handleReset(word)}>{t('wordsPage.resetDialog.continue')}</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                                 <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-green-600 focus:bg-green-100 focus:text-green-700">
+                                            <Trophy className="mr-2 h-4 w-4" />
+                                            {t('wordsPage.wontForgetButton')}
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>{t('wordsPage.wontForgetDialog.title')}</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            {t('wordsPage.wontForgetDialog.description', word.word)}
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleWontForget(word)}>{t('wordsPage.wontForgetDialog.continue')}</AlertDialogAction>
                                         </AlertDialogFooter>
                                     </AlertDialogContent>
                                 </AlertDialog>

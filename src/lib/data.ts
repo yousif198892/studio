@@ -34,7 +34,7 @@ export type Word = {
   unitId: string;
   lesson?: string;
   nextReview: Date;
-  strength: number;
+  strength: number; // -1 means mastered, 0 is new, >0 is SRS level
 };
 
 export type Message = {
@@ -230,7 +230,7 @@ export const getWordsBySupervisor = (supervisorId: string): Word[] => {
 };
 export const getWordForReview = (studentId: string): Word | undefined => {
     const words = getWordsForStudent(studentId);
-    return words.filter(w => new Date(w.nextReview) <= new Date()).sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime())[0];
+    return words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime())[0];
 };
 
 export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {

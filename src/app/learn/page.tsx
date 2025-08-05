@@ -29,7 +29,7 @@ export default function LearnPage() {
       if (userId) {
         const wordsForStudent = getWordsForStudent(userId);
         const wordsDueForReview = wordsForStudent
-          .filter((w) => new Date(w.nextReview) <= new Date())
+          .filter((w) => new Date(w.nextReview) <= new Date() && w.strength >= 0) // Exclude mastered words
           .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
 
         setReviewWords(wordsDueForReview);

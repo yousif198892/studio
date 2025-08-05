@@ -5,6 +5,7 @@ export const translations = {
       dashboard: "Dashboard",
       learn: "Learn",
       myWords: "My Words",
+      masteredWords: "Mastered Words",
       addWord: "Add Word",
       myUnits: "My Units",
       myStudents: "My Students",
@@ -201,6 +202,22 @@ export const translations = {
             title: "Are you sure you want to reset this word?",
             description: "This will reset the learning progress for “{0}” and move it back to your review queue.",
             continue: "Reset",
+        },
+        wontForgetButton: "I Won't Forget",
+        wontForgetDialog: {
+            title: "Move to Mastered Words?",
+            description: "This will remove “{0}” from your regular review schedule. You can restore it later from the Mastered Words page.",
+            continue: "Confirm",
+        }
+    },
+    masteredWordsPage: {
+        title: "Mastered Words",
+        description: "Words you've completely learned. They are no longer in your review schedule.",
+        badge: "Mastered",
+        restoreDialog: {
+            title: "Restore to Learning?",
+            description: "This will add “{0}” back to your learning queue for review.",
+            continue: "Restore"
         }
     },
     unitsPage: {
@@ -243,7 +260,9 @@ export const translations = {
         updateWordSuccess: "Word updated successfully!",
         deleteWordSuccess: "Word deleted successfully.",
         resetWordSuccess: "“{0}” progress has been reset.",
+        restoreWordSuccess: "“{0}” has been restored to your learning queue.",
         rescheduleSuccess: "“{0}” has been rescheduled.",
+        wontForgetText: "“{0}” moved to Mastered Words.",
         validationFailed: "Validation failed.",
         aiError: "Failed to add word. AI Generation Error: {0}",
         registerSuccess: "Success!",
@@ -265,6 +284,7 @@ export const translations = {
       dashboard: "لوحة التحكم",
       learn: "تعلم",
       myWords: "كلماتي",
+      masteredWords: "الكلمات المتقنة",
       addWord: "إضافة كلمة",
       myUnits: "وحداتي",
       myStudents: "طلابي",
@@ -461,6 +481,22 @@ export const translations = {
             title: "هل أنت متأكد من رغبتك في إعادة ضبط هذه الكلمة؟",
             description: "سيؤدي هذا إلى إعادة ضبط تقدم تعلم “{0}” وإعادته إلى قائمة المراجعة الخاصة بك.",
             continue: "إعادة تعيين",
+        },
+        wontForgetButton: "لن أنسى",
+        wontForgetDialog: {
+            title: "الانتقال إلى الكلمات المتقنة؟",
+            description: "سيؤدي هذا إلى إزالة “{0}” من جدول المراجعة المنتظم. يمكنك استعادته لاحقًا من صفحة الكلمات المتقنة.",
+            continue: "تأكيد",
+        }
+    },
+    masteredWordsPage: {
+        title: "الكلمات المتقنة",
+        description: "الكلمات التي تعلمتها بالكامل. لم تعد مدرجة في جدول المراجعة الخاص بك.",
+        badge: "متقن",
+        restoreDialog: {
+            title: "استعادة للتعلم؟",
+            description: "سيؤدي هذا إلى إضافة “{0}” مرة أخرى إلى قائمة انتظار التعلم الخاصة بك للمراجعة.",
+            continue: "استعادة"
         }
     },
     unitsPage: {
@@ -503,7 +539,9 @@ export const translations = {
         updateWordSuccess: "تم تحديث الكلمة بنجاح!",
         deleteWordSuccess: "تم حذف الكلمة بنجاح.",
         resetWordSuccess: "تمت إعادة ضبط تقدم “{0}”.",
+        restoreWordSuccess: "تمت استعادة “{0}” إلى قائمة التعلم الخاصة بك.",
         rescheduleSuccess: "تمت إعادة جدولة “{0}”.",
+        wontForgetText: "تم نقل “{0}” إلى الكلمات المتقنة.",
         validationFailed: "فشل التحقق.",
         aiError: "فشل إضافة الكلمة. خطأ في إنشاء الذكاء الاصطناعي: {0}",
         registerSuccess: "نجاح!",
@@ -523,7 +561,7 @@ export const translations = {
 };
 
 export type TranslationKey = 
-    | 'sidebar.dashboard' | 'sidebar.learn' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myUnits' | 'sidebar.myStudents' | 'sidebar.profile'
+    | 'sidebar.dashboard' | 'sidebar.learn' | 'sidebar.myWords' | 'sidebar.masteredWords' | 'sidebar.addWord' | 'sidebar.myUnits' | 'sidebar.myStudents' | 'sidebar.profile'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
@@ -546,6 +584,8 @@ export type TranslationKey =
     | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.unit' | 'wordsPage.table.actions' | 'wordsPage.table.nextReview' | 'wordsPage.table.reviewOverdue' | 'wordsPage.table.reviewToday' | 'wordsPage.table.reviewTomorrow' | 'wordsPage.table.reviewInDays'
     | 'wordsPage.deleteDialog.title' | 'wordsPage.deleteDialog.description' | 'wordsPage.deleteDialog.cancel' | 'wordsPage.deleteDialog.continue'
     | 'wordsPage.resetDialog.title' | 'wordsPage.resetDialog.description' | 'wordsPage.resetDialog.continue'
+    | 'wordsPage.wontForgetButton' | 'wordsPage.wontForgetDialog.title' | 'wordsPage.wontForgetDialog.description' | 'wordsPage.wontForgetDialog.continue'
+    | 'masteredWordsPage.title' | 'masteredWordsPage.description' | 'masteredWordsPage.badge' | 'masteredWordsPage.restoreDialog.title' | 'masteredWordsPage.restoreDialog.description' | 'masteredWordsPage.restoreDialog.continue'
     | 'unitsPage.title' | 'unitsPage.description'
     | 'unitsPage.allUnits.title' | 'unitsPage.allUnits.description' | 'unitsPage.allUnits.name' | 'unitsPage.allUnits.actions'
     | 'unitsPage.addUnit.title' | 'unitsPage.addUnit.description'
@@ -553,4 +593,4 @@ export type TranslationKey =
     | 'unitsPage.deleteDialog.description'
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
-    | 'toasts.error' | 'toasts.success' | 'toasts.addUnitSuccess' | 'toasts.addUnitExists' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.unitRequired' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+    | 'toasts.error' | 'toasts.success' | 'toasts.addUnitSuccess' | 'toasts.addUnitExists' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.unitRequired' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
