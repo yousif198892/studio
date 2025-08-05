@@ -16,28 +16,10 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, RefreshCw, Copy, Trash2 } from "lucide-react";
+import { Loader2, RefreshCw, Copy } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { getAllUsers, User } from "@/lib/data";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { User } from "@/lib/data";
+
 
 function CreateSupervisorButton() {
   const { pending } = useFormStatus();
@@ -59,19 +41,7 @@ export default function AdminsPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const [password, setPassword] = useState("");
-  const [supervisors, setSupervisors] = useState<User[]>([]);
   const formRef = useRef<HTMLFormElement>(null);
-
-  const fetchSupervisors = () => {
-    const allUsers = getAllUsers();
-    // Explicitly filter out the main admin from this list
-    const supervisorUsers = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin);
-    setSupervisors(supervisorUsers);
-  };
-
-  useEffect(() => {
-    fetchSupervisors();
-  }, []);
 
   const handleFormAction = async (formData: FormData) => {
     const result = await createSupervisor(null, formData);
@@ -86,8 +56,6 @@ export default function AdminsPage() {
         const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
         const updatedUsers = [...existingUsers, result.newUser];
         localStorage.setItem('users', JSON.stringify(updatedUsers));
-        
-        fetchSupervisors();
 
       } catch(e) {
         console.error("Could not save new supervisor to localStorage", e);
@@ -118,36 +86,14 @@ export default function AdminsPage() {
     });
   };
 
-  const handleDelete = async (userId: string) => {
-    setSupervisors(prev => prev.filter(s => s.id !== userId));
-
-    try {
-        const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-        const updatedUsers = existingUsers.filter(u => u.id !== userId);
-        localStorage.setItem('users', JSON.stringify(updatedUsers));
-        
-        toast({
-            title: "Success!",
-            description: "Supervisor deleted successfully.",
-        });
-    } catch (error) {
-        toast({
-            title: "Error!",
-            description: "Could not delete supervisor from local storage.",
-            variant: 'destructive'
-        });
-        fetchSupervisors();
-    }
-  };
-
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold font-headline">Admins</h1>
       <p className="text-muted-foreground">
         Create and manage supervisor accounts.
       </p>
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card>
+      <div className="flex justify-center">
+        <Card className="w-full max-w-lg">
             <CardHeader>
             <CardTitle>Create New Supervisor</CardTitle>
             <CardDescription>
@@ -202,56 +148,6 @@ export default function AdminsPage() {
                 </div>
                 <CreateSupervisorButton />
             </form>
-            </CardContent>
-        </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle>Existing Supervisors</CardTitle>
-                <CardDescription>A list of all supervisor accounts.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                 <Table>
-                    <TableHeader>
-                        <TableRow>
-                            <TableHead>Supervisor</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {supervisors.map((supervisor) => (
-                            <TableRow key={supervisor.id}>
-                                <TableCell>
-                                    <div className="font-medium">{supervisor.name}</div>
-                                    <div className="text-sm text-muted-foreground">{supervisor.email}</div>
-                                </TableCell>
-                                <TableCell className="text-right">
-                                    <AlertDialog>
-                                        <AlertDialogTrigger asChild>
-                                            <Button variant="destructive" size="icon">
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete Supervisor</span>
-                                            </Button>
-                                        </AlertDialogTrigger>
-                                        <AlertDialogContent>
-                                            <AlertDialogHeader>
-                                            <AlertDialogTitle>Are you sure you want to delete this supervisor?</AlertDialogTitle>
-                                            <AlertDialogDescription>
-                                                This action cannot be undone. This will permanently delete the account for {supervisor.name}.
-                                            </AlertDialogDescription>
-                                            </AlertDialogHeader>
-                                            <AlertDialogFooter>
-                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDelete(supervisor.id)}>
-                                                Delete
-                                            </AlertDialogAction>
-                                            </AlertDialogFooter>
-                                        </AlertDialogContent>
-                                    </AlertDialog>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
             </CardContent>
         </Card>
       </div>
