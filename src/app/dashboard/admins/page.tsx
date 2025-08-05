@@ -18,7 +18,7 @@ import { useFormStatus } from "react-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Copy } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { User } from "@/lib/data";
+import { User, getAllUsers } from "@/lib/data";
 
 
 function CreateSupervisorButton() {
@@ -42,6 +42,13 @@ export default function AdminsPage() {
   const { toast } = useToast();
   const [password, setPassword] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
+  const [supervisors, setSupervisors] = useState<User[]>([]);
+
+  useEffect(() => {
+    const allUsers = getAllUsers();
+    const allSupervisors = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin);
+    setSupervisors(allSupervisors);
+  }, []);
 
   const handleFormAction = async (formData: FormData) => {
     const result = await createSupervisor(null, formData);
@@ -56,7 +63,7 @@ export default function AdminsPage() {
         const existingUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
         const updatedUsers = [...existingUsers, result.newUser];
         localStorage.setItem('users', JSON.stringify(updatedUsers));
-
+        setSupervisors(prev => [...prev, result.newUser!]);
       } catch(e) {
         console.error("Could not save new supervisor to localStorage", e);
       }
