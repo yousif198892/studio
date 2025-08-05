@@ -79,8 +79,8 @@ export const mockUsers: User[] = [
   },
   {
     id: "sup1",
-    name: "Main Supervisor",
-    email: "admin@example.com",
+    name: "Yousif",
+    email: "warriorwithinyousif@gmail.com",
     password: "password123",
     role: "supervisor",
     avatar: "https://placehold.co/100x100.png",
@@ -156,11 +156,12 @@ export function getAllUsers(): User[] {
         ];
         
         storedItems.forEach((storedUser) => {
-            const baseUser = usersMap.get(storedUser.id) || {};
+            const baseUser = usersMap.get(storedUser.id);
             // Merge stored user data on top, but preserve critical flags from base
             const mergedUser = { 
-                ...storedUser, // Stored data takes lower precedence
-                ...baseUser,   // Base data with critical flags takes higher precedence
+                ...storedUser,
+                isMainAdmin: baseUser?.isMainAdmin || storedUser.isMainAdmin || false,
+                role: baseUser?.role || storedUser.role,
             };
             usersMap.set(storedUser.id, mergedUser);
         });
