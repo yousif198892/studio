@@ -1,5 +1,4 @@
 
-
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -17,6 +16,8 @@ const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
+  unit: z.string().optional(),
+  lesson: z.string().optional(),
   image: z.any(),
 });
 
@@ -25,6 +26,8 @@ export async function addWord(prevState: any, formData: FormData) {
     word: formData.get("word"),
     definition: formData.get("definition"),
     userId: formData.get("userId"),
+    unit: formData.get("unit"),
+    lesson: formData.get("lesson"),
     image: formData.get("image"),
   });
 
@@ -39,7 +42,7 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId } = validatedFields.data;
+  const { word, definition, userId, unit, lesson } = validatedFields.data;
   const imageFile = formData.get("image") as File;
 
   if (!imageFile || imageFile.size === 0) {
@@ -73,6 +76,8 @@ export async function addWord(prevState: any, formData: FormData) {
         id: `word${Date.now()}`,
         word,
         definition,
+        unit: unit || "",
+        lesson: lesson || "",
         imageUrl: dataUri, 
         options: uniqueOptions,
         correctOption: word,
@@ -96,6 +101,8 @@ const updateWordSchema = z.object({
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
   wordId: z.string().min(1, "Word ID is required."),
+  unit: z.string().optional(),
+  lesson: z.string().optional(),
 });
 
 export async function updateWord(prevState: any, formData: FormData) {
@@ -104,6 +111,8 @@ export async function updateWord(prevState: any, formData: FormData) {
     definition: formData.get("definition"),
     userId: formData.get("userId"),
     wordId: formData.get("wordId"),
+    unit: formData.get("unit"),
+    lesson: formData.get("lesson"),
   });
 
   if (!validatedFields.success) {
@@ -113,7 +122,7 @@ export async function updateWord(prevState: any, formData: FormData) {
       success: false,
     };
   }
-   const { word, definition, wordId } = validatedFields.data;
+   const { word, definition, wordId, unit, lesson } = validatedFields.data;
   const imageFile = formData.get("image") as File | null;
 
   try {
@@ -131,6 +140,8 @@ export async function updateWord(prevState: any, formData: FormData) {
         id: wordId,
         word,
         definition,
+        unit,
+        lesson,
         imageUrl: dataUri,
       }
     };
@@ -266,11 +277,6 @@ export async function login(prevState: any, formData: FormData) {
   
   redirect(`/dashboard?userId=${user.id}`);
 }
-
-const addUnitSchema = z.object({
-  unitName: z.string().min(1, "Unit name is required."),
-  userId: z.string().min(1, "User ID is required."),
-});
 
 const createSupervisorSchema = z.object({
   name: z.string().min(1, 'Name is required.'),

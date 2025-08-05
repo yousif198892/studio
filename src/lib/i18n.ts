@@ -159,6 +159,10 @@ export const translations = {
         cardTitle: "New Vocabulary Card",
         cardDescription: "Fill in the details for the new word.",
         form: {
+            unitLabel: "Unit",
+            unitPlaceholder: "e.g., Unit 1",
+            lessonLabel: "Lesson",
+            lessonPlaceholder: "e.g., Lesson 5",
             wordLabel: "Word",
             wordPlaceholder: "e.g., Ephemeral",
             definitionLabel: "Definition",
@@ -181,7 +185,7 @@ export const translations = {
         }
     },
     wordsPage: {
-        title: "My Learned Words",
+        title: "My Word Collection",
         myLearnedWordsDesc: "Review and manage the words you are actively learning.",
         description: "Browse and manage your vocabulary cards.",
         addNew: "Add New Word",
@@ -418,6 +422,10 @@ export const translations = {
         cardTitle: "بطاقة مفردات جديدة",
         cardDescription: "املأ تفاصيل الكلمة الجديدة.",
         form: {
+            unitLabel: "الوحدة",
+            unitPlaceholder: "مثال: الوحدة 1",
+            lessonLabel: "الدرس",
+            lessonPlaceholder: "مثال: الدرس 5",
             wordLabel: "الكلمة",
             wordPlaceholder: "مثال: سريع الزوال",
             definitionLabel: "التعريف",
@@ -440,7 +448,7 @@ export const translations = {
         }
     },
     wordsPage: {
-        title: "كلماتي المتعلمة",
+        title: "مجموعة كلماتي",
         myLearnedWordsDesc: "راجع وأدر الكلمات التي تتعلمها بنشاط.",
         description: "تصفح وأدر بطاقات المفردات الخاصة بك.",
         addNew: "إضافة كلمة جديدة",
@@ -539,7 +547,7 @@ export type TranslationKey =
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'
-    | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
+    | 'addWord.form.unitLabel' | 'addWord.form.unitPlaceholder' | 'addWord.form.lessonLabel' | 'addWord.form.lessonPlaceholder' | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'
     | 'wordsPage.title' | 'wordsPage.myLearnedWordsDesc' | 'wordsPage.description' | 'wordsPage.addNew'
     | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.actions' | 'wordsPage.table.nextReview' | 'wordsPage.table.reviewOverdue' | 'wordsPage.table.reviewToday' | 'wordsPage.table.reviewTomorrow' | 'wordsPage.table.reviewInDays'

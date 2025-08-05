@@ -88,6 +88,22 @@ export function AddWordForm() {
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid gap-2">
+            <Label htmlFor="unit">{t('addWord.form.unitLabel')}</Label>
+            <Input id="unit" name="unit" placeholder={t('addWord.form.unitPlaceholder')} />
+            {state?.errors?.unit && (
+            <p className="text-sm text-destructive">{state.errors.unit[0]}</p>
+            )}
+        </div>
+        <div className="grid gap-2">
+            <Label htmlFor="lesson">{t('addWord.form.lessonLabel')}</Label>
+            <Input id="lesson" name="lesson" placeholder={t('addWord.form.lessonPlaceholder')} />
+            {state?.errors?.lesson && (
+            <p className="text-sm text-destructive">{state.errors.lesson[0]}</p>
+            )}
+        </div>
+      </div>
       <div className="grid gap-2">
         <Label htmlFor="word">{t('addWord.form.wordLabel')}</Label>
         <Input id="word" name="word" placeholder={t('addWord.form.wordPlaceholder')} required />

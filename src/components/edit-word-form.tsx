@@ -45,7 +45,7 @@ function SubmitButton() {
   );
 }
 
-export function EditWordForm({ word }: { word: Word }) {
+export function EditWordForm({ word: initialWord }: { word: Word }) {
   const [state, formAction] = useActionState(updateWord, initialState);
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -67,12 +67,7 @@ export function EditWordForm({ word }: { word: Word }) {
         const updatedWords = storedWords.map(w => {
             if (w.id === state.updatedWord?.id) {
                 // Merge existing word with updated fields
-                return {
-                    ...w,
-                    word: state.updatedWord.word || w.word,
-                    definition: state.updatedWord.definition || w.definition,
-                    imageUrl: state.updatedWord.imageUrl || w.imageUrl,
-                };
+                return { ...w, ...state.updatedWord };
             }
             return w;
         });
@@ -93,11 +88,27 @@ export function EditWordForm({ word }: { word: Word }) {
 
   return (
     <form action={formAction} className="space-y-4">
-      <input type="hidden" name="wordId" value={word.id} />
+      <input type="hidden" name="wordId" value={initialWord.id} />
       <input type="hidden" name="userId" value={userId || ''} />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid gap-2">
+            <Label htmlFor="unit">{t('addWord.form.unitLabel')}</Label>
+            <Input id="unit" name="unit" defaultValue={initialWord.unit} placeholder={t('addWord.form.unitPlaceholder')} />
+            {state?.errors?.unit && (
+            <p className="text-sm text-destructive">{state.errors.unit[0]}</p>
+            )}
+        </div>
+        <div className="grid gap-2">
+            <Label htmlFor="lesson">{t('addWord.form.lessonLabel')}</Label>
+            <Input id="lesson" name="lesson" defaultValue={initialWord.lesson} placeholder={t('addWord.form.lessonPlaceholder')} />
+            {state?.errors?.lesson && (
+            <p className="text-sm text-destructive">{state.errors.lesson[0]}</p>
+            )}
+        </div>
+      </div>
       <div className="grid gap-2">
         <Label htmlFor="word">{t('addWord.form.wordLabel')}</Label>
-        <Input id="word" name="word" defaultValue={word.word} placeholder={t('addWord.form.wordPlaceholder')} required />
+        <Input id="word" name="word" defaultValue={initialWord.word} placeholder={t('addWord.form.wordPlaceholder')} required />
         {state?.errors?.word && (
           <p className="text-sm text-destructive">{state.errors.word[0]}</p>
         )}
@@ -107,7 +118,7 @@ export function EditWordForm({ word }: { word: Word }) {
         <Textarea
           id="definition"
           name="definition"
-          defaultValue={word.definition}
+          defaultValue={initialWord.definition}
           placeholder={t('addWord.form.definitionPlaceholder')}
           required
         />
@@ -118,7 +129,7 @@ export function EditWordForm({ word }: { word: Word }) {
       <div className="grid gap-2">
         <Label htmlFor="image">{t('addWord.form.imageLabel')}</Label>
         <p className="text-sm text-muted-foreground">{t('editWord.form.currentImage')}</p>
-        <Image src={word.imageUrl} alt="Current image" width={100} height={100} className="rounded-md" />
+        <Image src={initialWord.imageUrl} alt="Current image" width={100} height={100} className="rounded-md" />
         <Input id="image" name="image" type="file" accept="image/*" />
         <p className="text-xs text-muted-foreground">{t('editWord.form.imageHelper')}</p>
          {state?.errors?.image && (

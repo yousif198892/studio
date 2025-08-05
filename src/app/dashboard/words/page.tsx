@@ -91,7 +91,7 @@ export default function WordsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold font-headline">{t('wordsPage.title')}</h1>
-          <p className="text-muted-foreground">{t('wordsPage.table.description')}</p>
+          <p className="text-muted-foreground">{t('wordsPage.description')} </p>
         </div>
         <Button asChild>
             <Link href={`/dashboard/add-word?userId=${userId}`}>{t('wordsPage.addNew')}</Link>
@@ -100,7 +100,7 @@ export default function WordsPage() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {words.map((word) => (
-            <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl border-primary">
+            <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl">
               <CardHeader className="p-0">
                   <div className="aspect-video relative bg-muted rounded-t-lg">
                      <Image
@@ -111,7 +111,7 @@ export default function WordsPage() {
                       />
                   </div>
               </CardHeader>
-              <CardContent className="p-4 flex-grow">
+              <CardContent className="p-4 flex-grow space-y-2">
                 <div className="flex items-center gap-2">
                     <h3 className="text-lg font-bold font-headline">{word.word}</h3>
                     <Button 
@@ -126,18 +126,22 @@ export default function WordsPage() {
                     </Button>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{word.definition}</p>
+                <div className="flex gap-2 pt-2">
+                    {word.unit && <Badge variant="outline">{t('addWord.form.unitLabel')}: {word.unit}</Badge>}
+                    {word.lesson && <Badge variant="outline">{t('addWord.form.lessonLabel')}: {word.lesson}</Badge>}
+                </div>
               </CardContent>
               <CardFooter className="p-4 pt-0 flex justify-end gap-2">
                 <Button variant="outline" size="icon" asChild>
                   <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
-                    <Pencil />
+                    <Pencil className="h-4 w-4" />
                     <span className="sr-only">Edit</span>
                   </Link>
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button variant="destructive" size="icon">
-                        <Trash2 />
+                        <Trash2 className="h-4 w-4" />
                         <span className="sr-only">Delete</span>
                     </Button>
                   </AlertDialogTrigger>

@@ -1,5 +1,4 @@
 
-
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
@@ -21,6 +20,8 @@ export type Word = {
   id: string;
   word: string;
   definition: string;
+  unit: string;
+  lesson: string;
   imageUrl: string;
   options: string[]; // This will include the correct word and 3 incorrect ones
   correctOption: string;
@@ -93,9 +94,6 @@ export const mockUsers: User[] = [
     isSuspended: false,
   },
 ];
-
-export let mockWords: Word[] = [];
-
 
 // This is a workaround to simulate a persistent data layer.
 // In a real application, you would use a database.
