@@ -13,6 +13,7 @@ export type User = {
   supervisorId?: string;
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
+  isMainAdmin?: boolean;
 };
 
 export type Unit = {
@@ -85,6 +86,7 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
     fontSize: "base",
+    isMainAdmin: true,
   }
 ];
 
@@ -143,10 +145,10 @@ export let mockWords: Word[] = [
 export function getAllUsers(): User[] {
     const usersMap = new Map<string, User>();
 
-    // Start with the base mock users to establish defaults.
+    // Start with the base mock users to establish defaults and roles.
     mockUsers.forEach(user => usersMap.set(user.id, { ...user }));
 
-    // If on the client, merge with localStorage.
+    // If on the client, merge with localStorage, letting localStorage override non-critical info.
     if (typeof window !== 'undefined') {
         const storedItems: User[] = [
             ...JSON.parse(localStorage.getItem('users') || '[]'),
@@ -154,9 +156,13 @@ export function getAllUsers(): User[] {
         ];
         
         storedItems.forEach((storedUser) => {
-            const existingUser = usersMap.get(storedUser.id) || {};
-            // Merge stored user data on top of the existing user data
-            const mergedUser = { ...existingUser, ...storedUser };
+            const baseUser = usersMap.get(storedUser.id) || {};
+            // Merge stored user data on top, but preserve critical flags from base
+            const mergedUser = { 
+                ...storedUser, 
+                role: baseUser.role || storedUser.role, 
+                isMainAdmin: baseUser.isMainAdmin || storedUser.isMainAdmin || false
+            };
             usersMap.set(storedUser.id, mergedUser);
         });
     }

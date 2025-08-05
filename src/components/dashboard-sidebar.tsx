@@ -14,6 +14,8 @@ import {
   Layers,
   GraduationCap,
   BrainCircuit,
+  MessageSquare,
+  Shield,
 } from "lucide-react";
 
 import {
@@ -84,6 +86,20 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         roles: ["supervisor"],
     },
     {
+        href: `/dashboard/admins?userId=${user.id}`,
+        label: 'Admins',
+        icon: <Shield />,
+        roles: ["supervisor"],
+        isMainAdminOnly: true,
+    },
+    {
+        href: `/dashboard/messages?userId=${user.id}`,
+        label: 'Messages',
+        icon: <MessageSquare />,
+        roles: ["supervisor"],
+        isMainAdminOnly: true,
+    },
+    {
       href: `/dashboard/profile?userId=${user.id}`,
       label: t('sidebar.profile'),
       icon: <Settings />,
@@ -91,8 +107,14 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     },
   ];
 
-  const filteredMenuItems = menuItems.filter((item) => {
-    return item.roles.includes(userRole);
+  const filteredMenuItems = menuItems.filter((item: any) => {
+    if (!item.roles.includes(userRole)) {
+      return false;
+    }
+    if (item.isMainAdminOnly && !user.isMainAdmin) {
+      return false;
+    }
+    return true;
   });
 
   return (
