@@ -56,20 +56,11 @@ export default function LearnPage() {
 
   useEffect(() => {
     const loadWords = () => {
-      if (userId) {
-        const wordsForStudent = getWordsForStudent(userId);
-        const wordsDueForReview = wordsForStudent
-          .filter((w) => new Date(w.nextReview) <= new Date() && w.strength >= 0) // Exclude mastered words
-          .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
-
-        setReviewWords(wordsDueForReview);
-        if (wordsDueForReview.length > 0) {
-          setCurrentWord(wordsDueForReview[0]);
-        } else {
-          setSessionFinished(true);
-        }
-        setIsLoading(false);
-      }
+      // This is now hardcoded to show no words.
+      setReviewWords([]);
+      setCurrentWord(null);
+      setSessionFinished(true);
+      setIsLoading(false);
     };
     loadWords();
   }, [userId]);

@@ -50,14 +50,8 @@ export default function MyWordsPage() {
   const [loadingAudio, setLoadingAudio] = useState<string | null>(null);
 
   useEffect(() => {
-    if (userId) {
-      const student = getUserById(userId);
-      if (student?.supervisorId) {
-        const studentWords = getWordsForStudent(userId);
-        const learnedWords = studentWords.filter(w => w.strength >= 0); // Only show words in SRS
-        setWords(learnedWords);
-      }
-    }
+    // This is now an empty list as per user request.
+    setWords([]);
   }, [userId]);
 
   const handlePlayAudio = async (word: Word) => {
