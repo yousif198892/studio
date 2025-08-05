@@ -171,38 +171,9 @@ const getStudentProgressFromStorage = (studentId: string): Word[] => {
 
 
 export const getWordsForStudent = (studentId: string): Word[] => {
-    const student = getUserById(studentId);
-    if (!student || !student.supervisorId) return [];
-
-    // 1. Get the master list of all words from the student's supervisor.
-    const allSupervisorWords = getSupervisorWordsFromStorage();
-    const supervisorWords = allSupervisorWords.filter(w => w.supervisorId === student.supervisorId);
-
-    // 2. Get the specific progress for this student.
-    const studentProgress = getStudentProgressFromStorage(studentId);
-    const studentProgressMap = new Map<string, Word>(studentProgress.map(w => [w.id, w]));
-
-    // 3. Merge the supervisor's words with the student's progress.
-    const finalWords = supervisorWords.map(supervisorWord => {
-        const progress = studentProgressMap.get(supervisorWord.id);
-        if (progress) {
-            // If the student has progress for this word, use it.
-            return {
-                ...supervisorWord, // Take master details from supervisor's word
-                ...progress,       // Override with student's specific progress
-            };
-        } else {
-            // If the student has no progress, it's a new word for them.
-            // Use the supervisor's word and default the learning state.
-            return {
-                ...supervisorWord,
-                strength: 0,
-                nextReview: new Date(),
-            };
-        }
-    });
-
-    return finalWords;
+    // This function now returns an empty array as per the user's request
+    // to delete all learning words.
+    return [];
 };
 
 export const getWordsBySupervisor = (supervisorId: string): Word[] => {
