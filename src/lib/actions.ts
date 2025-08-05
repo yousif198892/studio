@@ -18,7 +18,7 @@ const addWordSchema = z.object({
   userId: z.string().min(1, "User ID is required."),
   unit: z.string().optional(),
   lesson: z.string().optional(),
-  image: z.any(),
+  image: z.instanceof(File).refine(file => file.size > 0, "Image is required."),
   existingWords: z.string(),
 });
 
@@ -45,9 +45,8 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId, unit, lesson, existingWords } = validatedFields.data;
-  const imageFile = formData.get("image") as File;
-
+  const { word, definition, userId, unit, lesson, image, existingWords } = validatedFields.data;
+  
   const wordsForSupervisor: Word[] = JSON.parse(existingWords);
   if (wordsForSupervisor.some(w => w.word.toLowerCase() === word.toLowerCase())) {
     return {
@@ -57,18 +56,10 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  if (!imageFile || imageFile.size === 0) {
-    return {
-      errors: { image: ["Image is required."] },
-      message: "Image is required.",
-      success: false,
-    };
-  }
-
   try {
-    const buffer = await imageFile.arrayBuffer();
+    const buffer = await image.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
-    const dataUri = `data:${imageFile.type};base64,${base64}`;
+    const dataUri = `data:${image.type};base64,${base64}`;
 
     const aiResponse = await generateWordOptions({
       word,

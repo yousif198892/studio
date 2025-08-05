@@ -12,7 +12,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Word, getWordsBySupervisor } from "@/lib/data";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useLanguage } from "@/hooks/use-language";
 
 const initialState: {
@@ -69,12 +68,12 @@ export function AddWordForm() {
 
       // Save to localStorage
       try {
-        const existingWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+        const wordsFromStorage: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
         const newWord: Word = {
           ...state.newWord,
           nextReview: new Date(state.newWord.nextReview)
         };
-        const updatedWords = [...existingWords, newWord];
+        const updatedWords = [...wordsFromStorage, newWord];
         localStorage.setItem('userWords', JSON.stringify(updatedWords));
       } catch (e) {
         console.error("Could not save to localStorage", e);
@@ -83,9 +82,15 @@ export function AddWordForm() {
       formRef.current?.reset();
       router.push(`/dashboard/words?userId=${userId}`);
     } else if (state.message && !state.success) {
+      const errorMessage = 
+        state.errors?.word?.[0] ||
+        state.errors?.definition?.[0] ||
+        state.errors?.image?.[0] ||
+        state.message;
+
       toast({
         title: t('toasts.error'),
-        description: state.errors?.word ? state.errors.word[0] : (state.message.startsWith('Failed to add word. AI Generation Error:') ? t('toasts.aiError', state.message.replace('Failed to add word. AI Generation Error:', '').trim()) : state.message),
+        description: errorMessage,
         variant: "destructive",
       });
     }
