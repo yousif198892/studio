@@ -129,6 +129,14 @@ export const translations = {
             learnedDescription: "Actively learning via SRS",
             masteredTitle: "Mastered Words",
             masteredDescription: "Words moved to long-term memory",
+            progressOverview: {
+                title: "Progress Overview",
+                description: "A snapshot of your learning activity.",
+                timeSpent: "Time Spent",
+                wordsReviewed: "Words Reviewed",
+                reviewedToday: "Reviewed Today",
+                masteredWords: "Mastered Words"
+            }
         },
         supervisor: {
             title: "Supervisor Dashboard",
@@ -410,6 +418,14 @@ export const translations = {
             learnedDescription: "تتعلم بنشاط عبر SRS",
             masteredTitle: "الكلمات المتقنة",
             masteredDescription: "الكلمات التي تم نقلها إلى الذاكرة طويلة المدى",
+            progressOverview: {
+                title: "نظرة عامة على التقدم",
+                description: "لقطة من نشاطك التعليمي.",
+                timeSpent: "الوقت المستغرق",
+                wordsReviewed: "الكلمات المراجعة",
+                reviewedToday: "تمت مراجعته اليوم",
+                masteredWords: "الكلمات المتقنة"
+            }
         },
         supervisor: {
             title: "لوحة تحكم المشرف",
@@ -579,6 +595,7 @@ export type TranslationKey =
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
     | 'learn.title' | 'learn.question' | 'learn.nextWord' | 'learn.iKnowIt' | 'learn.backToDashboard' | 'learn.finishedTitle' | 'learn.finishedDescription1' | 'learn.finishedDescription2' | 'learn.startNewSession' | 'learn.wordStrength'
     | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.learnedTitle' | 'dashboard.student.learnedDescription' | 'dashboard.student.masteredTitle' | 'dashboard.student.masteredDescription'
+    | 'dashboard.student.progressOverview.title' | 'dashboard.student.progressOverview.description' | 'dashboard.student.progressOverview.timeSpent' | 'dashboard.student.progressOverview.wordsReviewed' | 'dashboard.student.progressOverview.reviewedToday' | 'dashboard.student.progressOverview.masteredWords'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'

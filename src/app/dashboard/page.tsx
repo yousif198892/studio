@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getStudentsBySupervisorId, getWordsForStudent, getUserById, User } from "@/lib/data";
-import { BookOpen, Target, Users, KeyRound, Trophy } from "lucide-react";
+import { BookOpen, Target, Users, KeyRound, Trophy, Clock, BarChart, CalendarCheck, Star } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -24,6 +24,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { Separator } from "@/components/ui/separator";
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
@@ -47,6 +48,12 @@ export default function Dashboard() {
     const wordsToReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
     const wordsLearned = words.filter(w => w.strength >= 0).length;
     const wordsMastered = words.filter(w => w.strength === -1).length;
+
+    // Placeholder stats
+    const timeSpent = "1h 24m";
+    const wordsReviewedTotal = 158;
+    const wordsReviewedToday = 12;
+
 
     return (
       <div className="space-y-6">
@@ -98,6 +105,34 @@ export default function Dashboard() {
             </Card>
           </Link>
         </div>
+        <Card className="lg:col-span-3">
+          <CardHeader>
+            <CardTitle>{t('dashboard.student.progressOverview.title')}</CardTitle>
+            <CardDescription>{t('dashboard.student.progressOverview.description')}</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                  <Clock className="h-8 w-8 text-primary mb-2"/>
+                  <p className="text-2xl font-bold">{timeSpent}</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.timeSpent')}</p>
+              </div>
+               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                  <BarChart className="h-8 w-8 text-primary mb-2"/>
+                  <p className="text-2xl font-bold">{wordsReviewedTotal}</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.wordsReviewed')}</p>
+              </div>
+               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                  <CalendarCheck className="h-8 w-8 text-primary mb-2"/>
+                  <p className="text-2xl font-bold">{wordsReviewedToday}</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.reviewedToday')}</p>
+              </div>
+               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                  <Star className="h-8 w-8 text-primary mb-2"/>
+                  <p className="text-2xl font-bold">{wordsMastered}</p>
+                  <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.masteredWords')}</p>
+              </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
