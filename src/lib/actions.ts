@@ -361,6 +361,7 @@ export async function createSupervisor(prevState: any, formData: FormData) {
       role: 'supervisor',
       avatar: "https://placehold.co/100x100.png",
       isSuspended: false,
+      isMainAdmin: false,
   };
   
   return { success: true, message: "Supervisor created!", newUser };
@@ -383,10 +384,8 @@ export async function toggleSupervisorSuspension(prevState: any, formData: FormD
         };
     }
     
-    // This part is tricky without a real database. We'll return the updated user
-    // and let the client-side handle the localStorage update.
     const { userId } = validatedFields.data;
-    const allUsers = getAllUsers();
+    const allUsers = getAllUsers(); // This can now be trusted to have all users
     const userToUpdate = allUsers.find(u => u.id === userId);
 
     if (!userToUpdate) {

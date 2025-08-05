@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState, useActionState } from "react";
@@ -32,14 +31,17 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { getAllUsers, User } from "@/lib/data";
+import { getAllUsers, User, getUserById } from "@/lib/data";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
 import { toggleSupervisorSuspension } from "@/lib/actions";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 
 
 export default function AdminsPage() {
+  const searchParams = useSearchParams();
+  const mainAdminId = searchParams.get("userId");
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const { toast } = useToast();
 
@@ -48,10 +50,10 @@ export default function AdminsPage() {
   useEffect(() => {
     const allUsers = getAllUsers();
     const otherSupervisors = allUsers.filter(
-      (u) => u.role === "supervisor" && !u.isMainAdmin
+      (u) => u.role === "supervisor" && u.id !== mainAdminId
     );
     setSupervisors(otherSupervisors);
-  }, []);
+  }, [mainAdminId]);
 
   const handleSupervisorAdded = (newUser: User) => {
     setSupervisors((prev) => [...prev, newUser]);
