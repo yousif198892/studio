@@ -45,7 +45,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
 import { Badge } from "@/components/ui/badge";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, differenceInHours, differenceInDays } from "date-fns";
 
 export default function MyWordsPage() {
   const searchParams = useSearchParams();
@@ -174,7 +174,17 @@ export default function MyWordsPage() {
     if (reviewDate <= now) {
       return t('wordsPage.table.reviewOverdue');
     }
-    return formatDistanceToNow(reviewDate, { addSuffix: true });
+
+    const hoursLeft = differenceInHours(reviewDate, now);
+    if (hoursLeft <= 0) { // Should be overdue but as a fallback
+        return t('wordsPage.table.reviewOverdue');
+    }
+    if (hoursLeft < 24) {
+        return `${hoursLeft}H left`;
+    }
+
+    const daysLeft = differenceInDays(reviewDate, now);
+    return `${daysLeft}D left`;
   };
 
   return (
