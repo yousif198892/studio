@@ -26,20 +26,65 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 
+type LearningStats = {
+  timeSpentSeconds: number;
+  totalWordsReviewed: number;
+  reviewedToday: {
+    count: number;
+    date: string; // YYYY-MM-DD
+  };
+};
+
 export default function Dashboard() {
   const searchParams = useSearchParams();
   const { t } = useLanguage();
   const [user, setUser] = useState<any>(null);
+  const [stats, setStats] = useState<LearningStats>({
+    timeSpentSeconds: 0,
+    totalWordsReviewed: 0,
+    reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+  });
 
   useEffect(() => {
-     // In a real app, this would come from a session or a more robust user management system.
-    const userId = searchParams?.get('userId') as string || "sup1";
-    const foundUser = getUserById(userId);
-    setUser(foundUser);
+    const userId = searchParams?.get('userId') as string;
+    if (userId) {
+      const foundUser = getUserById(userId);
+      setUser(foundUser);
+
+      // Load stats from localStorage
+      const storedStats = localStorage.getItem(`learningStats_${userId}`);
+      if (storedStats) {
+        const parsedStats: LearningStats = JSON.parse(storedStats);
+        const today = new Date().toISOString().split('T')[0];
+        // Reset 'reviewed today' if the date is old
+        if (parsedStats.reviewedToday.date !== today) {
+          parsedStats.reviewedToday = { count: 0, date: today };
+          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(parsedStats));
+        }
+        setStats(parsedStats);
+      } else {
+        // Initialize if no stats are found
+        const initialStats: LearningStats = {
+          timeSpentSeconds: 0,
+          totalWordsReviewed: 0,
+          reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+        };
+        localStorage.setItem(`learningStats_${userId}`, JSON.stringify(initialStats));
+        setStats(initialStats);
+      }
+    }
   }, [searchParams]);
+
+  const formatTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
   
   if (!user) {
-    // This could redirect to a login or error page in a real app
     return <div>{t('dashboard.loading')}</div>;
   }
 
@@ -48,12 +93,6 @@ export default function Dashboard() {
     const wordsToReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
     const wordsLearned = words.filter(w => w.strength >= 0).length;
     const wordsMastered = words.filter(w => w.strength === -1).length;
-
-    // Placeholder stats
-    const timeSpent = "1h 24m";
-    const wordsReviewedTotal = 158;
-    const wordsReviewedToday = 12;
-
 
     return (
       <div className="space-y-6">
@@ -113,17 +152,17 @@ export default function Dashboard() {
           <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <Clock className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{timeSpent}</p>
+                  <p className="text-2xl font-bold">{formatTime(stats.timeSpentSeconds)}</p>
                   <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.timeSpent')}</p>
               </div>
                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <BarChart className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{wordsReviewedTotal}</p>
+                  <p className="text-2xl font-bold">{stats.totalWordsReviewed}</p>
                   <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.wordsReviewed')}</p>
               </div>
                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <CalendarCheck className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{wordsReviewedToday}</p>
+                  <p className="text-2xl font-bold">{stats.reviewedToday.count}</p>
                   <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.reviewedToday')}</p>
               </div>
                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">

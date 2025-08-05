@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, LayoutDashboard } from "lucide-react";
@@ -14,6 +14,15 @@ import { ClientOnly } from "@/components/client-only";
 
 const SRS_INTERVALS = [1, 2, 4, 8, 16, 32, 64]; // in days
 
+type LearningStats = {
+  timeSpentSeconds: number;
+  totalWordsReviewed: number;
+  reviewedToday: {
+    count: number;
+    date: string; // YYYY-MM-DD
+  };
+};
+
 export default function LearnPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "user1";
@@ -23,6 +32,27 @@ export default function LearnPage() {
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [sessionFinished, setSessionFinished] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const sessionStartTimeRef = useRef<Date | null>(null);
+
+  useEffect(() => {
+    sessionStartTimeRef.current = new Date();
+
+    const handleBeforeUnload = () => {
+      if (sessionStartTimeRef.current) {
+        const sessionEndTime = new Date();
+        const timeDiffSeconds = Math.round((sessionEndTime.getTime() - sessionStartTimeRef.current.getTime()) / 1000);
+        updateTimeSpent(timeDiffSeconds);
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      handleBeforeUnload(); // Also save on component unmount (e.g., navigating away)
+    };
+  }, [userId]);
+
 
   useEffect(() => {
     const loadWords = () => {
@@ -62,6 +92,38 @@ export default function LearnPage() {
     }
   };
 
+  const updateTimeSpent = (seconds: number) => {
+     const storedStats = localStorage.getItem(`learningStats_${userId}`);
+      let stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
+        timeSpentSeconds: 0,
+        totalWordsReviewed: 0,
+        reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+      };
+      stats.timeSpentSeconds += seconds;
+      localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+  };
+  
+  const incrementReviewCount = () => {
+    const storedStats = localStorage.getItem(`learningStats_${userId}`);
+    let stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
+      timeSpentSeconds: 0,
+      totalWordsReviewed: 0,
+      reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+    };
+    
+    const today = new Date().toISOString().split('T')[0];
+
+    // Reset daily count if the date has changed
+    if (stats.reviewedToday.date !== today) {
+      stats.reviewedToday = { count: 1, date: today };
+    } else {
+      stats.reviewedToday.count += 1;
+    }
+
+    stats.totalWordsReviewed += 1;
+    localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+  };
+
 
   const handleNextWord = () => {
     const currentIndex = reviewWords.findIndex(w => w.id === currentWord?.id);
@@ -92,16 +154,19 @@ export default function LearnPage() {
   const handleCorrect = () => {
     if (!currentWord) return;
     updateWordStrength(currentWord, true);
+    incrementReviewCount();
   };
 
   const handleIncorrect = () => {
     if (!currentWord) return;
     updateWordStrength(currentWord, false);
+    incrementReviewCount();
   };
 
   const handleOverrideCorrect = () => {
      if (!currentWord) return;
      updateWordStrength(currentWord, true);
+     // Note: we don't call incrementReviewCount here again to avoid double counting
   };
   
   if (isLoading) {
