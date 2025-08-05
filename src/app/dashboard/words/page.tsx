@@ -126,9 +126,6 @@ export default function WordsPage() {
                     </Button>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1 min-h-[40px]">{word.definition}</p>
-                <div className="flex gap-2 mt-4">
-                    {word.lesson && <Badge variant="secondary">{word.lesson}</Badge>}
-                </div>
               </CardContent>
               <CardFooter className="p-4 pt-0 flex justify-end gap-2">
                 <Button variant="outline" size="icon" asChild>

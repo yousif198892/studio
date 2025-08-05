@@ -53,7 +53,6 @@ export function EditWordForm({ word }: { word: Word }) {
   const router = useRouter();
   
   const userId = searchParams.get("userId");
-  const lessons = Array.from({ length: 8 }, (_, i) => `Lesson ${i + 1}`);
 
   useEffect(() => {
     if (state.success && state.updatedWord) {
@@ -73,7 +72,6 @@ export function EditWordForm({ word }: { word: Word }) {
                     word: state.updatedWord.word || w.word,
                     definition: state.updatedWord.definition || w.definition,
                     imageUrl: state.updatedWord.imageUrl || w.imageUrl,
-                    lesson: state.updatedWord.lesson || w.lesson,
                 };
             }
             return w;
@@ -117,22 +115,6 @@ export function EditWordForm({ word }: { word: Word }) {
           <p className="text-sm text-destructive">{state.errors.definition[0]}</p>
         )}
       </div>
-       <div className="grid gap-2">
-            <Label htmlFor="lesson">Lesson</Label>
-            <Select name="lesson" defaultValue={word.lesson}>
-                <SelectTrigger>
-                    <SelectValue placeholder="Select a Lesson" />
-                </SelectTrigger>
-                <SelectContent>
-                    {lessons.map(lesson => (
-                        <SelectItem key={lesson} value={lesson}>{lesson}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-             {state?.errors?.lesson && (
-                <p className="text-sm text-destructive">{state.errors.lesson[0]}</p>
-            )}
-       </div>
       <div className="grid gap-2">
         <Label htmlFor="image">{t('addWord.form.imageLabel')}</Label>
         <p className="text-sm text-muted-foreground">{t('editWord.form.currentImage')}</p>

@@ -85,8 +85,6 @@ export function AddWordForm() {
     }
   }, [state, toast, router, userId, t]);
 
-  const lessons = Array.from({ length: 8 }, (_, i) => `Lesson ${i + 1}`);
-
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
@@ -109,22 +107,6 @@ export function AddWordForm() {
           <p className="text-sm text-destructive">{state.errors.definition[0]}</p>
         )}
       </div>
-       <div className="grid gap-2">
-            <Label htmlFor="lesson">Lesson</Label>
-            <Select name="lesson">
-                <SelectTrigger>
-                    <SelectValue placeholder="Select a Lesson" />
-                </SelectTrigger>
-                <SelectContent>
-                    {lessons.map(lesson => (
-                        <SelectItem key={lesson} value={lesson}>{lesson}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-             {state?.errors?.lesson && (
-                <p className="text-sm text-destructive">{state.errors.lesson[0]}</p>
-            )}
-       </div>
       <div className="grid gap-2">
         <Label htmlFor="image">{t('addWord.form.imageLabel')}</Label>
         <Input id="image" name="image" type="file" accept="image/*" required />

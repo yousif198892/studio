@@ -17,7 +17,6 @@ const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
-  lesson: z.string().optional(),
   image: z.any(),
 });
 
@@ -26,7 +25,6 @@ export async function addWord(prevState: any, formData: FormData) {
     word: formData.get("word"),
     definition: formData.get("definition"),
     userId: formData.get("userId"),
-    lesson: formData.get("lesson"),
     image: formData.get("image"),
   });
 
@@ -41,7 +39,7 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId, lesson } = validatedFields.data;
+  const { word, definition, userId } = validatedFields.data;
   const imageFile = formData.get("image") as File;
 
   if (!imageFile || imageFile.size === 0) {
@@ -79,7 +77,6 @@ export async function addWord(prevState: any, formData: FormData) {
         options: uniqueOptions,
         correctOption: word,
         supervisorId: userId,
-        lesson: lesson,
         nextReview: new Date(),
         strength: 0,
     };
@@ -99,7 +96,6 @@ const updateWordSchema = z.object({
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
   wordId: z.string().min(1, "Word ID is required."),
-  lesson: z.string().optional(),
 });
 
 export async function updateWord(prevState: any, formData: FormData) {
@@ -108,7 +104,6 @@ export async function updateWord(prevState: any, formData: FormData) {
     definition: formData.get("definition"),
     userId: formData.get("userId"),
     wordId: formData.get("wordId"),
-    lesson: formData.get("lesson"),
   });
 
   if (!validatedFields.success) {
@@ -118,7 +113,7 @@ export async function updateWord(prevState: any, formData: FormData) {
       success: false,
     };
   }
-   const { word, definition, wordId, lesson } = validatedFields.data;
+   const { word, definition, wordId } = validatedFields.data;
   const imageFile = formData.get("image") as File | null;
 
   try {
@@ -136,7 +131,6 @@ export async function updateWord(prevState: any, formData: FormData) {
         id: wordId,
         word,
         definition,
-        lesson,
         imageUrl: dataUri,
       }
     };

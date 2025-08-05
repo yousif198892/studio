@@ -25,7 +25,6 @@ export type Word = {
   options: string[]; // This will include the correct word and 3 incorrect ones
   correctOption: string;
   supervisorId: string;
-  lesson?: string;
   nextReview: Date;
   strength: number; // -1 means mastered, 0 is new, >0 is SRS level
 };
@@ -104,7 +103,6 @@ export let mockWords: Word[] = [
         options: ["Ephemeral", "Permanent", "Eternal", "Enduring"],
         correctOption: "Ephemeral",
         supervisorId: "sup1",
-        lesson: "Lesson 1",
         nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
         strength: 2,
     },
@@ -116,7 +114,6 @@ export let mockWords: Word[] = [
         options: ["Ubiquitous", "Rare", "Scarce", "Limited"],
         correctOption: "Ubiquitous",
         supervisorId: "sup1",
-        lesson: "Lesson 2",
         nextReview: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
         strength: 3,
     },
@@ -128,7 +125,6 @@ export let mockWords: Word[] = [
         options: ["Mellifluous", "Cacophonous", "Harsh", "Grating"],
         correctOption: "Mellifluous",
         supervisorId: "sup1",
-        lesson: "Lesson 1",
         nextReview: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago (due for review)
         strength: 1,
     }
