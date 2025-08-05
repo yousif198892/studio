@@ -168,19 +168,22 @@ export function getAllUsers(): User[] {
         storedItems.forEach((storedUser) => {
             const baseUser = usersMap.get(storedUser.id);
             
-            // Start with the stored user's properties (like updated name or avatar)
-            let mergedUser = { ...usersMap.get(storedUser.id), ...storedUser };
-
-            // Forcefully re-apply critical properties from the base data if it exists.
             if (baseUser) {
-                mergedUser.role = baseUser.role;
-                mergedUser.isMainAdmin = baseUser.isMainAdmin;
+                // If the user exists in the base data, merge non-critical properties.
+                const mergedUser = {
+                    ...baseUser, // Start with the authoritative data
+                    name: storedUser.name || baseUser.name,
+                    avatar: storedUser.avatar || baseUser.avatar,
+                    // any other non-critical property can be merged here
+                };
+                usersMap.set(storedUser.id, mergedUser);
             } else {
-                // If it's a completely new user not in mock data, ensure isMainAdmin is not set
-                delete mergedUser.isMainAdmin;
+                 // If it's a completely new user not in mock data, just add them.
+                 // Ensure isMainAdmin is not set for these new users for security.
+                const newUser = { ...storedUser };
+                delete newUser.isMainAdmin;
+                usersMap.set(newUser.id, newUser);
             }
-            
-            usersMap.set(storedUser.id, mergedUser);
         });
     }
 
