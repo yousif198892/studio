@@ -13,7 +13,6 @@ export type User = {
   supervisorId?: string;
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
-  isMainAdmin?: boolean;
 };
 
 export type Unit = {
@@ -86,7 +85,6 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
     fontSize: "base",
-    isMainAdmin: true,
   }
 ];
 
@@ -163,10 +161,7 @@ export function getAllUsers(): User[] {
                 ...storedUser, // Apply stored properties (like updated name or avatar)
             };
 
-            // **THE FIX**: Forcefully re-apply critical permissions from the authoritative base data.
-            // This ensures that cached data from localStorage cannot override these essential flags.
             if (baseUser) {
-                mergedUser.isMainAdmin = baseUser.isMainAdmin || false;
                 mergedUser.role = baseUser.role;
             }
             
