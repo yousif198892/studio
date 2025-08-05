@@ -91,12 +91,14 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         label: 'Admins',
         icon: <Shield />,
         roles: ["supervisor"],
+        requiresMainAdmin: true,
     },
     {
         href: `/dashboard/messages?userId=${user.id}`,
         label: 'Messages',
         icon: <MessageSquare />,
         roles: ["supervisor"],
+        requiresMainAdmin: true,
     },
     {
       href: `/dashboard/profile?userId=${user.id}`,
@@ -109,6 +111,9 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const filteredMenuItems = menuItems.filter((item: any) => {
     if (!item.roles.includes(userRole)) {
       return false;
+    }
+    if (item.requiresMainAdmin && !user.isMainAdmin) {
+        return false;
     }
     return true;
   });

@@ -13,6 +13,7 @@ export type User = {
   supervisorId?: string;
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
+  isMainAdmin?: boolean;
 };
 
 export type Unit = {
@@ -85,6 +86,7 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
     fontSize: "base",
+    isMainAdmin: true,
   },
   {
     id: "sup2",
@@ -167,11 +169,15 @@ export function getAllUsers(): User[] {
             const baseUser = usersMap.get(storedUser.id);
             
             // Start with the stored user's properties (like updated name or avatar)
-            const mergedUser = { ...storedUser };
+            let mergedUser = { ...storedUser };
 
             // Forcefully re-apply critical properties from the base data if it exists.
             if (baseUser) {
                 mergedUser.role = baseUser.role;
+                mergedUser.isMainAdmin = baseUser.isMainAdmin;
+            } else {
+                // If it's a completely new user not in mock data, ensure isMainAdmin is not set
+                delete mergedUser.isMainAdmin;
             }
             
             usersMap.set(storedUser.id, mergedUser);
