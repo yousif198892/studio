@@ -140,24 +140,29 @@ export let mockWords: Word[] = [
 
 
 // This is a workaround to simulate a persistent data layer.
-// In a real app, you would use a database.
+// In a real application, you would use a database.
 // This function can be called from both server and client.
 export function getAllUsers(): User[] {
     const usersMap = new Map<string, User>();
 
-    // Start with the base mock users.
+    // Start with the base mock users to establish defaults and admin flags.
     mockUsers.forEach(user => usersMap.set(user.id, user));
 
-    // If on the client, merge with localStorage, overwriting defaults.
+    // If on the client, merge with localStorage, allowing stored data to
+    // overwrite defaults, but ensuring critical flags from mockUsers are preserved.
     if (typeof window !== 'undefined') {
         const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-        storedUsers.forEach(user => usersMap.set(user.id, user));
+        storedUsers.forEach(storedUser => {
+            const baseUser = usersMap.get(storedUser.id);
+            // Merge, ensuring properties like isMainAdmin from the baseUser are kept if not present in the storedUser.
+            usersMap.set(storedUser.id, { ...baseUser, ...storedUser });
+        });
 
         const storedCombinedUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
-        storedCombinedUsers.forEach(user => {
-            const existingUser = usersMap.get(user.id);
-            // Deep merge to preserve properties like isMainAdmin from mock
-            usersMap.set(user.id, { ...existingUser, ...user });
+        storedCombinedUsers.forEach(storedUser => {
+            const baseUser = usersMap.get(storedUser.id);
+            // Same merge logic for the 'combinedUsers' key
+            usersMap.set(storedUser.id, { ...baseUser, ...storedUser });
         });
     }
 
