@@ -228,7 +228,7 @@ export default function MyWordsPage() {
                                     <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
+                                <DropdownMenuContent align="end" className="max-h-60 overflow-y-auto">
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuLabel>Reschedule Review</DropdownMenuLabel>
