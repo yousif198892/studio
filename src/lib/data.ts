@@ -13,7 +13,6 @@ export type User = {
   supervisorId?: string;
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
-  isMainAdmin?: boolean;
 };
 
 export type Unit = {
@@ -86,7 +85,6 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
     fontSize: "base",
-    isMainAdmin: true,
   }
 ];
 
@@ -145,7 +143,7 @@ export let mockWords: Word[] = [
 export function getAllUsers(): User[] {
     const usersMap = new Map<string, User>();
 
-    // Start with the base mock users to establish defaults and admin flags.
+    // Start with the base mock users to establish defaults.
     mockUsers.forEach(user => usersMap.set(user.id, { ...user }));
 
     // If on the client, merge with localStorage.
@@ -156,14 +154,9 @@ export function getAllUsers(): User[] {
         ];
         
         storedItems.forEach((storedUser) => {
-            const baseUser = mockUsers.find(u => u.id === storedUser.id);
             const existingUser = usersMap.get(storedUser.id) || {};
-            // Merge stored user data on top of the base/existing user data
+            // Merge stored user data on top of the existing user data
             const mergedUser = { ...existingUser, ...storedUser };
-            // Crucially, if the base user from mockUsers had the admin flag, preserve it.
-            if (baseUser?.isMainAdmin) {
-                mergedUser.isMainAdmin = true;
-            }
             usersMap.set(storedUser.id, mergedUser);
         });
     }
