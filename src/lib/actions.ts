@@ -4,7 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, Word, getAllUsers, User } from "./data";
+import { mockUsers, Word, getAllUsers, User, getWordsBySupervisor } from "./data";
 import { redirect } from "next/navigation";
 import { translations } from "./i18n";
 
@@ -19,17 +19,20 @@ const addWordSchema = z.object({
   unit: z.string().optional(),
   lesson: z.string().optional(),
   image: z.any(),
+  existingWords: z.string(),
 });
 
 export async function addWord(prevState: any, formData: FormData) {
-  const validatedFields = addWordSchema.safeParse({
-    word: formData.get("word"),
-    definition: formData.get("definition"),
-    userId: formData.get("userId"),
-    unit: formData.get("unit"),
-    lesson: formData.get("lesson"),
-    image: formData.get("image"),
-  });
+    const validatedFields = addWordSchema.safeParse({
+        word: formData.get("word"),
+        definition: formData.get("definition"),
+        userId: formData.get("userId"),
+        unit: formData.get("unit"),
+        lesson: formData.get("lesson"),
+        image: formData.get("image"),
+        existingWords: formData.get("existingWords"),
+    });
+
 
   if (!validatedFields.success) {
     const errorMap = validatedFields.error.flatten().fieldErrors;
@@ -42,8 +45,17 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId, unit, lesson } = validatedFields.data;
+  const { word, definition, userId, unit, lesson, existingWords } = validatedFields.data;
   const imageFile = formData.get("image") as File;
+
+  const wordsForSupervisor: Word[] = JSON.parse(existingWords);
+  if (wordsForSupervisor.some(w => w.word.toLowerCase() === word.toLowerCase())) {
+    return {
+      errors: { word: ["This word already exists in your collection."] },
+      message: "This word already exists.",
+      success: false,
+    };
+  }
 
   if (!imageFile || imageFile.size === 0) {
     return {

@@ -11,7 +11,7 @@ import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word } from "@/lib/data";
+import { Word, getWordsBySupervisor } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -51,8 +51,14 @@ export function AddWordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
+  const [existingWords, setExistingWords] = useState<Word[]>([]);
   
   const userId = searchParams.get("userId") || "sup1";
+
+  useEffect(() => {
+      const words = getWordsBySupervisor(userId);
+      setExistingWords(words);
+  }, [userId]);
 
   useEffect(() => {
     if (state.success && state.newWord) {
@@ -79,7 +85,7 @@ export function AddWordForm() {
     } else if (state.message && !state.success) {
       toast({
         title: t('toasts.error'),
-        description: state.message.startsWith('Failed to add word. AI Generation Error:') ? t('toasts.aiError', state.message.replace('Failed to add word. AI Generation Error:', '').trim()) : state.message,
+        description: state.errors?.word ? state.errors.word[0] : (state.message.startsWith('Failed to add word. AI Generation Error:') ? t('toasts.aiError', state.message.replace('Failed to add word. AI Generation Error:', '').trim()) : state.message),
         variant: "destructive",
       });
     }
@@ -88,6 +94,7 @@ export function AddWordForm() {
   return (
     <form ref={formRef} action={formAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
+      <input type="hidden" name="existingWords" value={JSON.stringify(existingWords)} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="grid gap-2">
             <Label htmlFor="unit">{t('addWord.form.unitLabel')}</Label>
