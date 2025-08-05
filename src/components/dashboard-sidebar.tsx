@@ -150,7 +150,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
             <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className={cn("font-semibold text-sm truncate")}>{user?.name}</p>
+            <p className={cn("font-semibold text-sm truncate", user.isMainAdmin && "text-destructive")}>{user?.name}</p>
             <p className="text-xs text-muted-foreground truncate">
               {user?.email}
             </p>

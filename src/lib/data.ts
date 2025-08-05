@@ -169,7 +169,7 @@ export function getAllUsers(): User[] {
             const baseUser = usersMap.get(storedUser.id);
             
             // Start with the stored user's properties (like updated name or avatar)
-            let mergedUser = { ...storedUser };
+            let mergedUser = { ...usersMap.get(storedUser.id), ...storedUser };
 
             // Forcefully re-apply critical properties from the base data if it exists.
             if (baseUser) {
