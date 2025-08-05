@@ -171,9 +171,39 @@ const getStudentProgressFromStorage = (studentId: string): Word[] => {
 
 
 export const getWordsForStudent = (studentId: string): Word[] => {
-    // This function now returns an empty array as per the user's request
-    // to delete all learning words.
-    return [];
+    if (typeof window === 'undefined') return [];
+
+    const student = getUserById(studentId);
+    if (!student?.supervisorId) return [];
+
+    const supervisorWords = getWordsBySupervisor(student.supervisorId);
+    const studentProgress = getStudentProgressFromStorage(studentId);
+    const studentProgressMap = new Map(studentProgress.map(w => [w.id, w]));
+
+    const mergedWords = supervisorWords.map(supervisorWord => {
+        const progress = studentProgressMap.get(supervisorWord.id);
+        if (progress) {
+            // If student has progress, merge it with the supervisor's word data
+            return {
+                ...supervisorWord,
+                strength: progress.strength,
+                nextReview: new Date(progress.nextReview),
+            };
+        } else {
+            // If student has no progress, it's a new word for them
+            return {
+                ...supervisorWord,
+                strength: 0,
+                nextReview: new Date(),
+            };
+        }
+    });
+
+    // Save back to student's progress to persist new words.
+    const storageKey = `userWords_${studentId}`;
+    localStorage.setItem(storageKey, JSON.stringify(mergedWords));
+
+    return mergedWords;
 };
 
 export const getWordsBySupervisor = (supervisorId: string): Word[] => {

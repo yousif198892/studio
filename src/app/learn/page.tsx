@@ -8,7 +8,7 @@ import { ArrowLeft, LayoutDashboard } from "lucide-react";
 
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
-import { getWordsForStudent, Word } from "@/lib/data";
+import { getWordForReview, Word, getWordsForStudent } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { ClientOnly } from "@/components/client-only";
 
@@ -56,10 +56,20 @@ export default function LearnPage() {
 
   useEffect(() => {
     const loadWords = () => {
-      // This is now hardcoded to show no words.
-      setReviewWords([]);
-      setCurrentWord(null);
-      setSessionFinished(true);
+      setIsLoading(true);
+      const allStudentWords = getWordsForStudent(userId);
+      const dueWords = allStudentWords.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0)
+        .sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
+
+      setReviewWords(dueWords);
+
+      if (dueWords.length > 0) {
+        setCurrentWord(dueWords[0]);
+        setSessionFinished(false);
+      } else {
+        setCurrentWord(null);
+        setSessionFinished(true);
+      }
       setIsLoading(false);
     };
     loadWords();
