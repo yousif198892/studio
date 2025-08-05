@@ -37,6 +37,8 @@ export default function WordsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
+    // This effect will run when the component mounts and whenever userId changes.
+    // It fetches the latest word list from localStorage.
     const supervisorWords = getWordsBySupervisor(userId);
     setWords(supervisorWords);
   }, [userId]);
