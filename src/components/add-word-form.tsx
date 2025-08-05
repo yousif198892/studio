@@ -50,14 +50,24 @@ export function AddWordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [existingWords, setExistingWords] = useState<Word[]>([]);
   
   const userId = searchParams.get("userId") || "sup1";
 
-  useEffect(() => {
-      const words = getWordsBySupervisor(userId);
-      setExistingWords(words);
-  }, [userId]);
+  const handleFormAction = (formData: FormData) => {
+    const wordInput = formData.get("word") as string;
+    if (wordInput) {
+        const existingWords = getWordsBySupervisor(userId);
+        if (existingWords.some(w => w.word.toLowerCase() === wordInput.toLowerCase())) {
+            toast({
+                title: t('toasts.error'),
+                description: "This word already exists in your collection.",
+                variant: "destructive",
+            });
+            return;
+        }
+    }
+    formAction(formData);
+  }
 
   useEffect(() => {
     if (state.success && state.newWord) {
@@ -97,9 +107,8 @@ export function AddWordForm() {
   }, [state, toast, router, userId, t]);
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form ref={formRef} action={handleFormAction} className="space-y-4">
       <input type="hidden" name="userId" value={userId || ''} />
-      <input type="hidden" name="existingWords" value={JSON.stringify(existingWords)} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="grid gap-2">
             <Label htmlFor="unit">{t('addWord.form.unitLabel')}</Label>

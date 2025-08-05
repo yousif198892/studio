@@ -19,7 +19,6 @@ const addWordSchema = z.object({
   unit: z.string().optional(),
   lesson: z.string().optional(),
   image: z.instanceof(File).refine(file => file.size > 0, "Image is required."),
-  existingWords: z.string(),
 });
 
 export async function addWord(prevState: any, formData: FormData) {
@@ -30,7 +29,6 @@ export async function addWord(prevState: any, formData: FormData) {
         unit: formData.get("unit"),
         lesson: formData.get("lesson"),
         image: formData.get("image"),
-        existingWords: formData.get("existingWords"),
     });
 
 
@@ -45,17 +43,8 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId, unit, lesson, image, existingWords } = validatedFields.data;
+  const { word, definition, userId, unit, lesson, image } = validatedFields.data;
   
-  const wordsForSupervisor: Word[] = JSON.parse(existingWords);
-  if (wordsForSupervisor.some(w => w.word.toLowerCase() === word.toLowerCase())) {
-    return {
-      errors: { word: ["This word already exists in your collection."] },
-      message: "This word already exists.",
-      success: false,
-    };
-  }
-
   try {
     const buffer = await image.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
