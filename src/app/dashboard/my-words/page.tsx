@@ -93,21 +93,18 @@ export default function MyWordsPage() {
 
   const updateWordInStorage = (updatedWord: Word) => {
     try {
-      const student = getUserById(userId);
-      if (!student?.supervisorId) return;
-
       const allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-      const supervisorId = student.supervisorId;
-      const otherSupervisorWords = allWords.filter(w => w.supervisorId !== supervisorId);
-      const supervisorWords = allWords.filter(w => w.supervisorId === supervisorId);
-      
-      const wordIndex = supervisorWords.findIndex(w => w.id === updatedWord.id);
+      const wordIndex = allWords.findIndex(w => w.id === updatedWord.id);
       
       if (wordIndex > -1) {
-        supervisorWords[wordIndex] = updatedWord;
+        // If word exists, update it
+        allWords[wordIndex] = updatedWord;
+      } else {
+        // If word doesn't exist (edge case), add it
+        allWords.push(updatedWord);
       }
       
-      localStorage.setItem('userWords', JSON.stringify([...otherSupervisorWords, ...supervisorWords]));
+      localStorage.setItem('userWords', JSON.stringify(allWords));
 
     } catch (e) {
       console.error("Failed to update word in localStorage", e);
