@@ -56,17 +56,21 @@ export default function StudentsPage() {
       // Remove from component state
       setStudents(prev => prev.filter(s => s.id !== studentId));
       
-      // Remove from 'users' and 'combinedUsers' in localStorage
-      let users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
-      users = users.filter(u => u.id !== studentId);
-      localStorage.setItem("users", JSON.stringify(users));
+      // Get all users to find the student to "remove"
+      let allUsers: User[] = JSON.parse(localStorage.getItem("combinedUsers") || "[]");
+      const studentIndex = allUsers.findIndex(u => u.id === studentId);
 
-      let combinedUsers: User[] = JSON.parse(localStorage.getItem("combinedUsers") || "[]");
-      combinedUsers = combinedUsers.filter(u => u.id !== studentId);
-      localStorage.setItem("combinedUsers", JSON.stringify(combinedUsers));
+      if (studentIndex > -1) {
+        // Instead of deleting, just detach from the supervisor
+        allUsers[studentIndex].supervisorId = undefined;
+        
+        // Save the updated user list back to localStorage
+        localStorage.setItem("combinedUsers", JSON.stringify(allUsers));
+      }
+
 
       // Optional: Also clear student's specific progress
-      localStorage.removeItem(`userWords_${studentId}`);
+      localStorage.removeItem(`wordProgress_${studentId}`);
       localStorage.removeItem(`learningStats_${studentId}`);
 
       toast({
@@ -133,7 +137,7 @@ export default function StudentsPage() {
                                           Are you absolutely sure?
                                         </AlertDialogTitle>
                                         <AlertDialogDescription>
-                                          This action cannot be undone. This will permanently remove {student.name} from your supervision. Their account will not be deleted, but they will lose access to your words.
+                                          This action cannot be undone. This will permanently remove {student.name} from your supervision. Their account will not be deleted, but they will lose access to your words and their progress will be reset.
                                         </AlertDialogDescription>
                                       </AlertDialogHeader>
                                       <AlertDialogFooter>

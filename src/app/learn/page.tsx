@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { getWordForReview, Word, getWordsForStudent } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { ClientOnly } from "@/components/client-only";
+import { updateStudentProgressInStorage } from "@/lib/storage";
 
 const SRS_INTERVALS = [1, 2, 4, 8, 16, 32, 64]; // in days
 
@@ -75,20 +76,13 @@ export default function LearnPage() {
     loadWords();
   }, [userId]);
 
-  const updateWordInStorage = (updatedWord: Word) => {
+  const updateWordInStorage = (wordToUpdate: Word) => {
     try {
-      const storageKey = `userWords_${userId}`;
-      const allWords: Word[] = JSON.parse(localStorage.getItem(storageKey) || '[]');
-      const wordIndex = allWords.findIndex(w => w.id === updatedWord.id);
-      
-      if (wordIndex > -1) {
-        allWords[wordIndex] = updatedWord;
-      } else {
-        allWords.push(updatedWord);
-      }
-      
-      const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
-      localStorage.setItem(storageKey, JSON.stringify(uniqueWords));
+      updateStudentProgressInStorage(userId, {
+        id: wordToUpdate.id,
+        strength: wordToUpdate.strength,
+        nextReview: wordToUpdate.nextReview,
+      });
     } catch (e) {
       console.error("Failed to update word in localStorage", e);
     }

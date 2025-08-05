@@ -2,6 +2,9 @@
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
+import { getStudentProgressFromStorage, saveAllStudentProgressInStorage, WordProgress } from './storage';
+
+
 export type User = {
   id: string;
   name: string;
@@ -157,18 +160,6 @@ const getSupervisorWordsFromStorage = (): Word[] => {
     }));
 }
 
-const getStudentProgressFromStorage = (studentId: string): Word[] => {
-     if (typeof window === 'undefined') return [];
-    
-    // This is the student-specific list of words with their progress
-    const storageKey = `userWords_${studentId}`;
-    const storedWords: Word[] = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    return storedWords.map(word => ({
-        ...word,
-        nextReview: new Date(word.nextReview)
-    }));
-}
-
 
 export const getWordsForStudent = (studentId: string): Word[] => {
     if (typeof window === 'undefined') return [];
@@ -178,7 +169,7 @@ export const getWordsForStudent = (studentId: string): Word[] => {
 
     const supervisorWords = getWordsBySupervisor(student.supervisorId);
     const studentProgress = getStudentProgressFromStorage(studentId);
-    const studentProgressMap = new Map(studentProgress.map(w => [w.id, w]));
+    const studentProgressMap = new Map(studentProgress.map(p => [p.id, p]));
 
     const mergedWords = supervisorWords.map(supervisorWord => {
         const progress = studentProgressMap.get(supervisorWord.id);
@@ -199,9 +190,14 @@ export const getWordsForStudent = (studentId: string): Word[] => {
         }
     });
 
-    // Save back to student's progress to persist new words.
-    const storageKey = `userWords_${studentId}`;
-    localStorage.setItem(storageKey, JSON.stringify(mergedWords));
+    // Save back to student's progress to persist new words, but only the progress part.
+    const allProgressToSave: WordProgress[] = mergedWords.map(w => ({
+        id: w.id,
+        strength: w.strength,
+        nextReview: w.nextReview,
+    }));
+
+    saveAllStudentProgressInStorage(studentId, allProgressToSave);
 
     return mergedWords;
 };

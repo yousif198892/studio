@@ -26,6 +26,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
 import { Badge } from "@/components/ui/badge";
+import { updateStudentProgressInStorage } from "@/lib/storage";
 
 export default function MasteredWordsPage() {
   const searchParams = useSearchParams();
@@ -50,19 +51,11 @@ export default function MasteredWordsPage() {
   
   const updateWordInStorage = (updatedWord: Word) => {
     try {
-        const storageKey = `userWords_${userId}`;
-        let allWords: Word[] = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        const wordIndex = allWords.findIndex(w => w.id === updatedWord.id);
-        
-        if (wordIndex !== -1) {
-            allWords[wordIndex] = updatedWord;
-        } else {
-            allWords.push(updatedWord);
-        }
-
-        const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
-        localStorage.setItem(storageKey, JSON.stringify(uniqueWords));
-
+        updateStudentProgressInStorage(userId, {
+            id: updatedWord.id,
+            strength: updatedWord.strength,
+            nextReview: updatedWord.nextReview
+        })
     } catch (e) {
         console.error("Failed to update word in localStorage", e);
         toast({ title: t('toasts.error'), description: 'Failed to save changes.' });
