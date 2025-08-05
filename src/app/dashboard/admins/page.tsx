@@ -119,8 +119,7 @@ export default function AdminsPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Email</TableHead>
+                  <TableHead>Supervisor</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -128,12 +127,22 @@ export default function AdminsPage() {
                 {supervisors.map((supervisor) => (
                   <TableRow key={supervisor.id}>
                     <TableCell>
-                      <div className="flex items-center gap-2">
-                          <Image src={supervisor.avatar} alt={supervisor.name} width={32} height={32} className="rounded-full" />
-                          <span className="font-medium">{supervisor.name}</span>
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={supervisor.avatar}
+                          alt={supervisor.name}
+                          width={40}
+                          height={40}
+                          className="rounded-full"
+                        />
+                        <div>
+                          <div className="font-medium">{supervisor.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {supervisor.email}
+                          </div>
+                        </div>
                       </div>
                     </TableCell>
-                    <TableCell>{supervisor.email}</TableCell>
                     <TableCell className="text-right">
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
