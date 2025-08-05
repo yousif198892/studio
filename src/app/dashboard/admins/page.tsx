@@ -1,7 +1,8 @@
 
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useActionState } from "react";
 import {
   Card,
   CardContent,
@@ -18,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Ban } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,10 +35,15 @@ import { useToast } from "@/hooks/use-toast";
 import { getAllUsers, User } from "@/lib/data";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
+import { toggleSupervisorSuspension } from "@/lib/actions";
+import { cn } from "@/lib/utils";
+
 
 export default function AdminsPage() {
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const { toast } = useToast();
+
+  const [_, toggleSuspensionAction] = useActionState(toggleSupervisorSuspension, { success: false, message: ""});
 
   useEffect(() => {
     const allUsers = getAllUsers();
@@ -50,6 +56,37 @@ export default function AdminsPage() {
   const handleSupervisorAdded = (newUser: User) => {
     setSupervisors((prev) => [...prev, newUser]);
   };
+  
+  const handleToggleSuspension = async (user: User) => {
+    const formData = new FormData();
+    formData.append('userId', user.id);
+    const result = await toggleSupervisorSuspension(null, formData);
+
+    if (result.success && result.updatedUser) {
+        setSupervisors(supervisors.map(s => s.id === user.id ? result.updatedUser : s));
+        
+        // Update localStorage
+        try {
+          const storedUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+          const updatedUsers = storedUsers.map(u => u.id === result.updatedUser.id ? result.updatedUser : u);
+          localStorage.setItem('combinedUsers', JSON.stringify(updatedUsers));
+        } catch (error) {
+            console.error("Failed to update user in localStorage", error);
+        }
+
+        toast({
+            title: "Success!",
+            description: `Supervisor ${user.name} has been ${result.updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
+        });
+    } else {
+         toast({
+            title: "Error",
+            description: result.message,
+            variant: "destructive",
+        });
+    }
+  }
+
 
   const handleDelete = (userId: string) => {
     // In a real app, this would be a server action.
@@ -120,12 +157,13 @@ export default function AdminsPage() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Supervisor</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {supervisors.map((supervisor) => (
-                  <TableRow key={supervisor.id}>
+                  <TableRow key={supervisor.id} className={cn(supervisor.isSuspended && "bg-muted/50")}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Image
@@ -143,7 +181,37 @@ export default function AdminsPage() {
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell className="text-right">
+                    <TableCell>
+                      {supervisor.isSuspended ? (
+                          <span className="px-2 py-1 text-xs font-medium text-destructive-foreground bg-destructive rounded-full">Suspended</span>
+                      ) : (
+                          <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Active</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right space-x-2">
+                      <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                              <Button variant={supervisor.isSuspended ? "outline" : "secondary"} size="icon">
+                                <Ban className="h-4 w-4" />
+                                <span className="sr-only">{supervisor.isSuspended ? "Unsuspend" : "Suspend"}</span>
+                              </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                  This will {supervisor.isSuspended ? "reinstate" : "suspend"} the account for {supervisor.name}. They will {supervisor.isSuspended ? "be able to" : "no longer be able to"} log in.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleToggleSuspension(supervisor)}>
+                                  Continue
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
                           <Button variant="destructive" size="icon">

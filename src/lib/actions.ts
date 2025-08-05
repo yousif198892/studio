@@ -5,7 +5,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, Word, Unit, mockUnits, getUnitsBySupervisor, getAllUsers, User } from "./data";
+import { mockUsers, Word, Unit, getUnitsBySupervisor, getAllUsers, User } from "./data";
 import { redirect } from "next/navigation";
 import { translations } from "./i18n";
 
@@ -268,6 +268,13 @@ export async function login(prevState: any, formData: FormData) {
       message: "Invalid email or password.",
     };
   }
+
+  if (user.isSuspended) {
+    return {
+      errors: {},
+      message: "This account has been suspended.",
+    };
+  }
   
   redirect(`/dashboard?userId=${user.id}`);
 }
@@ -353,7 +360,47 @@ export async function createSupervisor(prevState: any, formData: FormData) {
       password,
       role: 'supervisor',
       avatar: "https://placehold.co/100x100.png",
+      isSuspended: false,
   };
   
   return { success: true, message: "Supervisor created!", newUser };
+}
+
+
+const toggleSuspensionSchema = z.object({
+    userId: z.string().min(1, "User ID is required."),
+});
+
+export async function toggleSupervisorSuspension(prevState: any, formData: FormData) {
+    const validatedFields = toggleSuspensionSchema.safeParse({
+        userId: formData.get("userId"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            message: "Invalid request.",
+            success: false,
+        };
+    }
+    
+    // This part is tricky without a real database. We'll return the updated user
+    // and let the client-side handle the localStorage update.
+    const { userId } = validatedFields.data;
+    const allUsers = getAllUsers();
+    const userToUpdate = allUsers.find(u => u.id === userId);
+
+    if (!userToUpdate) {
+        return { message: "User not found.", success: false };
+    }
+
+    const updatedUser = {
+        ...userToUpdate,
+        isSuspended: !userToUpdate.isSuspended,
+    };
+
+    return { 
+        success: true, 
+        message: `Supervisor ${updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`,
+        updatedUser: updatedUser,
+    };
 }

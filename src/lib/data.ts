@@ -14,6 +14,7 @@ export type User = {
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
   isMainAdmin?: boolean;
+  isSuspended?: boolean;
 };
 
 export type Unit = {
@@ -97,6 +98,7 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "Europe/London",
     fontSize: "base",
+    isSuspended: false,
   },
 ];
 
@@ -175,6 +177,7 @@ export function getAllUsers(): User[] {
                     avatar: storedUser.avatar || baseUser.avatar,
                     timezone: storedUser.timezone || baseUser.timezone,
                     fontSize: storedUser.fontSize || baseUser.fontSize,
+                    isSuspended: 'isSuspended' in storedUser ? storedUser.isSuspended : baseUser.isSuspended,
                 };
                 usersMap.set(storedUser.id, mergedUser);
             } else {
