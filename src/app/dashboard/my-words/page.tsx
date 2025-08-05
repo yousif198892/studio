@@ -232,7 +232,7 @@ export default function MyWordsPage() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuPortal>
-                                    <DropdownMenuContent align="end">
+                                    <DropdownMenuContent align="end" className="max-h-60 overflow-y-auto">
                                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem onClick={() => handleReset(word)}>
