@@ -44,6 +44,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
+import { Badge } from "@/components/ui/badge";
 
 export default function MyWordsPage() {
   const searchParams = useSearchParams();
@@ -176,6 +177,13 @@ export default function MyWordsPage() {
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return diffDays;
   }
+  
+  const getReviewText = (days: number) => {
+    if (days < 0) return t('wordsPage.table.reviewOverdue');
+    if (days === 0) return t('wordsPage.table.reviewToday');
+    if (days === 1) return t('wordsPage.table.reviewTomorrow');
+    return t('wordsPage.table.reviewInDays', days);
+  };
 
   return (
     <div className="space-y-6">
@@ -202,6 +210,7 @@ export default function MyWordsPage() {
                 <TableHead>{t('wordsPage.table.word')}</TableHead>
                 <TableHead>{t('wordsPage.table.definition')}</TableHead>
                 <TableHead>{t('wordsPage.table.unit')}</TableHead>
+                <TableHead>{t('wordsPage.table.nextReview')}</TableHead>
                 <TableHead><span className="sr-only">Actions</span></TableHead>
               </TableRow>
             </TableHeader>
@@ -235,6 +244,9 @@ export default function MyWordsPage() {
                     </TableCell>
                     <TableCell>{word.definition}</TableCell>
                     <TableCell>{getUnitName(word.unitId)}</TableCell>
+                    <TableCell>
+                      <Badge variant={daysUntilReview <= 0 ? 'destructive' : 'outline'}>{getReviewText(daysUntilReview)}</Badge>
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>

@@ -185,6 +185,11 @@ export const translations = {
             definition: "Definition",
             unit: "Unit",
             actions: "Actions",
+            nextReview: "Next Review",
+            reviewOverdue: "Overdue",
+            reviewToday: "Today",
+            reviewTomorrow: "Tomorrow",
+            reviewInDays: "In {0} days",
         },
         deleteDialog: {
             title: "Are you absolutely sure?",
@@ -341,7 +346,7 @@ export const translations = {
         login: "تسجيل الدخول",
         features: {
             title: "لماذا يعمل LinguaLeap",
-            description: "لقد صممنا المزيج المثالي من التكنولوجيا والتربية لتسريع اكتسابك للغة.",
+            description: "لقد صممنا המزيج المثالي من التكنولوجيا والتربية لتسريع اكتسابك للغة.",
             aiQuizzes: {
                 title: "اختبارات مدعومة بالذكاء الاصطناعي",
                 description: "تحدَّ نفسك بخيارات غير صحيحة تم إنشاؤها بواسطة الذكاء الاصطناعي، مما يجعل التعلم أكثر فعالية وجاذبية."
@@ -440,6 +445,11 @@ export const translations = {
             definition: "التعريف",
             unit: "الوحدة",
             actions: "الإجراءات",
+            nextReview: "المراجعة التالية",
+            reviewOverdue: "متأخر",
+            reviewToday: "اليوم",
+            reviewTomorrow: "غداً",
+            reviewInDays: "خلال {0} أيام",
         },
         deleteDialog: {
             title: "هل أنت متأكد تمامًا؟",
@@ -533,7 +543,7 @@ export type TranslationKey =
     | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.unitLabel' | 'addWord.form.selectUnit' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'
     | 'wordsPage.title' | 'wordsPage.myLearnedWordsDesc' | 'wordsPage.description' | 'wordsPage.addNew'
-    | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.unit' | 'wordsPage.table.actions'
+    | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.unit' | 'wordsPage.table.actions' | 'wordsPage.table.nextReview' | 'wordsPage.table.reviewOverdue' | 'wordsPage.table.reviewToday' | 'wordsPage.table.reviewTomorrow' | 'wordsPage.table.reviewInDays'
     | 'wordsPage.deleteDialog.title' | 'wordsPage.deleteDialog.description' | 'wordsPage.deleteDialog.cancel' | 'wordsPage.deleteDialog.continue'
     | 'wordsPage.resetDialog.title' | 'wordsPage.resetDialog.description' | 'wordsPage.resetDialog.continue'
     | 'unitsPage.title' | 'unitsPage.description'
@@ -544,4 +554,3 @@ export type TranslationKey =
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'toasts.error' | 'toasts.success' | 'toasts.addUnitSuccess' | 'toasts.addUnitExists' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.unitRequired' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
-
