@@ -87,7 +87,18 @@ export const mockUsers: User[] = [
     timezone: "America/New_York",
     fontSize: "base",
     isMainAdmin: true,
-  }
+  },
+  {
+    id: "sup2",
+    name: "Jane Smith",
+    email: "jane.smith@example.com",
+    password: "password123",
+    role: "supervisor",
+    avatar: "https://placehold.co/100x100.png",
+    timezone: "Europe/London",
+    fontSize: "base",
+    isMainAdmin: false,
+  },
 ];
 
 export const mockUnits: Unit[] = [
