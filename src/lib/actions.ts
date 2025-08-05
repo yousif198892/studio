@@ -313,3 +313,47 @@ export async function addUnit(prevState: any, formData: FormData) {
   
   return { success: true, message: "Unit created!", newUnit };
 }
+
+const createSupervisorSchema = z.object({
+  name: z.string().min(1, 'Name is required.'),
+  email: z.string().email('Invalid email address.'),
+  password: z.string().min(6, 'Password must be at least 6 characters.'),
+});
+
+export async function createSupervisor(prevState: any, formData: FormData) {
+  const validatedFields = createSupervisorSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    password: formData.get("password"),
+  });
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: "Validation failed.",
+      success: false,
+    };
+  }
+
+  const allUsers = getAllUsers();
+  if (allUsers.find(u => u.email === validatedFields.data.email)) {
+    return {
+      errors: { email: ["Supervisor with this email already exists."] },
+      message: "Supervisor with this email already exists.",
+      success: false,
+    };
+  }
+
+  const { name, email, password } = validatedFields.data;
+  
+  const newUser: User = {
+      id: `sup${Date.now()}`,
+      name,
+      email,
+      password,
+      role: 'supervisor',
+      avatar: "https://placehold.co/100x100.png",
+  };
+  
+  return { success: true, message: "Supervisor created!", newUser };
+}

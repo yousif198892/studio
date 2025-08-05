@@ -94,7 +94,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         requiresMainAdmin: true,
     },
     {
-      href: `/dashboard/admins`,
+      href: `/dashboard/admins?userId=${user.id}`,
       label: 'Admins',
       icon: <Shield />,
       roles: ["supervisor"],
