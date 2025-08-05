@@ -94,41 +94,7 @@ export const mockUsers: User[] = [
   },
 ];
 
-export let mockWords: Word[] = [
-    {
-        id: "word1",
-        word: "Ephemeral",
-        definition: "Lasting for a very short time.",
-        imageUrl: "https://placehold.co/600x400.png",
-        options: ["Ephemeral", "Permanent", "Eternal", "Enduring"],
-        correctOption: "Ephemeral",
-        supervisorId: "sup1",
-        nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
-        strength: 2,
-    },
-    {
-        id: "word2",
-        word: "Ubiquitous",
-        definition: "Present, appearing, or found everywhere.",
-        imageUrl: "https://placehold.co/600x400.png",
-        options: ["Ubiquitous", "Rare", "Scarce", "Limited"],
-        correctOption: "Ubiquitous",
-        supervisorId: "sup1",
-        nextReview: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
-        strength: 3,
-    },
-    {
-        id: "word3",
-        word: "Mellifluous",
-        definition: "A sound that is sweet and smooth, pleasing to hear.",
-        imageUrl: "https://placehold.co/600x400.png",
-        options: ["Mellifluous", "Cacophonous", "Harsh", "Grating"],
-        correctOption: "Mellifluous",
-        supervisorId: "sup1",
-        nextReview: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago (due for review)
-        strength: 1,
-    }
-];
+export let mockWords: Word[] = [];
 
 
 // This is a workaround to simulate a persistent data layer.
@@ -190,13 +156,12 @@ export const getWordsForStudent = (studentId: string): Word[] => {
     return supervisorWords;
 };
 export const getWordsBySupervisor = (supervisorId: string): Word[] => {
-    const baseWords = mockWords.filter(w => w.supervisorId === supervisorId);
-    let allWords: Word[] = [...baseWords];
+    let allWords: Word[] = [];
 
     if (typeof window !== 'undefined') {
         const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
         const userAddedWords = storedWords.filter(w => w.supervisorId === supervisorId);
-        allWords = [...userAddedWords, ...baseWords];
+        allWords = [...userAddedWords];
     }
     
     const uniqueWordsMap = new Map<string, Word>();
