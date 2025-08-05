@@ -23,7 +23,6 @@ export default function DashboardLayout({
       const userId = searchParams?.get('userId') as string;
       
       if (!userId) {
-        console.error("No user ID found, redirecting to login.")
         redirect("/login");
         return;
       }
