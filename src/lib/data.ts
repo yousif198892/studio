@@ -158,16 +158,17 @@ export function getAllUsers(): User[] {
         storedItems.forEach((storedUser) => {
             const baseUser = usersMap.get(storedUser.id);
             
-            // This is the corrected logic.
-            // It uses the base user as the foundation, and overwrites it with stored properties.
-            // But then, it re-applies critical permissions from the base user, ensuring they are NEVER overwritten.
             const mergedUser = {
                 ...baseUser, // Start with base user properties
                 ...storedUser, // Apply stored properties (like updated name or avatar)
-                // --- Re-apply critical permissions from base data ---
-                isMainAdmin: baseUser?.isMainAdmin || storedUser.isMainAdmin || false,
-                role: baseUser?.role || storedUser.role,
             };
+
+            // **THE FIX**: Forcefully re-apply critical permissions from the authoritative base data.
+            // This ensures that cached data from localStorage cannot override these essential flags.
+            if (baseUser) {
+                mergedUser.isMainAdmin = baseUser.isMainAdmin || false;
+                mergedUser.role = baseUser.role;
+            }
             
             usersMap.set(storedUser.id, mergedUser);
         });
