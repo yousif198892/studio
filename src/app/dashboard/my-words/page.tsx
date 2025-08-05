@@ -93,21 +93,23 @@ export default function MyWordsPage() {
 
   const updateWordInStorage = (updatedWord: Word) => {
     try {
-      const allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-      const wordIndex = allWords.findIndex(w => w.id === updatedWord.id);
-      
-      if (wordIndex > -1) {
-        // If word exists, update it
-        allWords[wordIndex] = updatedWord;
-      } else {
-        // If word doesn't exist (edge case), add it
-        allWords.push(updatedWord);
-      }
-      
-      localStorage.setItem('userWords', JSON.stringify(allWords));
+        let allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+        const wordIndex = allWords.findIndex(w => w.id === updatedWord.id);
+        
+        if (wordIndex !== -1) {
+            allWords[wordIndex] = updatedWord;
+        } else {
+            // This case might happen if the word was part of initial mock data and not yet in localStorage
+            allWords.push(updatedWord);
+        }
+
+        // To be safe, ensure no duplicates and save
+        const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
+        localStorage.setItem('userWords', JSON.stringify(uniqueWords));
 
     } catch (e) {
-      console.error("Failed to update word in localStorage", e);
+        console.error("Failed to update word in localStorage", e);
+        toast({ title: t('toasts.error'), description: 'Failed to save changes.' });
     }
   };
 
@@ -128,9 +130,14 @@ export default function MyWordsPage() {
   };
 
 
-  const handleReschedule = (word: Word, days: number) => {
+  const handleReschedule = (word: Word, options: { days?: number, minutes?: number }) => {
     const newNextReview = new Date();
-    newNextReview.setDate(newNextReview.getDate() + days);
+    if (options.days) {
+      newNextReview.setDate(newNextReview.getDate() + options.days);
+    }
+    if (options.minutes) {
+        newNextReview.setMinutes(newNextReview.getMinutes() + options.minutes);
+    }
 
     const updatedWord: Word = { ...word, nextReview: newNextReview };
 
@@ -147,6 +154,7 @@ export default function MyWordsPage() {
   }
 
   const reviewOptions = [
+    { label: "In 5 minutes", minutes: 5 },
     { label: "Tomorrow", days: 1 },
     { label: "After 2 days", days: 2 },
     { label: "After 3 days", days: 3 },
@@ -226,8 +234,8 @@ export default function MyWordsPage() {
                                 <DropdownMenuLabel>Reschedule Review</DropdownMenuLabel>
                                 {reviewOptions.map(opt => (
                                     <DropdownMenuItem 
-                                        key={opt.days} 
-                                        onClick={() => handleReschedule(word, opt.days)}
+                                        key={opt.label} 
+                                        onClick={() => handleReschedule(word, { days: opt.days, minutes: opt.minutes })}
                                     >
                                         {opt.label}
                                     </DropdownMenuItem>
