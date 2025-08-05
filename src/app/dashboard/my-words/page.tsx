@@ -196,8 +196,87 @@ export default function MyWordsPage() {
         <p className="text-muted-foreground">{t('wordsPage.myLearnedWordsDesc')}</p>
       </div>
 
+       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {words.map((word) => (
+                <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl">
+                    <CardHeader className="p-0">
+                        <div className="aspect-video relative bg-muted rounded-t-lg">
+                            <Image
+                                src={word.imageUrl}
+                                alt={`Image for ${word.word}`}
+                                fill
+                                className="object-contain rounded-t-lg p-2"
+                            />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-4 flex-grow space-y-2">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold font-headline">{word.word}</h3>
+                                 <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => handlePlayAudio(word)} 
+                                disabled={!!loadingAudio}
+                                aria-label="Play audio"
+                                className="h-6 w-6"
+                                >
+                                {loadingAudio === word.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+                                </Button>
+                            </div>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8">
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => handleReset(word)}>
+                                        <RotateCcw className="mr-2 h-4 w-4" />
+                                        <span>Reset Progress</span>
+                                    </DropdownMenuItem>
+                                     <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                            <div className="relative flex cursor-default select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50">
+                                                 <Trophy className="mr-2 h-4 w-4" />
+                                                 <span>{t('wordsPage.wontForgetButton')}</span>
+                                            </div>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                            <AlertDialogHeader>
+                                            <AlertDialogTitle>{t('wordsPage.wontForgetDialog.title')}</AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                                 {t('wordsPage.wontForgetDialog.description', word.word)}
+                                            </AlertDialogDescription>
+                                            </AlertDialogHeader>
+                                            <AlertDialogFooter>
+                                            <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleWontForget(word)}>{t('wordsPage.wontForgetDialog.continue')}</AlertDialogAction>
+                                            </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                    </AlertDialog>
+                                    <DropdownMenuSeparator />
+                                     <DropdownMenuLabel>Review Later</DropdownMenuLabel>
+                                    {reviewOptions.map(opt => (
+                                        <DropdownMenuItem key={opt.label} onClick={() => handleReschedule(word, { days: opt.days, minutes: opt.minutes })}>
+                                            <span>{opt.label}</span>
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <p className="text-sm text-muted-foreground min-h-[40px]">{word.definition}</p>
+                         <div className="flex justify-between items-center pt-2">
+                            <Badge variant="secondary">{`Strength: ${word.strength}`}</Badge>
+                            <span className="text-xs text-muted-foreground">{getReviewText(word.nextReview)}</span>
+                        </div>
+                    </CardContent>
+                </Card>
+            )
+          )}
+      </div>
     </div>
   );
 }
-
-    
