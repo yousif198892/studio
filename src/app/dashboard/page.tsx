@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getStudentsBySupervisorId, getWordsForStudent, getUserById, User } from "@/lib/data";
-import { BookOpen, Target, Users, KeyRound } from "lucide-react";
+import { BookOpen, Target, Users, KeyRound, Trophy } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -44,8 +44,9 @@ export default function Dashboard() {
 
   if (user?.role === "student") {
     const words = getWordsForStudent(user.id);
-    const wordsToReview = words.filter(w => new Date(w.nextReview) <= new Date()).length;
-    const wordsLearned = words.filter(w => w.strength > 0).length;
+    const wordsToReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
+    const wordsLearned = words.filter(w => w.strength >= 0).length;
+    const wordsMastered = words.filter(w => w.strength === -1).length;
 
     return (
       <div className="space-y-6">
@@ -78,6 +79,20 @@ export default function Dashboard() {
                 <div className="text-2xl font-bold">{wordsLearned}</div>
                 <p className="text-xs text-muted-foreground">
                   {t('dashboard.student.learnedDescription')}
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href={`/dashboard/mastered-words?userId=${user.id}`}>
+            <Card className="hover:bg-muted/50 transition-colors">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{t('dashboard.student.masteredTitle')}</CardTitle>
+                <Trophy className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{wordsMastered}</div>
+                <p className="text-xs text-muted-foreground">
+                  {t('dashboard.student.masteredDescription')}
                 </p>
               </CardContent>
             </Card>

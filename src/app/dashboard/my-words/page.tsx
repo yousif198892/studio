@@ -99,11 +99,9 @@ export default function MyWordsPage() {
         if (wordIndex !== -1) {
             allWords[wordIndex] = updatedWord;
         } else {
-            // This case might happen if the word was part of initial mock data and not yet in localStorage
             allWords.push(updatedWord);
         }
 
-        // To be safe, ensure no duplicates and save
         const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
         localStorage.setItem('userWords', JSON.stringify(uniqueWords));
 
@@ -120,10 +118,9 @@ export default function MyWordsPage() {
         nextReview: new Date(),
     };
 
-    // Remove from component state as it's no longer "learned"
-    setWords(words.filter(w => w.id !== wordToReset.id));
+    const updatedWords = words.map(w => w.id === wordToReset.id ? updatedWord : w);
+    setWords(updatedWords);
 
-    // Update in localStorage
     updateWordInStorage(updatedWord);
 
     toast({ title: t('toasts.success'), description: t('toasts.resetWordSuccess', wordToReset.word) });
@@ -202,7 +199,7 @@ export default function MyWordsPage() {
     <div className="space-y-6">
       <audio ref={audioRef} onEnded={() => setCurrentlyPlaying(null)} />
       <div>
-        <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.learnedTitle')}</h1>
+        <h1 className="text-3xl font-bold font-headline">{t('wordsPage.title')}</h1>
         <p className="text-muted-foreground">{t('wordsPage.myLearnedWordsDesc')}</p>
       </div>
 

@@ -125,8 +125,10 @@ export const translations = {
             description: "Here's a summary of your learning progress. Keep up the great work!",
             reviewTitle: "Words to Review",
             reviewDescription: "Ready for your next session",
-            learnedTitle: "Learned Words",
-            learnedDescription: "Total vocabulary words acquired",
+            learnedTitle: "Words in Learning",
+            learnedDescription: "Actively learning via SRS",
+            masteredTitle: "Mastered Words",
+            masteredDescription: "Words moved to long-term memory",
         },
         supervisor: {
             title: "Supervisor Dashboard",
@@ -174,8 +176,8 @@ export const translations = {
         }
     },
     wordsPage: {
-        title: "My Words",
-        myLearnedWordsDesc: "Review and manage the words you've already learned.",
+        title: "My Learned Words",
+        myLearnedWordsDesc: "Review and manage the words you are actively learning.",
         description: "Browse and manage your vocabulary cards.",
         addNew: "Add New Word",
         table: {
@@ -404,8 +406,10 @@ export const translations = {
             description: "إليك ملخص لتقدمك في التعلم. استمر في العمل الرائع!",
             reviewTitle: "كلمات للمراجعة",
             reviewDescription: "جاهز لجلستك التالية",
-            learnedTitle: "الكلمات المتعلمة",
-            learnedDescription: "إجمالي كلمات المفردات المكتسبة",
+            learnedTitle: "الكلمات قيد التعلم",
+            learnedDescription: "تتعلم بنشاط عبر SRS",
+            masteredTitle: "الكلمات المتقنة",
+            masteredDescription: "الكلمات التي تم نقلها إلى الذاكرة طويلة المدى",
         },
         supervisor: {
             title: "لوحة تحكم المشرف",
@@ -453,8 +457,8 @@ export const translations = {
         }
     },
     wordsPage: {
-        title: "كلماتي",
-        myLearnedWordsDesc: "راجع وأدر الكلمات التي تعلمتها بالفعل.",
+        title: "كلماتي المتعلمة",
+        myLearnedWordsDesc: "راجع وأدر الكلمات التي تتعلمها بنشاط.",
         description: "تصفح وأدر بطاقات المفردات الخاصة بك.",
         addNew: "إضافة كلمة جديدة",
         table: {
@@ -574,7 +578,7 @@ export type TranslationKey =
     | 'landing.features.srs.title' | 'landing.features.srs.description'
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
     | 'learn.title' | 'learn.question' | 'learn.nextWord' | 'learn.iKnowIt' | 'learn.backToDashboard' | 'learn.finishedTitle' | 'learn.finishedDescription1' | 'learn.finishedDescription2' | 'learn.startNewSession' | 'learn.wordStrength'
-    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.learnedTitle' | 'dashboard.student.learnedDescription'
+    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.learnedTitle' | 'dashboard.student.learnedDescription' | 'dashboard.student.masteredTitle' | 'dashboard.student.masteredDescription'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'
