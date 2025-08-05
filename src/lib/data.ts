@@ -145,10 +145,10 @@ export let mockWords: Word[] = [
 export function getAllUsers(): User[] {
     const usersMap = new Map<string, User>();
 
-    // Always start with the base mock users to establish defaults and roles.
+    // Load base users first to establish ground truth for critical properties
     mockUsers.forEach(user => usersMap.set(user.id, { ...user }));
 
-    // If on the client, merge with localStorage, letting localStorage override non-critical info.
+    // If on the client, merge with localStorage.
     if (typeof window !== 'undefined') {
         const storedItems: User[] = [
             ...JSON.parse(localStorage.getItem('users') || '[]'),
@@ -157,13 +157,18 @@ export function getAllUsers(): User[] {
         
         storedItems.forEach((storedUser) => {
             const baseUser = usersMap.get(storedUser.id);
-            // Merge stored user data on top, but preserve critical flags from base
-            const mergedUser = { 
-                ...storedUser,
-                isMainAdmin: baseUser?.isMainAdmin || storedUser.isMainAdmin || false,
-                role: baseUser?.role || storedUser.role,
-            };
-            usersMap.set(storedUser.id, mergedUser);
+            // If there's a stored user, merge it with the base user,
+            // but ensure critical properties from the base user are preserved.
+            if (baseUser) {
+                 usersMap.set(storedUser.id, {
+                    ...storedUser, // Stored data is the base
+                    ...baseUser, // Base mock data overrides stored data for critical properties
+                    name: storedUser.name || baseUser.name, // Prefer stored name if available
+                    avatar: storedUser.avatar || baseUser.avatar, // Prefer stored avatar
+                 });
+            } else {
+                 usersMap.set(storedUser.id, storedUser);
+            }
         });
     }
 
