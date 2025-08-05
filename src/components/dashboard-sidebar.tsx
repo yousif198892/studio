@@ -17,6 +17,7 @@ import {
   MessageSquare,
   Shield,
   Trophy,
+  Target,
 } from "lucide-react";
 
 import {
@@ -50,6 +51,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       label: t('sidebar.dashboard'),
       icon: <Home />,
       roles: ["student", "supervisor"],
+    },
+    {
+        href: `/learn?userId=${user.id}`,
+        label: t('sidebar.learn'),
+        icon: <Target />,
+        roles: ["student"],
     },
     {
         href: `/dashboard/words?userId=${user.id}`,

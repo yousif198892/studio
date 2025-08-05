@@ -202,6 +202,23 @@ export const getWordsForStudent = (studentId: string): Word[] => {
     return mergedWords;
 };
 
+export const getWordForReview = (studentId: string): Word | null => {
+  if (typeof window === 'undefined') return null;
+
+  const allWords = getWordsForStudent(studentId);
+  const dueWords = allWords.filter(word => {
+    return new Date(word.nextReview) <= new Date() && word.strength >= 0;
+  });
+
+  if (dueWords.length === 0) return null;
+
+  // Simple logic: return the word with the earliest review date
+  dueWords.sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
+  
+  return dueWords[0];
+};
+
+
 export const getWordsBySupervisor = (supervisorId: string): Word[] => {
     const allWords = getSupervisorWordsFromStorage();
     return allWords.filter(w => w.supervisorId === supervisorId);

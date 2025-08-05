@@ -7,6 +7,7 @@ export const translations = {
       addWord: "Add Word",
       myStudents: "My Students",
       profile: "Profile",
+      learn: "Learn",
     },
     profile: {
         title: "My Profile",
@@ -108,6 +109,8 @@ export const translations = {
         student: {
             welcome: "Welcome, {0}!",
             description: "Here's a summary of your learning progress. Keep up the great work!",
+            reviewTitle: "Words to Review",
+            reviewDescription: "Words that are due for a review session.",
             progressOverview: {
                 title: "Progress Overview",
                 description: "A snapshot of your learning activity.",
@@ -132,6 +135,13 @@ export const translations = {
             }
         },
         loading: "Loading..."
+    },
+    learn: {
+        backToDashboard: "Back to Dashboard",
+        sessionFinished: {
+            title: "Great Job!",
+            description: "You've finished your review session for now. Come back later for more!",
+        }
     },
     addWord: {
         title: "Add a New Word",
@@ -223,6 +233,7 @@ export const translations = {
       addWord: "إضافة كلمة",
       myStudents: "طلابي",
       profile: "الملف الشخصي",
+      learn: "تعلّم"
     },
     profile: {
         title: "ملفي الشخصي",
@@ -324,6 +335,8 @@ export const translations = {
         student: {
             welcome: "مرحبًا، {0}!",
             description: "إليك ملخص لتقدمك في التعلم. استمر في العمل الرائع!",
+            reviewTitle: "كلمات للمراجعة",
+            reviewDescription: "الكلمات التي حان وقت مراجعتها.",
             progressOverview: {
                 title: "نظرة عامة على التقدم",
                 description: "لقطة من نشاطك التعليمي.",
@@ -348,6 +361,13 @@ export const translations = {
             }
         },
         loading: "جار التحميل..."
+    },
+    learn: {
+        backToDashboard: "العودة إلى لوحة التحكم",
+        sessionFinished: {
+            title: "أحسنت صنعًا!",
+            description: "لقد أنهيت جلسة المراجعة الخاصة بك الآن. عد لاحقًا للمزيد!",
+        }
     },
     addWord: {
         title: "إضافة كلمة جديدة",
@@ -435,7 +455,7 @@ export const translations = {
 };
 
 export type TranslationKey = 
-    | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile'
+    | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile' | 'sidebar.learn'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
@@ -447,10 +467,11 @@ export type TranslationKey =
     | 'landing.features.supervisorTools.title' | 'landing.features.supervisorTools.description'
     | 'landing.features.srs.title' | 'landing.features.srs.description'
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
-    | 'dashboard.student.welcome' | 'dashboard.student.description'
+    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription'
     | 'dashboard.student.progressOverview.title' | 'dashboard.student.progressOverview.description' | 'dashboard.student.progressOverview.timeSpent' | 'dashboard.student.progressOverview.wordsReviewed' | 'dashboard.student.progressOverview.reviewedToday' | 'dashboard.student.progressOverview.masteredWords'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
+    | 'learn.backToDashboard' | 'learn.sessionFinished.title' | 'learn.sessionFinished.description'
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'
     | 'addWord.form.unitLabel' | 'addWord.form.unitPlaceholder' | 'addWord.form.lessonLabel' | 'addWord.form.lessonPlaceholder' | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'

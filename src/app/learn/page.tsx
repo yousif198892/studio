@@ -1,0 +1,156 @@
+
+"use client";
+
+import { useEffect, useState, useMemo, useCallback } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { getWordForReview, Word } from "@/lib/data";
+import { QuizCard } from "@/components/quiz-card";
+import { Button } from "@/components/ui/button";
+import { updateStudentProgressInStorage } from "@/lib/storage";
+import { ClientOnly } from "@/components/client-only";
+import { useLanguage } from "@/hooks/use-language";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
+type LearningStats = {
+  timeSpentSeconds: number;
+  totalWordsReviewed: number;
+  reviewedToday: {
+    count: number;
+    date: string;
+  };
+};
+
+export default function LearnPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { t } = useLanguage();
+  const [word, setWord] = useState<Word | null>(null);
+  const [sessionFinished, setSessionFinished] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
+
+  const userId = searchParams.get("userId");
+
+  const loadNextWord = useCallback(() => {
+    if (userId) {
+      const nextWord = getWordForReview(userId);
+      setWord(nextWord);
+      if (!nextWord) {
+        setSessionFinished(true);
+      }
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    setStartTime(Date.now());
+    loadNextWord();
+
+    return () => {
+      if (userId && startTime) {
+        const endTime = Date.now();
+        const durationSeconds = Math.round((endTime - startTime) / 1000);
+        
+        const storedStats = localStorage.getItem(`learningStats_${userId}`);
+        const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
+          timeSpentSeconds: 0,
+          totalWordsReviewed: 0,
+          reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+        };
+        stats.timeSpentSeconds += durationSeconds;
+        localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+      }
+    };
+  }, [userId, loadNextWord]); // Only run once on mount
+
+
+  const handleCorrect = () => {
+    if (!word || !userId) return;
+
+    const newStrength = word.strength + 1;
+    const intervals = [1, 2, 4, 8, 16, 32, 64]; // Spaced repetition intervals in days
+    const newInterval = intervals[Math.min(newStrength, intervals.length - 1)];
+    const nextReview = new Date();
+    nextReview.setDate(nextReview.getDate() + newInterval);
+    
+    updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
+    updateStats(userId, 1);
+    loadNextWord();
+  };
+
+  const handleIncorrect = () => {
+    if (!word || !userId) return;
+
+    const newStrength = Math.max(0, word.strength - 1);
+    const nextReview = new Date(); // Review again soon
+    
+    updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
+    updateStats(userId, 1);
+    loadNextWord();
+  };
+
+  const updateStats = (userId: string, count: number) => {
+    const storedStats = localStorage.getItem(`learningStats_${userId}`);
+    const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
+      timeSpentSeconds: 0,
+      totalWordsReviewed: 0,
+      reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+    };
+    
+    const today = new Date().toISOString().split('T')[0];
+    if (stats.reviewedToday.date !== today) {
+        stats.reviewedToday = { count: 0, date: today };
+    }
+
+    stats.totalWordsReviewed += count;
+    stats.reviewedToday.count += count;
+
+    localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+  };
+
+  if (!userId) {
+    // In a real app, you might redirect to login if no userId is found
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        User not found. Please log in again.
+      </div>
+    );
+  }
+
+  return (
+    <ClientOnly>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary">
+        <div className="w-full max-w-2xl">
+           <Button variant="ghost" asChild className="absolute top-4 left-4">
+               <Link href={`/dashboard?userId=${userId}`}>
+                   <ArrowLeft className="mr-2 h-4 w-4" />
+                   {t('learn.backToDashboard')}
+               </Link>
+           </Button>
+
+          {sessionFinished ? (
+            <div className="text-center p-8 bg-card rounded-lg shadow-lg">
+              <h2 className="text-2xl font-bold font-headline mb-4">{t('learn.sessionFinished.title')}</h2>
+              <p className="text-muted-foreground mb-6">{t('learn.sessionFinished.description')}</p>
+              <Button asChild>
+                <Link href={`/dashboard?userId=${userId}`}>
+                  {t('learn.backToDashboard')}
+                </Link>
+              </Button>
+            </div>
+          ) : word ? (
+            <QuizCard
+              key={word.id}
+              word={word}
+              onCorrect={handleCorrect}
+              onIncorrect={handleIncorrect}
+            />
+          ) : (
+            <div className="text-center">
+              <p>{t('dashboard.loading')}</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </ClientOnly>
+  );
+}
