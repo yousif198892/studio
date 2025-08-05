@@ -4,7 +4,6 @@ export const translations = {
     sidebar: {
       dashboard: "Dashboard",
       myWords: "My Words",
-      masteredWords: "Mastered Words",
       addWord: "Add Word",
       myStudents: "My Students",
       profile: "Profile",
@@ -109,8 +108,6 @@ export const translations = {
         student: {
             welcome: "Welcome, {0}!",
             description: "Here's a summary of your learning progress. Keep up the great work!",
-            masteredTitle: "Mastered Words",
-            masteredDescription: "Words moved to long-term memory",
             progressOverview: {
                 title: "Progress Overview",
                 description: "A snapshot of your learning activity.",
@@ -186,16 +183,6 @@ export const translations = {
             continue: "Continue",
         },
     },
-    masteredWordsPage: {
-        title: "Mastered Words",
-        description: "Words you've completely learned. They are no longer in your review schedule.",
-        badge: "Mastered",
-        restoreDialog: {
-            title: "Restore to Learning?",
-            description: "This will add “{0}” back to your learning queue for review.",
-            continue: "Restore"
-        }
-    },
     studentsPage: {
         title: "My Students",
         description: "Welcome, {0}. Here are your students.",
@@ -233,7 +220,6 @@ export const translations = {
     sidebar: {
       dashboard: "لوحة التحكم",
       myWords: "كلماتي",
-      masteredWords: "الكلمات المتقنة",
       addWord: "إضافة كلمة",
       myStudents: "طلابي",
       profile: "الملف الشخصي",
@@ -338,8 +324,6 @@ export const translations = {
         student: {
             welcome: "مرحبًا، {0}!",
             description: "إليك ملخص لتقدمك في التعلم. استمر في العمل الرائع!",
-            masteredTitle: "الكلمات المتقنة",
-            masteredDescription: "الكلمات التي تم نقلها إلى الذاكرة طويلة المدى",
             progressOverview: {
                 title: "نظرة عامة على التقدم",
                 description: "لقطة من نشاطك التعليمي.",
@@ -415,16 +399,6 @@ export const translations = {
             continue: "متابعة",
         },
     },
-    masteredWordsPage: {
-        title: "الكلمات المتقنة",
-        description: "الكلمات التي تعلمتها بالكامل. لم تعد مدرجة في جدول المراجعة الخاص بك.",
-        badge: "متقن",
-        restoreDialog: {
-            title: "استعادة للتعلم؟",
-            description: "سيؤدي هذا إلى إضافة “{0}” مرة أخرى إلى قائمة انتظار التعلم الخاصة بك للمراجعة.",
-            continue: "استعادة"
-        }
-    },
     studentsPage: {
         title: "طلابي",
         description: "مرحبًا، {0}. إليك طلابك.",
@@ -461,7 +435,7 @@ export const translations = {
 };
 
 export type TranslationKey = 
-    | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.masteredWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile'
+    | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
@@ -473,7 +447,7 @@ export type TranslationKey =
     | 'landing.features.supervisorTools.title' | 'landing.features.supervisorTools.description'
     | 'landing.features.srs.title' | 'landing.features.srs.description'
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
-    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.masteredTitle' | 'dashboard.student.masteredDescription'
+    | 'dashboard.student.welcome' | 'dashboard.student.description'
     | 'dashboard.student.progressOverview.title' | 'dashboard.student.progressOverview.description' | 'dashboard.student.progressOverview.timeSpent' | 'dashboard.student.progressOverview.wordsReviewed' | 'dashboard.student.progressOverview.reviewedToday' | 'dashboard.student.progressOverview.masteredWords'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
@@ -483,7 +457,6 @@ export type TranslationKey =
     | 'wordsPage.title' | 'wordsPage.description' | 'wordsPage.addNew'
     | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.actions'
     | 'wordsPage.deleteDialog.title' | 'wordsPage.deleteDialog.description' | 'wordsPage.deleteDialog.cancel' | 'wordsPage.deleteDialog.continue'
-    | 'masteredWordsPage.title' | 'masteredWordsPage.description' | 'masteredWordsPage.badge' | 'masteredWordsPage.restoreDialog.title' | 'masteredWordsPage.restoreDialog.description' | 'masteredWordsPage.restoreDialog.continue'
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';

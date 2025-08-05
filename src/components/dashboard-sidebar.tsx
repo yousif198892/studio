@@ -52,12 +52,6 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       roles: ["student", "supervisor"],
     },
     {
-      href: `/dashboard/mastered-words?userId=${user.id}`,
-      label: t('sidebar.masteredWords'),
-      icon: <Trophy />,
-      roles: ["student"],
-    },
-    {
         href: `/dashboard/words?userId=${user.id}`,
         label: t('sidebar.myWords'),
         icon: <BookOpen />,
