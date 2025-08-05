@@ -224,7 +224,7 @@ export default function MyWordsPage() {
                     <TableCell className="hidden sm:table-cell">
                       <Image
                         alt="Word image"
-                        className="aspect-square rounded-md object-cover"
+                        className="aspect-square rounded-md object-contain"
                         height="64"
                         src={word.imageUrl}
                         width="64"
