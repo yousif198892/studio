@@ -145,7 +145,7 @@ export let mockWords: Word[] = [
 export function getAllUsers(): User[] {
     const usersMap = new Map<string, User>();
 
-    // Start with the base mock users to establish defaults and roles.
+    // Always start with the base mock users to establish defaults and roles.
     mockUsers.forEach(user => usersMap.set(user.id, { ...user }));
 
     // If on the client, merge with localStorage, letting localStorage override non-critical info.
