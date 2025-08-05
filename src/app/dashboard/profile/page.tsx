@@ -43,6 +43,7 @@ export default function ProfilePage() {
   const router = useRouter();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
+  const [supervisor, setSupervisor] = useState<User | null>(null);
   const [name, setName] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
@@ -54,6 +55,10 @@ export default function ProfilePage() {
       setUser(foundUser || null);
       if (foundUser) {
           setName(foundUser.name);
+          if (foundUser.role === 'student' && foundUser.supervisorId) {
+            const foundSupervisor = getUserById(foundUser.supervisorId);
+            setSupervisor(foundSupervisor || null);
+          }
       }
     }
   }, [searchParams]);
@@ -226,6 +231,12 @@ export default function ProfilePage() {
                 <Label htmlFor="email">{t('profile.personalInfo.email')}</Label>
                 <Input id="email" type="email" defaultValue={user.email} disabled />
                 </div>
+                {user.role === 'student' && supervisor && (
+                  <div className="space-y-2">
+                    <Label htmlFor="supervisor">Supervisor</Label>
+                    <Input id="supervisor" value={supervisor.name} disabled />
+                  </div>
+                )}
             </CardContent>
             <CardFooter>
                 <Button onClick={handleSaveChanges}>{t('profile.personalInfo.save')}</Button>
@@ -331,3 +342,4 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+}
