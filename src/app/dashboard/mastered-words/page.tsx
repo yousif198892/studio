@@ -50,7 +50,8 @@ export default function MasteredWordsPage() {
   
   const updateWordInStorage = (updatedWord: Word) => {
     try {
-        let allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+        const storageKey = `userWords_${userId}`;
+        let allWords: Word[] = JSON.parse(localStorage.getItem(storageKey) || '[]');
         const wordIndex = allWords.findIndex(w => w.id === updatedWord.id);
         
         if (wordIndex !== -1) {
@@ -60,7 +61,7 @@ export default function MasteredWordsPage() {
         }
 
         const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
-        localStorage.setItem('userWords', JSON.stringify(uniqueWords));
+        localStorage.setItem(storageKey, JSON.stringify(uniqueWords));
 
     } catch (e) {
         console.error("Failed to update word in localStorage", e);
