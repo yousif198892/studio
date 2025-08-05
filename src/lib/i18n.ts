@@ -109,10 +109,6 @@ export const translations = {
         student: {
             welcome: "Welcome, {0}!",
             description: "Here's a summary of your learning progress. Keep up the great work!",
-            reviewTitle: "Words to Review",
-            reviewDescription: "Ready for your next session",
-            learnedTitle: "Words in Learning",
-            learnedDescription: "Actively learning via SRS",
             masteredTitle: "Mastered Words",
             masteredDescription: "Words moved to long-term memory",
             progressOverview: {
@@ -173,7 +169,6 @@ export const translations = {
     },
     wordsPage: {
         title: "My Word Collection",
-        myLearnedWordsDesc: "Review and manage the words you are actively learning.",
         description: "Browse and manage your vocabulary cards.",
         addNew: "Add New Word",
         table: {
@@ -183,11 +178,6 @@ export const translations = {
             word: "Word",
             definition: "Definition",
             actions: "Actions",
-            nextReview: "Next Review",
-            reviewOverdue: "Overdue",
-            reviewToday: "Today",
-            reviewTomorrow: "Tomorrow",
-            reviewInDays: "In {0} days",
         },
         deleteDialog: {
             title: "Are you absolutely sure?",
@@ -195,17 +185,6 @@ export const translations = {
             cancel: "Cancel",
             continue: "Continue",
         },
-        resetDialog: {
-            title: "Are you sure you want to reset this word?",
-            description: "This will reset the learning progress for “{0}” and move it back to your review queue.",
-            continue: "Reset",
-        },
-        wontForgetButton: "I Won't Forget",
-        wontForgetDialog: {
-            title: "Move to Mastered Words?",
-            description: "This will remove “{0}” from your regular review schedule. You can restore it later from the Mastered Words page.",
-            continue: "Confirm",
-        }
     },
     masteredWordsPage: {
         title: "Mastered Words",
@@ -359,10 +338,6 @@ export const translations = {
         student: {
             welcome: "مرحبًا، {0}!",
             description: "إليك ملخص لتقدمك في التعلم. استمر في العمل الرائع!",
-            reviewTitle: "كلمات للمراجعة",
-            reviewDescription: "جاهز لجلستك التالية",
-            learnedTitle: "الكلمات قيد التعلم",
-            learnedDescription: "تتعلم بنشاط عبر SRS",
             masteredTitle: "الكلمات المتقنة",
             masteredDescription: "الكلمات التي تم نقلها إلى الذاكرة طويلة المدى",
             progressOverview: {
@@ -423,7 +398,6 @@ export const translations = {
     },
     wordsPage: {
         title: "مجموعة كلماتي",
-        myLearnedWordsDesc: "راجع وأدر الكلمات التي تتعلمها بنشاط.",
         description: "تصفح وأدر بطاقات المفردات الخاصة بك.",
         addNew: "إضافة كلمة جديدة",
         table: {
@@ -433,11 +407,6 @@ export const translations = {
             word: "الكلمة",
             definition: "التعريف",
             actions: "الإجراءات",
-            nextReview: "المراجعة التالية",
-            reviewOverdue: "متأخر",
-            reviewToday: "اليوم",
-            reviewTomorrow: "غداً",
-            reviewInDays: "خلال {0} أيام",
         },
         deleteDialog: {
             title: "هل أنت متأكد تمامًا؟",
@@ -445,17 +414,6 @@ export const translations = {
             cancel: "إلغاء",
             continue: "متابعة",
         },
-        resetDialog: {
-            title: "هل أنت متأكد من رغبتك في إعادة ضبط هذه الكلمة؟",
-            description: "سيؤدي هذا إلى إعادة ضبط تقدم تعلم “{0}” وإعادته إلى قائمة المراجعة الخاصة بك.",
-            continue: "إعادة تعيين",
-        },
-        wontForgetButton: "لن أنسى",
-        wontForgetDialog: {
-            title: "الانتقال إلى الكلمات المتقنة؟",
-            description: "سيؤدي هذا إلى إزالة “{0}” من جدول المراجعة المنتظم. يمكنك استعادته لاحقًا من صفحة الكلمات المتقنة.",
-            continue: "تأكيد",
-        }
     },
     masteredWordsPage: {
         title: "الكلمات المتقنة",
@@ -515,18 +473,16 @@ export type TranslationKey =
     | 'landing.features.supervisorTools.title' | 'landing.features.supervisorTools.description'
     | 'landing.features.srs.title' | 'landing.features.srs.description'
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
-    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.learnedTitle' | 'dashboard.student.learnedDescription' | 'dashboard.student.masteredTitle' | 'dashboard.student.masteredDescription'
+    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.masteredTitle' | 'dashboard.student.masteredDescription'
     | 'dashboard.student.progressOverview.title' | 'dashboard.student.progressOverview.description' | 'dashboard.student.progressOverview.timeSpent' | 'dashboard.student.progressOverview.wordsReviewed' | 'dashboard.student.progressOverview.reviewedToday' | 'dashboard.student.progressOverview.masteredWords'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'
     | 'addWord.form.unitLabel' | 'addWord.form.unitPlaceholder' | 'addWord.form.lessonLabel' | 'addWord.form.lessonPlaceholder' | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'
-    | 'wordsPage.title' | 'wordsPage.myLearnedWordsDesc' | 'wordsPage.description' | 'wordsPage.addNew'
-    | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.actions' | 'wordsPage.table.nextReview' | 'wordsPage.table.reviewOverdue' | 'wordsPage.table.reviewToday' | 'wordsPage.table.reviewTomorrow' | 'wordsPage.table.reviewInDays'
+    | 'wordsPage.title' | 'wordsPage.description' | 'wordsPage.addNew'
+    | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.actions'
     | 'wordsPage.deleteDialog.title' | 'wordsPage.deleteDialog.description' | 'wordsPage.deleteDialog.cancel' | 'wordsPage.deleteDialog.continue'
-    | 'wordsPage.resetDialog.title' | 'wordsPage.resetDialog.description' | 'wordsPage.resetDialog.continue'
-    | 'wordsPage.wontForgetButton' | 'wordsPage.wontForgetDialog.title' | 'wordsPage.wontForgetDialog.description' | 'wordsPage.wontForgetDialog.continue'
     | 'masteredWordsPage.title' | 'masteredWordsPage.description' | 'masteredWordsPage.badge' | 'masteredWordsPage.restoreDialog.title' | 'masteredWordsPage.restoreDialog.description' | 'masteredWordsPage.restoreDialog.continue'
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
