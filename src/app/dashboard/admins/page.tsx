@@ -31,7 +31,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { getAllUsers, User, getUserById } from "@/lib/data";
+import { getAllUsers, User } from "@/lib/data";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
 import { toggleSupervisorSuspension } from "@/lib/actions";
@@ -45,31 +45,34 @@ export default function AdminsPage() {
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const { toast } = useToast();
 
-  const [_, toggleSuspensionAction] = useActionState(toggleSupervisorSuspension, { success: false, message: ""});
+  const [_, toggleSuspensionAction, isPending] = useActionState(toggleSupervisorSuspension, { success: false, message: ""});
 
   useEffect(() => {
     const allUsers = getAllUsers();
+    const mainAdmin = allUsers.find(u => u.isMainAdmin);
     const otherSupervisors = allUsers.filter(
-      (u) => u.role === "supervisor" && u.id !== mainAdminId
+      (u) => u.role === "supervisor" && u.id !== mainAdmin?.id
     );
     setSupervisors(otherSupervisors);
-  }, [mainAdminId]);
+  }, []);
 
   const handleSupervisorAdded = (newUser: User) => {
     setSupervisors((prev) => [...prev, newUser]);
   };
   
-  const handleToggleSuspension = async (user: User) => {
+  const handleToggleSuspension = async (userToToggle: User) => {
     const formData = new FormData();
-    formData.append('userId', user.id);
+    formData.append('userToToggle', JSON.stringify(userToToggle));
+    
     const result = await toggleSupervisorSuspension(null, formData);
 
     if (result.success && result.updatedUser) {
-        setSupervisors(supervisors.map(s => s.id === user.id ? result.updatedUser : s));
+        // Update state
+        setSupervisors(supervisors.map(s => s.id === result.updatedUser.id ? result.updatedUser : s));
         
         // Update localStorage
         try {
-          const storedUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+          const storedUsers: User[] = getAllUsers();
           const updatedUsers = storedUsers.map(u => u.id === result.updatedUser.id ? result.updatedUser : u);
           localStorage.setItem('combinedUsers', JSON.stringify(updatedUsers));
         } catch (error) {
@@ -78,7 +81,7 @@ export default function AdminsPage() {
 
         toast({
             title: "Success!",
-            description: `Supervisor ${user.name} has been ${result.updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
+            description: `Supervisor ${userToToggle.name} has been ${result.updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
         });
     } else {
          toast({
@@ -131,11 +134,7 @@ export default function AdminsPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Admins</h1>
-      <p className="text-muted-foreground">
-        Create and manage supervisor accounts.
-      </p>
-      <div className="grid grid-cols-1 gap-6">
+       <div className="grid grid-cols-1 gap-6">
         <Card>
           <CardHeader>
             <CardTitle>Create New Supervisor</CardTitle>

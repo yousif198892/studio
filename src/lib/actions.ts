@@ -369,32 +369,35 @@ export async function createSupervisor(prevState: any, formData: FormData) {
 
 
 const toggleSuspensionSchema = z.object({
-    userId: z.string().min(1, "User ID is required."),
+    userToToggle: z.string().min(1, "User object is required."),
 });
 
 export async function toggleSupervisorSuspension(prevState: any, formData: FormData) {
     const validatedFields = toggleSuspensionSchema.safeParse({
-        userId: formData.get("userId"),
+        userToToggle: formData.get("userToToggle"),
     });
 
     if (!validatedFields.success) {
         return {
-            message: "Invalid request.",
+            message: "Invalid request: user object not provided.",
             success: false,
         };
     }
     
-    const { userId } = validatedFields.data;
-    const allUsers = getAllUsers(); // This can now be trusted to have all users
-    const userToUpdate = allUsers.find(u => u.id === userId);
+    let userToToggle: User;
+    try {
+        userToToggle = JSON.parse(validatedFields.data.userToToggle);
+    } catch (e) {
+        return { message: "Invalid user data format.", success: false };
+    }
 
-    if (!userToUpdate) {
-        return { message: "User not found.", success: false };
+    if (!userToToggle || !userToToggle.id) {
+        return { message: "User not found or invalid user data.", success: false };
     }
 
     const updatedUser = {
-        ...userToUpdate,
-        isSuspended: !userToUpdate.isSuspended,
+        ...userToToggle,
+        isSuspended: !userToToggle.isSuspended,
     };
 
     return { 
