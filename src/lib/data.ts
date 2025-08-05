@@ -146,23 +146,26 @@ export function getAllUsers(): User[] {
     const usersMap = new Map<string, User>();
 
     // Start with the base mock users to establish defaults and admin flags.
-    mockUsers.forEach(user => usersMap.set(user.id, user));
+    mockUsers.forEach(user => usersMap.set(user.id, { ...user }));
 
     // If on the client, merge with localStorage.
-    // The base user is spread first, then the stored user. This ensures properties
-    // like `isMainAdmin` from the mock data are preserved if they are not defined
-    // in the localStorage object.
     if (typeof window !== 'undefined') {
-        const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-        storedUsers.forEach(storedUser => {
-            const baseUser = usersMap.get(storedUser.id);
-            usersMap.set(storedUser.id, { ...baseUser, ...storedUser });
-        });
+        const storedItems = [
+            ...JSON.parse(localStorage.getItem('users') || '[]'),
+            ...JSON.parse(localStorage.getItem('combinedUsers') || '[]')
+        ];
+        
+        const storedUsersMap = new Map<string, User>();
+        storedItems.forEach((user: User) => storedUsersMap.set(user.id, user));
 
-        const storedCombinedUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
-        storedCombinedUsers.forEach(storedUser => {
-            const baseUser = usersMap.get(storedUser.id);
-            usersMap.set(storedUser.id, { ...baseUser, ...storedUser });
+        storedUsersMap.forEach((storedUser, id) => {
+            const baseUser = usersMap.get(id) || {};
+            // Merge, but ensure isMainAdmin from mockUsers is preserved.
+            const mergedUser = { ...baseUser, ...storedUser };
+            if (baseUser.isMainAdmin) {
+                mergedUser.isMainAdmin = true;
+            }
+            usersMap.set(id, mergedUser);
         });
     }
 
