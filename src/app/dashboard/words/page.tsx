@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getWordsBySupervisor, Word } from "@/lib/data";
 import {
   Table,
@@ -36,22 +36,34 @@ export default function WordsPage() {
   const [words, setWords] = useState<Word[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    // This effect will run when the component mounts and whenever userId changes.
-    // It fetches the latest word list from localStorage.
+  const fetchWords = useCallback(() => {
     const supervisorWords = getWordsBySupervisor(userId);
     setWords(supervisorWords);
   }, [userId]);
 
-  const handleDeleteWord = (wordId: string, wordText: string) => {
-    try {
-        // Update state
-        setWords(prev => prev.filter(w => w.id !== wordId));
+  useEffect(() => {
+    fetchWords();
+    
+    const handleStorageChange = () => {
+        fetchWords();
+    };
 
-        // Update localStorage
-        const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+
+  }, [fetchWords]);
+
+  const handleDeleteWord = (wordId: string) => {
+    try {
+        let storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
         const updatedWords = storedWords.filter(w => w.id !== wordId);
         localStorage.setItem('userWords', JSON.stringify(updatedWords));
+
+        // Update state to reflect deletion immediately
+        setWords(updatedWords.filter(w => w.supervisorId === userId));
 
         toast({
             title: t('toasts.success'),
@@ -126,7 +138,7 @@ export default function WordsPage() {
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                 <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteWord(word.id, word.word)}>
+                                <AlertDialogAction onClick={() => handleDeleteWord(word.id)}>
                                     {t('wordsPage.deleteDialog.continue')}
                                 </AlertDialogAction>
                                 </AlertDialogFooter>
