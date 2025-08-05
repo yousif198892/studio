@@ -32,6 +32,7 @@ import { Logo } from "./logo";
 import { Button } from "@/components/ui/button";
 import { type User } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
+import { cn } from "@/lib/utils";
 
 type DashboardSidebarProps = {
   user: User;
@@ -149,7 +150,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
             <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className="font-semibold text-sm truncate">{user?.name}</p>
+            <p className={cn("font-semibold text-sm truncate", user.isMainAdmin && "text-destructive")}>{user?.name}</p>
             <p className="text-xs text-muted-foreground truncate">
               {user?.email}
             </p>
