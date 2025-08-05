@@ -33,9 +33,13 @@ export default function DashboardLayout({
         setUser(foundUser);
         // Persist the combined user list if it's not already there.
         // This prevents overwriting changes made in other components like the profile page.
-        if (typeof window !== 'undefined' && !localStorage.getItem('combinedUsers')) {
-          const allUsers = getAllUsers();
-          localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+        if (typeof window !== 'undefined') {
+            if (!localStorage.getItem('combinedUsers')) {
+                const allUsers = getAllUsers();
+                localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+            }
+            // Clear the words from storage to ensure they are deleted.
+            localStorage.removeItem('userWords');
         }
       } else {
          console.error("User not found, redirecting to login.")
