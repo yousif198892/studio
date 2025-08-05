@@ -63,6 +63,7 @@ export default function AdminsPage() {
 
   const fetchSupervisors = () => {
     const allUsers = getAllUsers();
+    // Explicitly filter out the main admin from this list
     const supervisorUsers = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin);
     setSupervisors(supervisorUsers);
   };
