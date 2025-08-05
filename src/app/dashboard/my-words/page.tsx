@@ -3,19 +3,10 @@
 import {
   Card,
   CardContent,
-  CardDescription,
+  CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { getWordsForStudent, Word, Unit, getUnitsBySupervisor, getUserById } from "@/lib/data";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -195,111 +186,89 @@ export default function MyWordsPage() {
         <p className="text-muted-foreground">{t('wordsPage.myLearnedWordsDesc')}</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('wordsPage.table.title')}</CardTitle>
-          <CardDescription>
-            {t('dashboard.student.learnedDescription')}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="hidden w-[100px] sm:table-cell">
-                  {t('wordsPage.table.image')}
-                </TableHead>
-                <TableHead>{t('wordsPage.table.word')}</TableHead>
-                <TableHead>{t('wordsPage.table.definition')}</TableHead>
-                <TableHead>{t('wordsPage.table.unit')}</TableHead>
-                <TableHead>{t('wordsPage.table.nextReview')}</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {words.map((word) => {
-                const isOverdue = new Date(word.nextReview) <= new Date();
-                return (
-                  <TableRow key={word.id}>
-                    <TableCell className="hidden sm:table-cell">
-                      <Image
-                        alt="Word image"
-                        className="aspect-square rounded-md object-contain"
-                        height="64"
-                        src={word.imageUrl}
-                        width="64"
-                      />
-                    </TableCell>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <span>{word.word}</span>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={() => handlePlayAudio(word)} 
-                          disabled={!!loadingAudio}
-                          aria-label="Play audio"
-                        >
-                          {loadingAudio === word.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
-                        </Button>
-                      </div>
-                    </TableCell>
-                    <TableCell>{word.definition}</TableCell>
-                    <TableCell>{getUnitName(word.unitId)}</TableCell>
-                    <TableCell>
-                      <Badge variant={isOverdue ? 'destructive' : 'secondary'}>{getReviewText(word.nextReview)}</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Open menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuLabel>Reschedule Review</DropdownMenuLabel>
-                          {reviewOptions.map(opt => (
-                              <DropdownMenuItem 
-                                key={opt.days} 
-                                onClick={() => handleReschedule(word, opt.days)}
-                              >
-                                  {opt.label}
-                              </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuSeparator />
-                           <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                                      <RotateCcw className="mr-2 h-4 w-4" />
-                                      Reset Progress
-                                  </DropdownMenuItem>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                  <AlertDialogHeader>
-                                  <AlertDialogTitle>{t('wordsPage.resetDialog.title')}</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                      {t('wordsPage.resetDialog.description', word.word)}
-                                  </AlertDialogDescription>
-                                  </AlertDialogHeader>
-                                  <AlertDialogFooter>
-                                  <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
-                                  <AlertDialogAction onClick={() => handleReset(word)}>{t('wordsPage.resetDialog.continue')}</AlertDialogAction>
-                                  </AlertDialogFooter>
-                              </AlertDialogContent>
-                          </AlertDialog>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                )
-              })}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          {words.map((word) => {
+            const isOverdue = new Date(word.nextReview) <= new Date();
+            return (
+                <Card key={word.id} className="flex flex-col shadow-md transition-all duration-300 ease-in-out hover:shadow-xl">
+                    <CardHeader className="p-0">
+                        <div className="aspect-video relative bg-muted rounded-t-lg">
+                            <Image
+                                src={word.imageUrl}
+                                alt={`Image for ${word.word}`}
+                                fill
+                                className="object-contain rounded-t-lg p-2"
+                            />
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-4 flex-grow space-y-2">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                                <h3 className="text-lg font-bold font-headline">{word.word}</h3>
+                                <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                onClick={() => handlePlayAudio(word)} 
+                                disabled={!!loadingAudio}
+                                aria-label="Play audio"
+                                className="h-6 w-6"
+                                >
+                                {loadingAudio === word.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Volume2 className="h-4 w-4" />}
+                                </Button>
+                            </div>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel>Reschedule Review</DropdownMenuLabel>
+                                {reviewOptions.map(opt => (
+                                    <DropdownMenuItem 
+                                        key={opt.days} 
+                                        onClick={() => handleReschedule(word, opt.days)}
+                                    >
+                                        {opt.label}
+                                    </DropdownMenuItem>
+                                ))}
+                                <DropdownMenuSeparator />
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                                            <RotateCcw className="mr-2 h-4 w-4" />
+                                            Reset Progress
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                        <AlertDialogTitle>{t('wordsPage.resetDialog.title')}</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                            {t('wordsPage.resetDialog.description', word.word)}
+                                        </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                        <AlertDialogCancel>{t('wordsPage.deleteDialog.cancel')}</AlertDialogCancel>
+                                        <AlertDialogAction onClick={() => handleReset(word)}>{t('wordsPage.resetDialog.continue')}</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                        <p className="text-sm text-muted-foreground min-h-[40px]">{word.definition}</p>
+                        <div className="flex justify-between items-center">
+                            <Badge variant="outline">{getUnitName(word.unitId)}</Badge>
+                            <Badge variant={isOverdue ? 'destructive' : 'secondary'}>{getReviewText(word.nextReview)}</Badge>
+                        </div>
+                    </CardContent>
+                </Card>
+            )
+          })}
+      </div>
     </div>
   );
 }
