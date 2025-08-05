@@ -21,14 +21,26 @@ import {
 } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLanguage } from "@/hooks/use-language";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getUserById, User } from "@/lib/data";
+import { getUserById, User, Word } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function ProfilePage() {
   const { t, language, setLanguage } = useLanguage();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [name, setName] = useState('');
@@ -123,6 +135,53 @@ export default function ProfilePage() {
         title: t('toasts.success'),
         description: "Profile picture updated successfully!",
       });
+  }
+
+  const handleResetPassword = () => {
+    toast({
+        title: "Password Reset",
+        description: "In a real application, an email would be sent to you with instructions to reset your password.",
+    });
+  }
+
+  const handleDeleteAccount = () => {
+    if (!user) return;
+    
+    try {
+        // Remove from 'users'
+        let users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+        users = users.filter(u => u.id !== user.id);
+        localStorage.setItem("users", JSON.stringify(users));
+
+        // Remove from 'combinedUsers'
+        let combinedUsers: User[] = JSON.parse(localStorage.getItem("combinedUsers") || "[]");
+        combinedUsers = combinedUsers.filter(u => u.id !== user.id);
+        localStorage.setItem("combinedUsers", JSON.stringify(combinedUsers));
+        
+        // If supervisor, delete their words. If student, delete their progress.
+        // For this app's logic, student progress is stored with the word objects.
+        // If the user is a supervisor, we remove their words. This implicitly removes student progress on those words.
+        // If a student is deleted, we don't need to do anything with words, as they are owned by the supervisor.
+        if (user.role === 'supervisor') {
+            let allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+            allWords = allWords.filter(w => w.supervisorId !== user.id);
+            localStorage.setItem('userWords', JSON.stringify(allWords));
+        }
+
+        toast({
+            title: "Account Deleted",
+            description: "Your account has been permanently deleted.",
+        });
+
+        router.push("/login");
+
+    } catch (error) {
+         toast({
+            title: "Error",
+            description: "Could not delete your account. Please try again.",
+            variant: "destructive"
+        });
+    }
   }
 
   if (!user) {
@@ -248,11 +307,27 @@ export default function ProfilePage() {
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">
-            <Button variant="outline">{t('profile.account.resetPassword.button')}</Button>
-            <Button variant="destructive">{t('profile.account.deleteAccount.button')}</Button>
+            <Button variant="outline" onClick={handleResetPassword}>{t('profile.account.resetPassword.button')}</Button>
+            <AlertDialog>
+                <AlertDialogTrigger asChild>
+                    <Button variant="destructive">{t('profile.account.deleteAccount.button')}</Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete your
+                        account and remove your data from our servers.
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
           </CardFooter>
         </Card>
       </div>
     </div>
   );
-}
