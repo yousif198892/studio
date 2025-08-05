@@ -91,8 +91,8 @@ export async function addWord(prevState: any, formData: FormData) {
 
   } catch (error) {
     console.error("Error during AI word option generation:", error);
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to add word. The AI could not process the request. Please try a different word or image.`, errors: {}, success: false };
+    const errorMessage = "Failed to add word. The AI could not process the request. Please try a different word or image.";
+    return { message: errorMessage, errors: {}, success: false };
   }
 }
 
