@@ -45,6 +45,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { generateSpeech } from "@/ai/flows/text-to-speech-flow";
 import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
 
 export default function MyWordsPage() {
   const searchParams = useSearchParams();
@@ -166,23 +167,14 @@ export default function MyWordsPage() {
     { label: "After a month", days: 30 },
   ];
 
-  const getDaysUntilReview = (nextReviewDate: Date) => {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0); // Normalize current date to midnight
-      
-      const reviewDate = new Date(nextReviewDate);
-      reviewDate.setHours(0, 0, 0, 0); // Normalize review date to midnight
-      
-      const diffTime = reviewDate.getTime() - now.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      return diffDays;
-  }
-  
-  const getReviewText = (days: number) => {
-    if (days < 0) return t('wordsPage.table.reviewOverdue');
-    if (days === 0) return t('wordsPage.table.reviewToday');
-    if (days === 1) return t('wordsPage.table.reviewTomorrow');
-    return t('wordsPage.table.reviewInDays', days);
+  const getReviewText = (nextReviewDate: Date) => {
+    const now = new Date();
+    const reviewDate = new Date(nextReviewDate);
+
+    if (reviewDate <= now) {
+      return t('wordsPage.table.reviewOverdue');
+    }
+    return formatDistanceToNow(reviewDate, { addSuffix: true });
   };
 
   return (
@@ -216,7 +208,7 @@ export default function MyWordsPage() {
             </TableHeader>
             <TableBody>
               {words.map((word) => {
-                const daysUntilReview = getDaysUntilReview(word.nextReview);
+                const isOverdue = new Date(word.nextReview) <= new Date();
                 return (
                   <TableRow key={word.id}>
                     <TableCell className="hidden sm:table-cell">
@@ -245,7 +237,7 @@ export default function MyWordsPage() {
                     <TableCell>{word.definition}</TableCell>
                     <TableCell>{getUnitName(word.unitId)}</TableCell>
                     <TableCell>
-                      <Badge variant={daysUntilReview <= 0 ? 'destructive' : 'outline'}>{getReviewText(daysUntilReview)}</Badge>
+                      <Badge variant={isOverdue ? 'destructive' : 'outline'}>{getReviewText(word.nextReview)}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -263,9 +255,6 @@ export default function MyWordsPage() {
                               <DropdownMenuItem 
                                 key={opt.days} 
                                 onClick={() => handleReschedule(word, opt.days)}
-                                className={cn({
-                                    'text-destructive focus:bg-destructive/10 focus:text-destructive': daysUntilReview === opt.days
-                                })}
                               >
                                   {opt.label}
                               </DropdownMenuItem>
