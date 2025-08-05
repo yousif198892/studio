@@ -146,69 +146,59 @@ export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
     return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 
-const getSupervisorWordsFromStorage = (supervisorId: string): Word[] => {
+const getAllWordsFromStorage = (): Word[] => {
     if (typeof window === 'undefined') return [];
     
     const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-    return storedWords.filter(w => w.supervisorId === supervisorId);
+    return storedWords.map(word => ({
+        ...word,
+        nextReview: new Date(word.nextReview)
+    }));
 }
-
-// Simulates fetching student-specific word data, which might include their personal progress
-const getStudentWordProgressFromStorage = (studentId: string): Word[] => {
-    if (typeof window === 'undefined') return [];
-
-    // In a real app, this might be a separate localStorage key like `studentProgress_${studentId}`
-    // For this demo, we'll assume student progress is mixed into 'userWords' and filtered by an implicit owner.
-    // However, our current structure doesn't store studentId on a word, so we rely on the supervisor's list.
-    // The key is to merge the supervisor's master list with any student-specific progress.
-    const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-
-    // This is a simplified model. A real app would have a better way to track student-specific states.
-    return storedWords;
-}
-
 
 export const getWordsForStudent = (studentId: string): Word[] => {
     const student = getUserById(studentId);
     if (!student || !student.supervisorId) return [];
 
-    // Get the master list of words from the supervisor
-    const supervisorWords = getSupervisorWordsFromStorage(student.supervisorId);
+    // Get the master list of all words from storage.
+    const allWords = getAllWordsFromStorage();
     
-    // Get all word progress data (which in our case is the shared list)
-    const studentProgressWords = getStudentWordProgressFromStorage(studentId);
+    // Filter to get only the words for this student's supervisor.
+    const supervisorWords = allWords.filter(w => w.supervisorId === student.supervisorId);
 
     // Merge the two. The student's progress on a word takes precedence.
-    const mergedWords = new Map<string, Word>();
+    const studentWordMap = new Map<string, Word>();
 
     // First, add all of the supervisor's words. These are the "master" copies.
     supervisorWords.forEach(sw => {
-        mergedWords.set(sw.id, {
+        studentWordMap.set(sw.id, {
             ...sw,
-            nextReview: new Date(sw.nextReview) // Ensure date is a Date object
+            // When a student first gets a word, it should be ready for review.
+            // If there's no progress for it yet, we default it here.
+            strength: sw.strength ?? 0,
+            nextReview: sw.nextReview ?? new Date(),
         });
     });
 
     // Then, overlay any specific progress the student has made.
-    studentProgressWords.forEach(spw => {
-        // Only apply progress to words that actually belong to the student's supervisor
-        if (mergedWords.has(spw.id)) {
-             mergedWords.set(spw.id, {
-                ...spw, // Student progress overrides the base word
-                nextReview: new Date(spw.nextReview)
-             });
+    // The "progress" is just the word object itself, which contains strength/nextReview.
+    // In this model, all words are in one list, so we just need to ensure the objects are up-to-date.
+    allWords.forEach(wordWithProgress => {
+        // If the student's map already has this word, it means it belongs to their supervisor.
+        // We can then update it with the specific progress.
+        if (studentWordMap.has(wordWithProgress.id)) {
+             studentWordMap.set(wordWithProgress.id, wordWithProgress);
         }
     });
 
-    return Array.from(mergedWords.values());
+    return Array.from(studentWordMap.values());
 };
 
 export const getWordsBySupervisor = (supervisorId: string): Word[] => {
-    return getSupervisorWordsFromStorage(supervisorId).map(word => ({
-        ...word,
-        nextReview: new Date(word.nextReview)
-    }));
+    const allWords = getAllWordsFromStorage();
+    return allWords.filter(w => w.supervisorId === supervisorId);
 };
+
 export const getWordForReview = (studentId: string): Word | undefined => {
     const words = getWordsForStudent(studentId);
     return words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime())[0];
