@@ -247,7 +247,7 @@ export default function MyWordsPage() {
                     <TableCell>{word.definition}</TableCell>
                     <TableCell>{getUnitName(word.unitId)}</TableCell>
                     <TableCell>
-                      <Badge variant={isOverdue ? 'destructive' : 'outline'}>{getReviewText(word.nextReview)}</Badge>
+                      <Badge variant={isOverdue ? 'destructive' : 'secondary'}>{getReviewText(word.nextReview)}</Badge>
                     </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
@@ -303,3 +303,5 @@ export default function MyWordsPage() {
     </div>
   );
 }
+
+    
