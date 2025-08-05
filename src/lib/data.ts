@@ -146,30 +146,68 @@ export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
     return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 
+const getSupervisorWordsFromStorage = (supervisorId: string): Word[] => {
+    if (typeof window === 'undefined') return [];
+    
+    const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+    return storedWords.filter(w => w.supervisorId === supervisorId);
+}
+
+// Simulates fetching student-specific word data, which might include their personal progress
+const getStudentWordProgressFromStorage = (studentId: string): Word[] => {
+    if (typeof window === 'undefined') return [];
+
+    // In a real app, this might be a separate localStorage key like `studentProgress_${studentId}`
+    // For this demo, we'll assume student progress is mixed into 'userWords' and filtered by an implicit owner.
+    // However, our current structure doesn't store studentId on a word, so we rely on the supervisor's list.
+    // The key is to merge the supervisor's master list with any student-specific progress.
+    const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+
+    // This is a simplified model. A real app would have a better way to track student-specific states.
+    return storedWords;
+}
+
+
 export const getWordsForStudent = (studentId: string): Word[] => {
     const student = getUserById(studentId);
     if (!student || !student.supervisorId) return [];
-    const supervisorWords = getWordsBySupervisor(student.supervisorId);
-    // In a real app you might have student-specific word lists, but here we just use the supervisor's list
-    return supervisorWords;
-};
-export const getWordsBySupervisor = (supervisorId: string): Word[] => {
-    let allWords: Word[] = [];
 
-    if (typeof window !== 'undefined') {
-        const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-        const userAddedWords = storedWords.filter(w => w.supervisorId === supervisorId);
-        allWords = [...userAddedWords];
-    }
+    // Get the master list of words from the supervisor
+    const supervisorWords = getSupervisorWordsFromStorage(student.supervisorId);
     
-    const uniqueWordsMap = new Map<string, Word>();
-    allWords.forEach(word => {
-        // Ensure the correct option is always in the options list and options are unique
-        const sanitizedOptions = Array.from(new Set([...word.options, word.correctOption]));
-        uniqueWordsMap.set(word.id, { ...word, options: sanitizedOptions });
+    // Get all word progress data (which in our case is the shared list)
+    const studentProgressWords = getStudentWordProgressFromStorage(studentId);
+
+    // Merge the two. The student's progress on a word takes precedence.
+    const mergedWords = new Map<string, Word>();
+
+    // First, add all of the supervisor's words. These are the "master" copies.
+    supervisorWords.forEach(sw => {
+        mergedWords.set(sw.id, {
+            ...sw,
+            nextReview: new Date(sw.nextReview) // Ensure date is a Date object
+        });
     });
 
-    return Array.from(uniqueWordsMap.values());
+    // Then, overlay any specific progress the student has made.
+    studentProgressWords.forEach(spw => {
+        // Only apply progress to words that actually belong to the student's supervisor
+        if (mergedWords.has(spw.id)) {
+             mergedWords.set(spw.id, {
+                ...spw, // Student progress overrides the base word
+                nextReview: new Date(spw.nextReview)
+             });
+        }
+    });
+
+    return Array.from(mergedWords.values());
+};
+
+export const getWordsBySupervisor = (supervisorId: string): Word[] => {
+    return getSupervisorWordsFromStorage(supervisorId).map(word => ({
+        ...word,
+        nextReview: new Date(word.nextReview)
+    }));
 };
 export const getWordForReview = (studentId: string): Word | undefined => {
     const words = getWordsForStudent(studentId);
