@@ -155,17 +155,16 @@ export function getAllUsers(): User[] {
             ...JSON.parse(localStorage.getItem('combinedUsers') || '[]')
         ];
         
-        const storedUsersMap = new Map<string, User>();
-        storedItems.forEach((user: User) => storedUsersMap.set(user.id, user));
-
-        storedUsersMap.forEach((storedUser, id) => {
-            const baseUser = usersMap.get(id) || {};
-            // Merge, but ensure isMainAdmin from mockUsers is preserved.
-            const mergedUser = { ...baseUser, ...storedUser };
-            if (baseUser.isMainAdmin) {
+        storedItems.forEach((storedUser: User) => {
+             // Get the potentially existing user from the map
+            const existingUser = usersMap.get(storedUser.id) || {};
+            // Merge stored user data on top of the base/existing user data
+            const mergedUser = { ...existingUser, ...storedUser };
+            // Crucially, if the base user from mockUsers had the admin flag, preserve it.
+            if (mockUsers.find(u => u.id === storedUser.id)?.isMainAdmin) {
                 mergedUser.isMainAdmin = true;
             }
-            usersMap.set(id, mergedUser);
+            usersMap.set(storedUser.id, mergedUser);
         });
     }
 
