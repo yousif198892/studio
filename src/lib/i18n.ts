@@ -3,7 +3,6 @@ export const translations = {
   en: {
     sidebar: {
       dashboard: "Dashboard",
-      learn: "Learn",
       myWords: "My Words",
       masteredWords: "Mastered Words",
       addWord: "Add Word",
@@ -105,18 +104,6 @@ export const translations = {
             terms: "Terms of Service",
             privacy: "Privacy",
         }
-    },
-    learn: {
-        title: "Learning Session",
-        question: "Which word means: “{0}”?",
-        nextWord: "Next Word",
-        iKnowIt: "I Know It",
-        backToDashboard: "Back to Dashboard",
-        finishedTitle: "All done for now!",
-        finishedDescription1: "You've reviewed all your due words. Great work!",
-        finishedDescription2: "Come back later for your next session.",
-        startNewSession: "Start a new session anyway",
-        wordStrength: "Word Strength",
     },
     dashboard: {
         student: {
@@ -266,7 +253,6 @@ export const translations = {
   ar: {
     sidebar: {
       dashboard: "لوحة التحكم",
-      learn: "تعلم",
       myWords: "كلماتي",
       masteredWords: "الكلمات المتقنة",
       addWord: "إضافة كلمة",
@@ -368,18 +354,6 @@ export const translations = {
             terms: "شروط الخدمة",
             privacy: "الخصوصية",
         }
-    },
-    learn: {
-        title: "جلسة تعلم",
-        question: "أي كلمة تعني: “{0}”؟",
-        nextWord: "الكلمة التالية",
-        iKnowIt: "اعتبار الإجابة صحيحة",
-        backToDashboard: "العودة إلى لوحة التحكم",
-        finishedTitle: "لقد انتهيت من كل شيء في الوقت الحالي!",
-        finishedDescription1: "لقد راجعت كل كلماتك المستحقة. عمل رائع!",
-        finishedDescription2: "عد لاحقًا لجلستك التالية.",
-        startNewSession: "ابدأ جلسة جديدة على أي حال",
-        wordStrength: "قوة الكلمة",
     },
     dashboard: {
         student: {
@@ -529,7 +503,7 @@ export const translations = {
 };
 
 export type TranslationKey = 
-    | 'sidebar.dashboard' | 'sidebar.learn' | 'sidebar.myWords' | 'sidebar.masteredWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile'
+    | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.masteredWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
@@ -541,7 +515,6 @@ export type TranslationKey =
     | 'landing.features.supervisorTools.title' | 'landing.features.supervisorTools.description'
     | 'landing.features.srs.title' | 'landing.features.srs.description'
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
-    | 'learn.title' | 'learn.question' | 'learn.nextWord' | 'learn.iKnowIt' | 'learn.backToDashboard' | 'learn.finishedTitle' | 'learn.finishedDescription1' | 'learn.finishedDescription2' | 'learn.startNewSession' | 'learn.wordStrength'
     | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.learnedTitle' | 'dashboard.student.learnedDescription' | 'dashboard.student.masteredTitle' | 'dashboard.student.masteredDescription'
     | 'dashboard.student.progressOverview.title' | 'dashboard.student.progressOverview.description' | 'dashboard.student.progressOverview.timeSpent' | 'dashboard.student.progressOverview.wordsReviewed' | 'dashboard.student.progressOverview.reviewedToday' | 'dashboard.student.progressOverview.masteredWords'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'

@@ -207,11 +207,6 @@ export const getWordsBySupervisor = (supervisorId: string): Word[] => {
     return allWords.filter(w => w.supervisorId === supervisorId);
 };
 
-export const getWordForReview = (studentId: string): Word | undefined => {
-    const words = getWordsForStudent(studentId);
-    return words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime())[0];
-};
-
 export const getMessages = (): Message[] => {
     const baseMessages = mockMessages;
     if (typeof window !== 'undefined') {
