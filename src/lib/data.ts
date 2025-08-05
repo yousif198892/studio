@@ -13,6 +13,7 @@ export type User = {
   supervisorId?: string;
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
+  isMainAdmin?: boolean;
 };
 
 export type Unit = {
@@ -85,6 +86,7 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
     fontSize: "base",
+    isMainAdmin: true,
   }
 ];
 
@@ -143,10 +145,10 @@ export let mockWords: Word[] = [
 export function getAllUsers(): User[] {
     const usersMap = new Map<string, User>();
 
-    // Load base users first to establish ground truth.
+    // Load base users first to establish ground truth for critical properties.
     mockUsers.forEach(user => usersMap.set(user.id, { ...user }));
 
-    // If on the client, merge with localStorage.
+    // If on the client, merge with localStorage, but preserve authoritative properties.
     if (typeof window !== 'undefined') {
         const storedItems: User[] = [
             ...JSON.parse(localStorage.getItem('users') || '[]'),
@@ -156,13 +158,13 @@ export function getAllUsers(): User[] {
         storedItems.forEach((storedUser) => {
             const baseUser = usersMap.get(storedUser.id);
             
-            const mergedUser = {
-                ...baseUser, // Start with base user properties
-                ...storedUser, // Apply stored properties (like updated name or avatar)
-            };
+            // Start with the stored user's properties (like updated name or avatar)
+            const mergedUser = { ...storedUser };
 
+            // Forcefully re-apply critical properties from the base data if it exists.
             if (baseUser) {
                 mergedUser.role = baseUser.role;
+                mergedUser.isMainAdmin = baseUser.isMainAdmin;
             }
             
             usersMap.set(storedUser.id, mergedUser);
