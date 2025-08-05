@@ -13,6 +13,7 @@ export type User = {
   supervisorId?: string;
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
+  isMainAdmin?: boolean;
 };
 
 export type Unit = {
@@ -85,6 +86,7 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
     fontSize: "base",
+    isMainAdmin: true,
   },
   {
     id: "sup2",
@@ -149,14 +151,12 @@ export let mockWords: Word[] = [
 
 // This is a workaround to simulate a persistent data layer.
 // In a real application, you would use a database.
-// This function can be called from both server and client.
 export function getAllUsers(): User[] {
     const usersMap = new Map<string, User>();
 
     // Load base users first to establish ground truth for critical properties.
     mockUsers.forEach(user => usersMap.set(user.id, { ...user }));
 
-    // If on the client, merge with localStorage, but preserve authoritative properties.
     if (typeof window !== 'undefined') {
         const storedItems: User[] = [
             ...JSON.parse(localStorage.getItem('users') || '[]'),
@@ -167,18 +167,19 @@ export function getAllUsers(): User[] {
             const baseUser = usersMap.get(storedUser.id);
             
             if (baseUser) {
-                // If the user exists in the base data, merge non-critical properties.
+                // If the user exists in the base data, merge only non-critical properties.
+                // This preserves the authoritative role and isMainAdmin status.
                 const mergedUser = {
-                    ...baseUser, // Start with the authoritative data
+                    ...baseUser,
                     name: storedUser.name || baseUser.name,
                     avatar: storedUser.avatar || baseUser.avatar,
-                    // any other non-critical property can be merged here
+                    timezone: storedUser.timezone || baseUser.timezone,
+                    fontSize: storedUser.fontSize || baseUser.fontSize,
                 };
                 usersMap.set(storedUser.id, mergedUser);
             } else {
-                 // If it's a completely new user not in mock data, just add them.
-                const newUser = { ...storedUser };
-                usersMap.set(newUser.id, newUser);
+                 // If it's a completely new user not in mock data, add them.
+                usersMap.set(storedUser.id, { ...storedUser });
             }
         });
     }
