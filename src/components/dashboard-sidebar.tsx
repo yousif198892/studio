@@ -87,18 +87,10 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         roles: ["supervisor"],
     },
     {
-        href: `/dashboard/admins?userId=${user.id}`,
-        label: 'Admins',
-        icon: <Shield />,
-        roles: ["supervisor"],
-        requiresMainAdmin: true,
-    },
-    {
         href: `/dashboard/messages?userId=${user.id}`,
         label: 'Messages',
         icon: <MessageSquare />,
         roles: ["supervisor"],
-        requiresMainAdmin: true,
     },
     {
       href: `/dashboard/profile?userId=${user.id}`,
@@ -111,9 +103,6 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
   const filteredMenuItems = menuItems.filter((item: any) => {
     if (!item.roles.includes(userRole)) {
       return false;
-    }
-    if (item.requiresMainAdmin && !user.isMainAdmin) {
-        return false;
     }
     return true;
   });
@@ -150,7 +139,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
             <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
           </Avatar>
           <div className="flex-1 overflow-hidden">
-            <p className={cn("font-semibold text-sm truncate", user.isMainAdmin && "text-destructive")}>{user?.name}</p>
+            <p className={cn("font-semibold text-sm truncate")}>{user?.name}</p>
             <p className="text-xs text-muted-foreground truncate">
               {user?.email}
             </p>

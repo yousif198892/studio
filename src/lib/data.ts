@@ -13,7 +13,6 @@ export type User = {
   supervisorId?: string;
   timezone?: string;
   fontSize?: "sm" | "base" | "lg";
-  isMainAdmin?: boolean;
 };
 
 export type Unit = {
@@ -86,7 +85,6 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
     fontSize: "base",
-    isMainAdmin: true,
   },
   {
     id: "sup2",
@@ -179,9 +177,7 @@ export function getAllUsers(): User[] {
                 usersMap.set(storedUser.id, mergedUser);
             } else {
                  // If it's a completely new user not in mock data, just add them.
-                 // Ensure isMainAdmin is not set for these new users for security.
                 const newUser = { ...storedUser };
-                delete newUser.isMainAdmin;
                 usersMap.set(newUser.id, newUser);
             }
         });
