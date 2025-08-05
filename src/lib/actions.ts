@@ -67,14 +67,12 @@ export async function addWord(prevState: any, formData: FormData) {
       explanatoryImage: dataUri,
     });
     
-    if (!aiResponse?.options) {
-        throw new Error("AI did not return valid options.");
+    if (!aiResponse?.options || aiResponse.options.length < 3) {
+        throw new Error("AI did not return the expected number of options.");
     }
 
     const combinedOptions = [...aiResponse.options, word];
-    const uniqueOptions = Array.from(new Set(combinedOptions));
-
-
+    
     const newWord: Word = {
         id: `word${Date.now()}`,
         word,
@@ -82,7 +80,7 @@ export async function addWord(prevState: any, formData: FormData) {
         unit: unit || "",
         lesson: lesson || "",
         imageUrl: dataUri, 
-        options: uniqueOptions,
+        options: combinedOptions,
         correctOption: word,
         supervisorId: userId,
         nextReview: new Date(),
@@ -92,9 +90,9 @@ export async function addWord(prevState: any, formData: FormData) {
     return { success: true, message: "Word created!", newWord: newWord };
 
   } catch (error) {
-    console.error("Error adding word:", error);
+    console.error("Error during AI word option generation:", error);
     const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to add word. AI Generation Error: ${errorMessage}`, errors: {}, success: false };
+    return { message: `Failed to add word. The AI could not process the request. Please try a different word or image.`, errors: {}, success: false };
   }
 }
 

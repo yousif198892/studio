@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -17,7 +18,7 @@ const GenerateWordOptionsInputSchema = z.object({
   explanatoryImage: z
     .string()
     .describe(
-      "A data URI of an image that visually explains the word. It must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
+      "A photo of a plant, as a data URI that must include a MIME type and use Base64 encoding. Expected format: 'data:<mimetype>;base64,<encoded_data>'."
     ),
 });
 export type GenerateWordOptionsInput = z.infer<typeof GenerateWordOptionsInputSchema>;
@@ -38,13 +39,13 @@ const prompt = ai.definePrompt({
   prompt: `You are an AI assistant helping teachers create vocabulary quizzes.
 
   Given a vocabulary word, its definition, and an explanatory image, your task is to generate three incorrect, but contextually relevant, answer options.
-  These options should be plausible enough to challenge students, but definitively wrong.
+  These options should be plausible enough to challenge students, but definitively wrong. The options should not be simple variations of the correct word.
 
   Word: {{{word}}}
   Definition: {{{definition}}}
   Image: {{media url=explanatoryImage}}
 
-  Generate three incorrect options based on the provided information. Your output should only contain the three incorrect options.`,
+  Generate three incorrect options based on the provided information. Your output must be a JSON object with a single key "options" containing an array of three strings.`,
 });
 
 export async function generateWordOptions(
