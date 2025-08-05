@@ -97,6 +97,19 @@ export default function AdminsPage() {
         Create and manage supervisor accounts.
       </p>
       <div className="grid md:grid-cols-3 gap-6">
+        <div className="md:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle>Create New Supervisor</CardTitle>
+              <CardDescription>
+                Create a new account with supervisor privileges.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CreateSupervisorForm onSupervisorAdded={handleSupervisorAdded} />
+            </CardContent>
+          </Card>
+        </div>
         <div className="md:col-span-2">
           <Card>
             <CardHeader>
@@ -157,19 +170,6 @@ export default function AdminsPage() {
                   ))}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="md:col-span-1">
-          <Card>
-            <CardHeader>
-              <CardTitle>Create New Supervisor</CardTitle>
-              <CardDescription>
-                Create a new account with supervisor privileges.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CreateSupervisorForm onSupervisorAdded={handleSupervisorAdded} />
             </CardContent>
           </Card>
         </div>
