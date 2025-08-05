@@ -159,9 +159,8 @@ export function getAllUsers(): User[] {
             const baseUser = usersMap.get(storedUser.id) || {};
             // Merge stored user data on top, but preserve critical flags from base
             const mergedUser = { 
-                ...baseUser,
-                ...storedUser,
-                isMainAdmin: baseUser.isMainAdmin || storedUser.isMainAdmin || false
+                ...storedUser, // Stored data takes lower precedence
+                ...baseUser,   // Base data with critical flags takes higher precedence
             };
             usersMap.set(storedUser.id, mergedUser);
         });
