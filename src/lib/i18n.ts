@@ -7,7 +7,6 @@ export const translations = {
       myWords: "My Words",
       masteredWords: "Mastered Words",
       addWord: "Add Word",
-      myUnits: "My Units",
       myStudents: "My Students",
       profile: "Profile",
     },
@@ -164,8 +163,6 @@ export const translations = {
             wordPlaceholder: "e.g., Ephemeral",
             definitionLabel: "Definition",
             definitionPlaceholder: "e.g., Lasting for a very short time.",
-            unitLabel: "Unit",
-            selectUnit: "Select a Unit",
             imageLabel: "Explanatory Image",
             addButton: "Add Word",
             addingButton: "Adding Word...",
@@ -194,7 +191,6 @@ export const translations = {
             image: "Image",
             word: "Word",
             definition: "Definition",
-            unit: "Unit",
             actions: "Actions",
             nextReview: "Next Review",
             reviewOverdue: "Overdue",
@@ -230,29 +226,6 @@ export const translations = {
             continue: "Restore"
         }
     },
-    unitsPage: {
-        title: "My Units",
-        description: "Manage your vocabulary units.",
-        allUnits: {
-            title: "All Units",
-            description: "A list of all your vocabulary units.",
-            name: "Unit Name",
-            actions: "Actions",
-        },
-        addUnit: {
-            title: "Add New Unit",
-            description: "Create a new unit to categorize your words.",
-            form: {
-                nameLabel: "Unit Name",
-                namePlaceholder: "e.g., Chapter 1 Verbs",
-                addButton: "Add Unit",
-                addingButton: "Adding Unit...",
-            }
-        },
-        deleteDialog: {
-            description: "This action cannot be undone. This will permanently delete the unit “{0}”. You will need to re-assign any words in this unit.",
-        }
-    },
     studentsPage: {
         title: "My Students",
         description: "Welcome, {0}. Here are your students.",
@@ -264,8 +237,6 @@ export const translations = {
     toasts: {
         error: "Error",
         success: "Success!",
-        addUnitSuccess: "Unit created!",
-        addUnitExists: "Unit already exists.",
         addWordSuccess: "Word created!",
         updateWordSuccess: "Word updated successfully!",
         deleteWordSuccess: "Word deleted successfully.",
@@ -283,7 +254,6 @@ export const translations = {
         passwordLength: "Password must be at least 6 characters.",
         nameRequired: "Name is required.",
         invalidEmail: "Invalid email address.",
-        unitRequired: "Please select a unit.",
         definitionRequired: "Definition is required.",
         wordRequired: "Word is required.",
         imageRequired: "Image is required."
@@ -296,7 +266,6 @@ export const translations = {
       myWords: "كلماتي",
       masteredWords: "الكلمات المتقنة",
       addWord: "إضافة كلمة",
-      myUnits: "وحداتي",
       myStudents: "طلابي",
       profile: "الملف الشخصي",
     },
@@ -453,8 +422,6 @@ export const translations = {
             wordPlaceholder: "مثال: سريع الزوال",
             definitionLabel: "التعريف",
             definitionPlaceholder: "مثال: يدوم لفترة قصيرة جدًا.",
-            unitLabel: "الوحدة",
-            selectUnit: "اختر وحدة",
             imageLabel: "صورة توضيحية",
             addButton: "إضافة كلمة",
             addingButton: "جار إضافة الكلمة...",
@@ -483,7 +450,6 @@ export const translations = {
             image: "صورة",
             word: "الكلمة",
             definition: "التعريف",
-            unit: "الوحدة",
             actions: "الإجراءات",
             nextReview: "المراجعة التالية",
             reviewOverdue: "متأخر",
@@ -519,29 +485,6 @@ export const translations = {
             continue: "استعادة"
         }
     },
-    unitsPage: {
-        title: "وحداتي",
-        description: "إدارة وحدات المفردات الخاصة بك.",
-        allUnits: {
-            title: "جميع الوحدات",
-            description: "قائمة بجميع وحدات المفردات الخاصة بك.",
-            name: "اسم الوحدة",
-            actions: "الإجراءات",
-        },
-        addUnit: {
-            title: "إضافة وحدة جديدة",
-            description: "أنشئ وحدة جديدة لتصنيف كلماتك.",
-            form: {
-                nameLabel: "اسم الوحدة",
-                namePlaceholder: "مثال: الفصل الأول الأفعال",
-                addButton: "إضافة وحدة",
-                addingButton: "جارٍ إضافة الوحدة...",
-            }
-        },
-        deleteDialog: {
-            description: "لا يمكن التراجع عن هذا الإجراء. سيؤدي هذا إلى حذف الوحدة بشكل دائم “{0}”. سوف تحتاج إلى إعادة تعيين أي كلمات في هذه الوحدة.",
-        }
-    },
     studentsPage: {
         title: "طلابي",
         description: "مرحبًا، {0}. إليك طلابك.",
@@ -553,8 +496,6 @@ export const translations = {
     toasts: {
         error: "خطأ",
         success: "نجاح!",
-        addUnitSuccess: "تم إنشاء الوحدة!",
-        addUnitExists: "الوحدة موجودة بالفعل.",
         addWordSuccess: "تم إنشاء الكلمة!",
         updateWordSuccess: "تم تحديث الكلمة بنجاح!",
         deleteWordSuccess: "تم حذف الكلمة بنجاح.",
@@ -572,7 +513,6 @@ export const translations = {
         passwordLength: "يجب أن تتكون كلمة المرور من 6 أحرف على الأقل.",
         nameRequired: "الاسم مطلوب.",
         invalidEmail: "عنوان البريد الإلكتروني غير صالح.",
-        unitRequired: "يرجى تحديد وحدة.",
         definitionRequired: "التعريف مطلوب.",
         wordRequired: "الكلمة مطلوبة.",
         imageRequired: "الصورة مطلوبة."
@@ -581,7 +521,7 @@ export const translations = {
 };
 
 export type TranslationKey = 
-    | 'sidebar.dashboard' | 'sidebar.learn' | 'sidebar.myWords' | 'sidebar.masteredWords' | 'sidebar.addWord' | 'sidebar.myUnits' | 'sidebar.myStudents' | 'sidebar.profile'
+    | 'sidebar.dashboard' | 'sidebar.learn' | 'sidebar.myWords' | 'sidebar.masteredWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
@@ -599,19 +539,14 @@ export type TranslationKey =
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'
-    | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.unitLabel' | 'addWord.form.selectUnit' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
+    | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'
     | 'wordsPage.title' | 'wordsPage.myLearnedWordsDesc' | 'wordsPage.description' | 'wordsPage.addNew'
-    | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.unit' | 'wordsPage.table.actions' | 'wordsPage.table.nextReview' | 'wordsPage.table.reviewOverdue' | 'wordsPage.table.reviewToday' | 'wordsPage.table.reviewTomorrow' | 'wordsPage.table.reviewInDays'
+    | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.actions' | 'wordsPage.table.nextReview' | 'wordsPage.table.reviewOverdue' | 'wordsPage.table.reviewToday' | 'wordsPage.table.reviewTomorrow' | 'wordsPage.table.reviewInDays'
     | 'wordsPage.deleteDialog.title' | 'wordsPage.deleteDialog.description' | 'wordsPage.deleteDialog.cancel' | 'wordsPage.deleteDialog.continue'
     | 'wordsPage.resetDialog.title' | 'wordsPage.resetDialog.description' | 'wordsPage.resetDialog.continue'
     | 'wordsPage.wontForgetButton' | 'wordsPage.wontForgetDialog.title' | 'wordsPage.wontForgetDialog.description' | 'wordsPage.wontForgetDialog.continue'
     | 'masteredWordsPage.title' | 'masteredWordsPage.description' | 'masteredWordsPage.badge' | 'masteredWordsPage.restoreDialog.title' | 'masteredWordsPage.restoreDialog.description' | 'masteredWordsPage.restoreDialog.continue'
-    | 'unitsPage.title' | 'unitsPage.description'
-    | 'unitsPage.allUnits.title' | 'unitsPage.allUnits.description' | 'unitsPage.allUnits.name' | 'unitsPage.allUnits.actions'
-    | 'unitsPage.addUnit.title' | 'unitsPage.addUnit.description'
-    | 'unitsPage.addUnit.form.nameLabel' | 'unitsPage.addUnit.form.namePlaceholder' | 'unitsPage.addUnit.form.addButton' | 'unitsPage.addUnit.form.addingButton'
-    | 'unitsPage.deleteDialog.description'
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
-    | 'toasts.error' | 'toasts.success' | 'toasts.addUnitSuccess' | 'toasts.addUnitExists' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.unitRequired' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+    | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';

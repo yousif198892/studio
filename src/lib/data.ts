@@ -17,12 +17,6 @@ export type User = {
   isSuspended?: boolean;
 };
 
-export type Unit = {
-    id: string;
-    name: string;
-    supervisorId: string;
-}
-
 export type Word = {
   id: string;
   word: string;
@@ -31,7 +25,6 @@ export type Word = {
   options: string[]; // This will include the correct word and 3 incorrect ones
   correctOption: string;
   supervisorId: string;
-  unitId: string;
   lesson?: string;
   nextReview: Date;
   strength: number; // -1 means mastered, 0 is new, >0 is SRS level
@@ -102,12 +95,6 @@ export const mockUsers: User[] = [
   },
 ];
 
-export const mockUnits: Unit[] = [
-    { id: "unit1", name: "Unit 1: Common Nouns", supervisorId: "sup1" },
-    { id: "unit2", name: "Unit 2: Action Verbs", supervisorId: "sup1" },
-    { id: "unit3", name: "Unit 3: Adjectives", supervisorId: "sup1" },
-]
-
 export let mockWords: Word[] = [
     {
         id: "word1",
@@ -117,7 +104,6 @@ export let mockWords: Word[] = [
         options: ["Ephemeral", "Permanent", "Eternal", "Enduring"],
         correctOption: "Ephemeral",
         supervisorId: "sup1",
-        unitId: "unit3",
         lesson: "Lesson 1",
         nextReview: new Date(Date.now() + 24 * 60 * 60 * 1000), // 1 day from now
         strength: 2,
@@ -130,7 +116,6 @@ export let mockWords: Word[] = [
         options: ["Ubiquitous", "Rare", "Scarce", "Limited"],
         correctOption: "Ubiquitous",
         supervisorId: "sup1",
-        unitId: "unit3",
         lesson: "Lesson 2",
         nextReview: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
         strength: 3,
@@ -143,7 +128,6 @@ export let mockWords: Word[] = [
         options: ["Mellifluous", "Cacophonous", "Harsh", "Grating"],
         correctOption: "Mellifluous",
         supervisorId: "sup1",
-        unitId: "unit3",
         lesson: "Lesson 1",
         nextReview: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago (due for review)
         strength: 1,
@@ -232,21 +216,6 @@ export const getWordForReview = (studentId: string): Word | undefined => {
     const words = getWordsForStudent(studentId);
     return words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime())[0];
 };
-
-export const getUnitsBySupervisor = (supervisorId: string): Unit[] => {
-    const baseUnits = mockUnits.filter(u => u.supervisorId === supervisorId);
-     if (typeof window !== 'undefined') {
-        const storedUnits: Unit[] = JSON.parse(localStorage.getItem('userUnits') || '[]');
-        const userAddedUnits = storedUnits.filter(u => u.supervisorId === supervisorId);
-        
-        // This is where the fix is: use a Map to ensure all units are unique by their ID.
-        // It correctly merges the base units and the user-added units from localStorage.
-        const combined = [...baseUnits, ...userAddedUnits];
-        const uniqueUnits = Array.from(new Map(combined.map(item => [item.id, item])).values());
-        return uniqueUnits;
-    }
-    return baseUnits;
-}
 
 export const getMessages = (): Message[] => {
     const baseMessages = mockMessages;

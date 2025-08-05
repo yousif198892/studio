@@ -5,7 +5,7 @@ import {
   CardContent,
   CardHeader,
 } from "@/components/ui/card";
-import { getWordsForStudent, Word, Unit, getUnitsBySupervisor, getUserById } from "@/lib/data";
+import { getWordsForStudent, Word, getUserById } from "@/lib/data";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -31,7 +31,6 @@ export default function MasteredWordsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "user1";
   const [words, setWords] = useState<Word[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
   const { t } = useLanguage();
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -45,8 +44,6 @@ export default function MasteredWordsPage() {
         const studentWords = getWordsForStudent(userId);
         const masteredWords = studentWords.filter(w => w.strength === -1);
         setWords(masteredWords);
-        const supervisorUnits = getUnitsBySupervisor(student.supervisorId);
-        setUnits(supervisorUnits);
       }
     }
   }, [userId]);
@@ -115,11 +112,6 @@ export default function MasteredWordsPage() {
     toast({ title: t('toasts.success'), description: t('toasts.restoreWordSuccess', wordToRestore.word) });
   };
 
-  const getUnitName = (unitId: string) => {
-    const unit = units.find(u => u.id === unitId);
-    return unit ? unit.name : "N/A";
-  }
-
   return (
     <div className="space-y-6">
       <audio ref={audioRef} onEnded={() => setCurrentlyPlaying(null)} />
@@ -178,7 +170,6 @@ export default function MasteredWordsPage() {
                         </div>
                         <p className="text-sm text-muted-foreground min-h-[40px]">{word.definition}</p>
                          <div className="flex justify-between items-center pt-2">
-                            <Badge variant="outline">{getUnitName(word.unitId)}</Badge>
                             <Badge variant="secondary" className="bg-green-100 text-green-800">{t('masteredWordsPage.badge')}</Badge>
                         </div>
                     </CardContent>

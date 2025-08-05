@@ -11,7 +11,7 @@ import { useEffect, useRef, useState, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word, Unit, getUnitsBySupervisor } from "@/lib/data";
+import { Word } from "@/lib/data";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -51,17 +51,8 @@ export function AddWordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [units, setUnits] = useState<Unit[]>([]);
   
   const userId = searchParams.get("userId") || "sup1";
-
-  useEffect(() => {
-    if (userId) {
-        const supervisorUnits = getUnitsBySupervisor(userId);
-        setUnits(supervisorUnits);
-    }
-  }, [userId]);
-
 
   useEffect(() => {
     if (state.success && state.newWord) {
@@ -118,22 +109,6 @@ export function AddWordForm() {
           <p className="text-sm text-destructive">{state.errors.definition[0]}</p>
         )}
       </div>
-       <div className="grid gap-2">
-            <Label htmlFor="unitId">{t('addWord.form.unitLabel')}</Label>
-            <Select name="unitId" required>
-                <SelectTrigger>
-                    <SelectValue placeholder={t('addWord.form.selectUnit')} />
-                </SelectTrigger>
-                <SelectContent>
-                    {units.map(unit => (
-                        <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            {state?.errors?.unitId && (
-                <p className="text-sm text-destructive">{state.errors.unitId[0]}</p>
-            )}
-       </div>
        <div className="grid gap-2">
             <Label htmlFor="lesson">Lesson</Label>
             <Select name="lesson">

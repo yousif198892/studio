@@ -81,12 +81,6 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       icon: <PlusCircle />,
       roles: ["supervisor"],
     },
-     {
-        href: `/dashboard/units?userId=${user.id}`,
-        label: t('sidebar.myUnits'),
-        icon: <Layers />,
-        roles: ["supervisor"],
-    },
     {
         href: `/dashboard/students?userId=${user.id}`,
         label: t('sidebar.myStudents'),

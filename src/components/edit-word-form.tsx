@@ -7,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect, useActionState, useState } from "react";
+import { useEffect, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word, Unit, getUnitsBySupervisor } from "@/lib/data";
+import { Word } from "@/lib/data";
 import Image from "next/image";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useLanguage } from "@/hooks/use-language";
@@ -51,18 +51,9 @@ export function EditWordForm({ word }: { word: Word }) {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [units, setUnits] = useState<Unit[]>([]);
   
   const userId = searchParams.get("userId");
   const lessons = Array.from({ length: 8 }, (_, i) => `Lesson ${i + 1}`);
-
-  useEffect(() => {
-    if (userId) {
-        const supervisorUnits = getUnitsBySupervisor(userId);
-        setUnits(supervisorUnits);
-    }
-  }, [userId]);
-
 
   useEffect(() => {
     if (state.success && state.updatedWord) {
@@ -82,7 +73,6 @@ export function EditWordForm({ word }: { word: Word }) {
                     word: state.updatedWord.word || w.word,
                     definition: state.updatedWord.definition || w.definition,
                     imageUrl: state.updatedWord.imageUrl || w.imageUrl,
-                    unitId: state.updatedWord.unitId || w.unitId,
                     lesson: state.updatedWord.lesson || w.lesson,
                 };
             }
@@ -127,22 +117,6 @@ export function EditWordForm({ word }: { word: Word }) {
           <p className="text-sm text-destructive">{state.errors.definition[0]}</p>
         )}
       </div>
-       <div className="grid gap-2">
-            <Label htmlFor="unitId">{t('addWord.form.unitLabel')}</Label>
-            <Select name="unitId" defaultValue={word.unitId} required>
-                <SelectTrigger>
-                    <SelectValue placeholder={t('addWord.form.selectUnit')} />
-                </SelectTrigger>
-                <SelectContent>
-                    {units.map(unit => (
-                        <SelectItem key={unit.id} value={unit.id}>{unit.name}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-            {state?.errors?.unitId && (
-                <p className="text-sm text-destructive">{state.errors.unitId[0]}</p>
-            )}
-       </div>
        <div className="grid gap-2">
             <Label htmlFor="lesson">Lesson</Label>
             <Select name="lesson" defaultValue={word.lesson}>

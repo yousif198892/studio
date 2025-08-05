@@ -5,7 +5,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, Word, Unit, getUnitsBySupervisor, getAllUsers, User } from "./data";
+import { mockUsers, Word, getAllUsers, User } from "./data";
 import { redirect } from "next/navigation";
 import { translations } from "./i18n";
 
@@ -17,7 +17,6 @@ const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
-  unitId: z.string().min(1, "Please select a unit."),
   lesson: z.string().optional(),
   image: z.any(),
 });
@@ -27,7 +26,6 @@ export async function addWord(prevState: any, formData: FormData) {
     word: formData.get("word"),
     definition: formData.get("definition"),
     userId: formData.get("userId"),
-    unitId: formData.get("unitId"),
     lesson: formData.get("lesson"),
     image: formData.get("image"),
   });
@@ -43,7 +41,7 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId, unitId, lesson } = validatedFields.data;
+  const { word, definition, userId, lesson } = validatedFields.data;
   const imageFile = formData.get("image") as File;
 
   if (!imageFile || imageFile.size === 0) {
@@ -81,7 +79,6 @@ export async function addWord(prevState: any, formData: FormData) {
         options: uniqueOptions,
         correctOption: word,
         supervisorId: userId,
-        unitId: unitId,
         lesson: lesson,
         nextReview: new Date(),
         strength: 0,
@@ -102,7 +99,6 @@ const updateWordSchema = z.object({
   definition: z.string().min(1, "Definition is required."),
   userId: z.string().min(1, "User ID is required."),
   wordId: z.string().min(1, "Word ID is required."),
-  unitId: z.string().min(1, "Please select a unit."),
   lesson: z.string().optional(),
 });
 
@@ -112,7 +108,6 @@ export async function updateWord(prevState: any, formData: FormData) {
     definition: formData.get("definition"),
     userId: formData.get("userId"),
     wordId: formData.get("wordId"),
-    unitId: formData.get("unitId"),
     lesson: formData.get("lesson"),
   });
 
@@ -123,7 +118,7 @@ export async function updateWord(prevState: any, formData: FormData) {
       success: false,
     };
   }
-   const { word, definition, wordId, unitId, lesson } = validatedFields.data;
+   const { word, definition, wordId, lesson } = validatedFields.data;
   const imageFile = formData.get("image") as File | null;
 
   try {
@@ -141,7 +136,6 @@ export async function updateWord(prevState: any, formData: FormData) {
         id: wordId,
         word,
         definition,
-        unitId,
         lesson,
         imageUrl: dataUri,
       }
@@ -283,43 +277,6 @@ const addUnitSchema = z.object({
   unitName: z.string().min(1, "Unit name is required."),
   userId: z.string().min(1, "User ID is required."),
 });
-
-export async function addUnit(prevState: any, formData: FormData) {
-  const validatedFields = addUnitSchema.safeParse({
-    unitName: formData.get("unitName"),
-    userId: formData.get("userId"),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
-      success: false,
-    };
-  }
-  
-  const { unitName, userId } = validatedFields.data;
-
-  const allUnits = getUnitsBySupervisor(userId);
-  const existingUnit = allUnits.find(u => u.name.toLowerCase() === unitName.toLowerCase());
-
-
-  if (existingUnit) {
-      return {
-          errors: { unitName: ["Unit with this name already exists."] },
-          message: "Unit already exists.",
-          success: false,
-      }
-  }
-
-  const newUnit: Unit = {
-    id: `unit${Date.now()}`,
-    name: unitName,
-    supervisorId: userId,
-  };
-  
-  return { success: true, message: "Unit created!", newUnit };
-}
 
 const createSupervisorSchema = z.object({
   name: z.string().min(1, 'Name is required.'),

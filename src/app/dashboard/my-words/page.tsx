@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { getWordsForStudent, Word, Unit, getUnitsBySupervisor, getUserById } from "@/lib/data";
+import { getWordsForStudent, Word, getUserById } from "@/lib/data";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useRef } from "react";
@@ -42,7 +42,6 @@ export default function MyWordsPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "user1";
   const [words, setWords] = useState<Word[]>([]);
-  const [units, setUnits] = useState<Unit[]>([]);
   const { t } = useLanguage();
   const { toast } = useToast();
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -56,8 +55,6 @@ export default function MyWordsPage() {
         const studentWords = getWordsForStudent(userId);
         const learnedWords = studentWords.filter(w => w.strength >= 0); // Only show words in SRS
         setWords(learnedWords);
-        const supervisorUnits = getUnitsBySupervisor(student.supervisorId);
-        setUnits(supervisorUnits);
       }
     }
   }, [userId]);
@@ -96,10 +93,10 @@ export default function MyWordsPage() {
         let allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
         const wordIndex = allWords.findIndex(w => w.id === updatedWord.id);
         
-        if (wordIndex !== -1) {
+        if (wordIndex > -1) {
             allWords[wordIndex] = updatedWord;
         } else {
-            allWords.push(updatedWord);
+           allWords.push(updatedWord);
         }
 
         const uniqueWords = Array.from(new Map(allWords.map(item => [item.id, item])).values());
@@ -158,11 +155,6 @@ export default function MyWordsPage() {
     updateWordInStorage(updatedWord);
 
     toast({ title: t('toasts.success'), description: t('toasts.wontForgetText', wordToMaster.word) });
-  }
-
-  const getUnitName = (unitId: string) => {
-    const unit = units.find(u => u.id === unitId);
-    return unit ? unit.name : "N/A";
   }
 
   const reviewOptions = [
@@ -298,7 +290,6 @@ export default function MyWordsPage() {
                         </div>
                         <p className="text-sm text-muted-foreground min-h-[40px]">{word.definition}</p>
                         <div className="flex justify-between items-center">
-                            <Badge variant="outline">{getUnitName(word.unitId)}</Badge>
                             <Badge variant={isOverdue ? 'destructive' : 'secondary'}>{getReviewText(word.nextReview)}</Badge>
                         </div>
                     </CardContent>
