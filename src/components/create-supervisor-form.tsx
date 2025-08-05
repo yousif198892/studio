@@ -5,9 +5,9 @@ import { useFormStatus } from "react-dom";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useActionState } from "react";
+import { useEffect, useRef, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { User } from "@/lib/data";
 import { createSupervisor } from "@/lib/actions";
 
@@ -43,6 +43,8 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
   const [state, formAction] = useActionState(createSupervisor, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
+  const [showPassword, setShowPassword] = useState(false);
+
 
   useEffect(() => {
     if (state.success && state.newUser) {
@@ -93,7 +95,17 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
       </div>
       <div className="grid gap-2">
         <Label htmlFor="password">Password</Label>
-        <Input id="password" name="password" type="password" required />
+        <div className="relative">
+            <Input id="password" name="password" type={showPassword ? "text" : "password"} required />
+            <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground hover:text-foreground"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+        </div>
          {state?.errors?.password && (
           <p className="text-sm text-destructive">{state.errors.password[0]}</p>
         )}
