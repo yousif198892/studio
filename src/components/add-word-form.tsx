@@ -28,14 +28,12 @@ export function AddWordForm() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, setIsPending] = useState(false);
-  const [errors, setErrors] = useState<any>({});
   
   const userId = searchParams.get("userId") || "sup1";
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setIsPending(true);
-    setErrors({});
 
     const formData = new FormData(event.currentTarget);
     const wordInput = formData.get("word") as string;
@@ -45,11 +43,16 @@ export function AddWordForm() {
     const lessonInput = formData.get("lesson") as string;
 
     // --- Client-side validation ---
-    if (!wordInput) {
-        setErrors({ word: ["Word is required."] });
+    if (!wordInput || !definitionInput || !imageInput || imageInput.size === 0) {
+        toast({
+            title: t('toasts.error'),
+            description: "Please fill out all required fields (Word, Definition, Image).",
+            variant: "destructive",
+        });
         setIsPending(false);
         return;
     }
+
     if (getWordsBySupervisor(userId).some(w => w.word.toLowerCase() === wordInput.toLowerCase())) {
         toast({
             title: t('toasts.error'),
@@ -59,24 +62,19 @@ export function AddWordForm() {
         setIsPending(false);
         return;
     }
-    if (!definitionInput) {
-        setErrors({ definition: ["Definition is required."] });
-        setIsPending(false);
-        return;
-    }
-    if (!imageInput || imageInput.size === 0) {
-        setErrors({ image: ["Image is required."] });
-        setIsPending(false);
-        return;
-    }
     
-    // --- Server action call ---
-    const result = await addWord(formData);
+    try {
+        const imageDataUri = await toBase64(imageInput);
 
-    if (result.success && result.options && result.correctOption) {
-        try {
-            const imageDataUri = await toBase64(imageInput);
+        // --- Server action call ---
+        const result = await addWord({
+            word: wordInput,
+            definition: definitionInput,
+            imageDataUri: imageDataUri
+        });
 
+        if (result.success && result.options) {
+            // Assemble the full word object on the client
             const newWord: Word = {
                 id: `word${Date.now()}`,
                 word: wordInput,
@@ -84,13 +82,14 @@ export function AddWordForm() {
                 unit: unitInput,
                 lesson: lessonInput,
                 imageUrl: imageDataUri,
-                options: [...result.options, result.correctOption], // Combine incorrect and correct options
-                correctOption: result.correctOption,
+                options: [...result.options, wordInput], // AI options + correct option
+                correctOption: wordInput,
                 supervisorId: userId,
                 nextReview: new Date(),
                 strength: 0,
             };
 
+            // Save to localStorage
             const wordsFromStorage: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
             const updatedWords = [...wordsFromStorage, newWord];
             localStorage.setItem('userWords', JSON.stringify(updatedWords));
@@ -103,25 +102,24 @@ export function AddWordForm() {
             formRef.current?.reset();
             router.push(`/dashboard/words?userId=${userId}`);
 
-        } catch (e) {
-             console.error("Could not save to localStorage or process image", e);
-             toast({
+        } else {
+            const errorMessage = result.message || "An unknown error occurred.";
+            toast({
                 title: t('toasts.error'),
-                description: "Failed to save the new word locally.",
+                description: errorMessage,
                 variant: "destructive",
-             });
+            });
         }
-    } else {
-        const errorMessage = result.message || "An unknown error occurred.";
-        setErrors(result.errors || {});
-        toast({
+    } catch (e: any) {
+         console.error("An unexpected error occurred:", e);
+         toast({
             title: t('toasts.error'),
-            description: errorMessage,
+            description: e.message || "An unexpected error occurred. Please check the console.",
             variant: "destructive",
-        });
+         });
+    } finally {
+        setIsPending(false);
     }
-
-    setIsPending(false);
   };
 
   return (
@@ -130,29 +128,19 @@ export function AddWordForm() {
       onSubmit={handleSubmit}
       className="space-y-4"
     >
-      <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="grid gap-2">
             <Label htmlFor="unit">{t('addWord.form.unitLabel')}</Label>
             <Input id="unit" name="unit" placeholder={t('addWord.form.unitPlaceholder')} />
-            {errors?.unit && (
-            <p className="text-sm text-destructive">{errors.unit[0]}</p>
-            )}
         </div>
         <div className="grid gap-2">
             <Label htmlFor="lesson">{t('addWord.form.lessonLabel')}</Label>
             <Input id="lesson" name="lesson" placeholder={t('addWord.form.lessonPlaceholder')} />
-            {errors?.lesson && (
-            <p className="text-sm text-destructive">{errors.lesson[0]}</p>
-            )}
         </div>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="word">{t('addWord.form.wordLabel')}</Label>
-        <Input id="word" name="word" placeholder={t('addWord.form.wordPlaceholder')} />
-        {errors?.word && (
-          <p className="text-sm text-destructive">{errors.word[0]}</p>
-        )}
+        <Input id="word" name="word" placeholder={t('addWord.form.wordPlaceholder')} required />
       </div>
       <div className="grid gap-2">
         <Label htmlFor="definition">{t('addWord.form.definitionLabel')}</Label>
@@ -160,17 +148,12 @@ export function AddWordForm() {
           id="definition"
           name="definition"
           placeholder={t('addWord.form.definitionPlaceholder')}
+          required
         />
-        {errors?.definition && (
-          <p className="text-sm text-destructive">{errors.definition[0]}</p>
-        )}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="image">{t('addWord.form.imageLabel')}</Label>
-        <Input id="image" name="image" type="file" accept="image/*" />
-         {errors?.image && (
-          <p className="text-sm text-destructive">{errors.image[0]}</p>
-        )}
+        <Input id="image" name="image" type="file" accept="image/*" required />
       </div>
       <Button type="submit" disabled={isPending} className="w-full">
         {isPending ? (

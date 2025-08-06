@@ -12,59 +12,49 @@ const t = (lang: 'en' | 'ar', key: keyof (typeof translations.en.toasts)) => {
     return translations[lang].toasts[key];
 }
 
+// This is no longer a form action, but a simple callable server function.
 const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
-  image: z.instanceof(File).refine(file => file.size > 0, "Image is required."),
-  unit: z.string().optional(),
-  lesson: z.string().optional(),
+  imageDataUri: z.string().min(1, "Image data is required."),
 });
 
-export async function addWord(formData: FormData) {
-    const validatedFields = addWordSchema.safeParse({
-        word: formData.get("word"),
-        definition: formData.get("definition"),
-        image: formData.get("image"),
-        unit: formData.get("unit"),
-        lesson: formData.get("lesson"),
-    });
+export async function addWord(data: {
+    word: string;
+    definition: string;
+    imageDataUri: string;
+}) {
+    const validatedFields = addWordSchema.safeParse(data);
 
-  if (!validatedFields.success) {
-    const errorMap = validatedFields.error.flatten().fieldErrors;
-    const firstError = Object.values(errorMap)[0]?.[0] || "Validation failed.";
-    
-    return {
-      errors: errorMap,
-      message: firstError,
-      success: false,
-    };
-  }
-
-  const { word, definition, image } = validatedFields.data;
-  
-  try {
-    const buffer = await image.arrayBuffer();
-    const base64 = Buffer.from(buffer).toString("base64");
-    const dataUri = `data:${image.type};base64,${base64}`;
-
-    const aiResponse = await generateWordOptions({
-      word,
-      definition,
-      explanatoryImage: dataUri,
-    });
-    
-    if (!aiResponse?.options || aiResponse.options.length < 3) {
-        throw new Error("AI did not return the expected number of options.");
+    if (!validatedFields.success) {
+        const errorMap = validatedFields.error.flatten().fieldErrors;
+        const firstError = Object.values(errorMap)[0]?.[0] || "Validation failed.";
+        return {
+            errors: errorMap,
+            message: firstError,
+            success: false,
+        };
     }
-    
-    // Return the options and the correct word separately
-    return { success: true, message: "Word created!", options: aiResponse.options, correctOption: word };
+  
+    try {
+        const aiResponse = await generateWordOptions({
+            word: data.word,
+            definition: data.definition,
+            explanatoryImage: data.imageDataUri,
+        });
 
-  } catch (error) {
-    console.error("Error during word creation:", error);
-    const errorMessage = "Failed to add word. The AI could not process the request. Please try a different word or image.";
-    return { message: errorMessage, errors: {}, success: false };
-  }
+        if (!aiResponse?.options || aiResponse.options.length < 3) {
+            throw new Error("AI did not return the expected number of options.");
+        }
+        
+        // Return only the incorrect options. The correct option is the word itself.
+        return { success: true, options: aiResponse.options };
+
+    } catch (error) {
+        console.error("Error during word creation:", error);
+        const errorMessage = "Failed to add word. The AI could not process the request. Please try a different word or image.";
+        return { message: errorMessage, errors: {}, success: false };
+    }
 }
 
 
