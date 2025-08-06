@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User } from "@/lib/data";
+import { User, getAllUsers } from "@/lib/data";
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -19,6 +19,11 @@ export default function WelcomePage() {
         const existingUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
         const updatedUsers = [...existingUsers, newUser];
         localStorage.setItem("users", JSON.stringify(updatedUsers));
+        
+        // Also update the combined users list immediately
+        const allUsers = getAllUsers();
+        localStorage.setItem("combinedUsers", JSON.stringify(allUsers));
+
 
         // Redirect to the dashboard
         router.replace(`/dashboard?userId=${newUser.id}`);

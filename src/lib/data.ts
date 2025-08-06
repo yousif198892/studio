@@ -98,43 +98,28 @@ export const mockUsers: User[] = [
   },
 ];
 
-// This is a workaround to simulate a persistent data layer.
-// In a real application, you would use a database.
 export function getAllUsers(): User[] {
-    const usersMap = new Map<string, User>();
+  const usersMap = new Map<string, User>();
 
-    // Load base users first to establish ground truth for critical properties.
-    mockUsers.forEach(user => usersMap.set(user.id, { ...user }));
+  // Load base mock users first
+  mockUsers.forEach(user => usersMap.set(user.id, user));
 
-    if (typeof window !== 'undefined') {
-        const storedItems: User[] = [
-            ...JSON.parse(localStorage.getItem('users') || '[]'),
-            ...JSON.parse(localStorage.getItem('combinedUsers') || '[]')
-        ];
-        
-        storedItems.forEach((storedUser) => {
-            const baseUser = usersMap.get(storedUser.id);
-            
-            if (baseUser) {
-                // If the user exists in the base data, merge only non-critical properties.
-                // This preserves the authoritative role and isMainAdmin status.
-                const mergedUser = {
-                    ...baseUser,
-                    name: storedUser.name || baseUser.name,
-                    avatar: storedUser.avatar || baseUser.avatar,
-                    timezone: storedUser.timezone || baseUser.timezone,
-                    fontSize: storedUser.fontSize || baseUser.fontSize,
-                    isSuspended: 'isSuspended' in storedUser ? storedUser.isSuspended : baseUser.isSuspended,
-                };
-                usersMap.set(storedUser.id, mergedUser);
-            } else {
-                 // If it's a completely new user not in mock data, add them.
-                usersMap.set(storedUser.id, { ...storedUser });
-            }
-        });
-    }
+  if (typeof window !== 'undefined') {
+    // Load users created dynamically during the session
+    const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+    storedUsers.forEach(user => usersMap.set(user.id, user));
 
-    return Array.from(usersMap.values());
+    // Load users from the 'combinedUsers' key which might have updates (like profile changes)
+    const combinedUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+    combinedUsers.forEach(user => {
+        // Merge with existing user data to keep mock data properties like isMainAdmin
+        const existingUser = usersMap.get(user.id);
+        usersMap.set(user.id, { ...existingUser, ...user });
+    });
+  }
+
+  // Return a unique list of users
+  return Array.from(usersMap.values());
 }
 
 
