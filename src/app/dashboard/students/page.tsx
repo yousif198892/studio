@@ -56,18 +56,14 @@ export default function StudentsPage() {
       // Remove from component state
       setStudents(prev => prev.filter(s => s.id !== studentId));
       
-      // Get all users to find the student to "remove"
-      let allUsers: User[] = JSON.parse(localStorage.getItem("combinedUsers") || "[]");
+      let allUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
       const studentIndex = allUsers.findIndex(u => u.id === studentId);
 
       if (studentIndex > -1) {
         // Instead of deleting, just detach from the supervisor
         allUsers[studentIndex].supervisorId = undefined;
-        
-        // Save the updated user list back to localStorage
-        localStorage.setItem("combinedUsers", JSON.stringify(allUsers));
+        localStorage.setItem("users", JSON.stringify(allUsers));
       }
-
 
       // Optional: Also clear student's specific progress
       localStorage.removeItem(`wordProgress_${studentId}`);

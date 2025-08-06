@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useActionState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -34,7 +34,6 @@ import { useToast } from "@/hooks/use-toast";
 import { getAllUsers, User } from "@/lib/data";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
-import { toggleSupervisorSuspension } from "@/lib/actions";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 
@@ -45,13 +44,10 @@ export default function AdminsPage() {
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const { toast } = useToast();
 
-  const [_, toggleSuspensionAction, isPending] = useActionState(toggleSupervisorSuspension, { success: false, message: ""});
-
   useEffect(() => {
     const allUsers = getAllUsers();
-    const mainAdmin = allUsers.find(u => u.isMainAdmin);
     const otherSupervisors = allUsers.filter(
-      (u) => u.role === "supervisor" && u.id !== mainAdmin?.id
+      (u) => u.role === "supervisor" && !u.isMainAdmin
     );
     setSupervisors(otherSupervisors);
   }, []);
@@ -60,38 +56,40 @@ export default function AdminsPage() {
     setSupervisors((prev) => [...prev, newUser]);
   };
   
-  const handleToggleSuspension = async (userToToggle: User) => {
-    const formData = new FormData();
-    formData.append('userToToggle', JSON.stringify(userToToggle));
+  const handleToggleSuspension = (userToToggle: User) => {
+    const updatedUser = {
+      ...userToToggle,
+      isSuspended: !userToToggle.isSuspended,
+    };
     
-    const result = await toggleSupervisorSuspension(null, formData);
+    // Update state
+    setSupervisors(supervisors.map(s => s.id === updatedUser.id ? updatedUser : s));
+    
+    // Update localStorage
+    try {
+      const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+      const userIndex = storedUsers.findIndex(u => u.id === updatedUser.id);
+      
+      if (userIndex > -1) {
+        storedUsers[userIndex] = updatedUser;
+      } else {
+        storedUsers.push(updatedUser);
+      }
+      localStorage.setItem('users', JSON.stringify(storedUsers));
 
-    if (result.success && result.updatedUser) {
-        // Update state
-        setSupervisors(supervisors.map(s => s.id === result.updatedUser.id ? result.updatedUser : s));
-        
-        // Update localStorage
-        try {
-          const storedUsers: User[] = getAllUsers();
-          const updatedUsers = storedUsers.map(u => u.id === result.updatedUser.id ? result.updatedUser : u);
-          localStorage.setItem('combinedUsers', JSON.stringify(updatedUsers));
-        } catch (error) {
-            console.error("Failed to update user in localStorage", error);
-        }
-
+      toast({
+          title: "Success!",
+          description: `Supervisor ${userToToggle.name} has been ${updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
+      });
+    } catch (error) {
+        console.error("Failed to update user in localStorage", error);
         toast({
-            title: "Success!",
-            description: `Supervisor ${userToToggle.name} has been ${result.updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
-        });
-    } else {
-         toast({
             title: "Error",
-            description: result.message,
+            description: "Could not update supervisor status.",
             variant: "destructive",
         });
     }
   }
-
 
   const handleDelete = (userId: string) => {
     // In a real app, this would be a server action.
@@ -105,18 +103,6 @@ export default function AdminsPage() {
       );
       const updatedStoredUsers = storedUsers.filter((u) => u.id !== userId);
       localStorage.setItem("users", JSON.stringify(updatedStoredUsers));
-
-      // Also update 'combinedUsers' for consistency
-      const combinedUsers: User[] = JSON.parse(
-        localStorage.getItem("combinedUsers") || "[]"
-      );
-      const updatedCombinedUsers = combinedUsers.filter(
-        (u) => u.id !== userId
-      );
-      localStorage.setItem(
-        "combinedUsers",
-        JSON.stringify(updatedCombinedUsers)
-      );
 
       toast({
         title: "Success!",

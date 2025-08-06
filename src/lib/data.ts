@@ -107,13 +107,9 @@ export function getAllUsers(): User[] {
   if (typeof window !== 'undefined') {
     // Load users created dynamically during the session
     const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-    storedUsers.forEach(user => usersMap.set(user.id, user));
-
-    // Load users from the 'combinedUsers' key which might have updates (like profile changes)
-    const combinedUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
-    combinedUsers.forEach(user => {
-        // Merge with existing user data to keep mock data properties like isMainAdmin
-        const existingUser = usersMap.get(user.id);
+    storedUsers.forEach(user => {
+        // This ensures that any updates to a user (like profile changes) overwrite the mock/previous data
+        const existingUser = usersMap.get(user.id) || {};
         usersMap.set(user.id, { ...existingUser, ...user });
     });
   }
@@ -130,7 +126,7 @@ export const getUserById = (id: string): User | undefined => {
 }
 
 export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
-    let allUsers: User[] = getAllUsers();
+    const allUsers = getAllUsers();
     return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 

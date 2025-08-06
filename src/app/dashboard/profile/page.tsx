@@ -23,7 +23,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getUserById, User, Word } from "@/lib/data";
+import { getAllUsers, getUserById, User, Word } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -77,15 +77,23 @@ export default function ProfilePage() {
   
   const handleSaveChanges = () => {
       if (!user) return;
-      // In a real app, this would call a server action to update the user data.
+      
       const updatedUser = { ...user, name };
-      const allUsers = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+      
+      const allUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
       const userIndex = allUsers.findIndex((u:User) => u.id === user.id);
+      
       if (userIndex > -1) {
-        allUsers[userIndex] = updatedUser;
-        localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
-        setUser(updatedUser);
+        allUsers[userIndex] = { ...allUsers[userIndex], ...updatedUser };
+      } else {
+        // This handles updates for mock users who aren't in the 'users' list initially
+        const mockUserIndex = allUsers.findIndex(u => u.id === user.id);
+        if (mockUserIndex === -1) {
+             allUsers.push(updatedUser);
+        }
       }
+      localStorage.setItem('users', JSON.stringify(allUsers));
+      setUser(updatedUser);
 
       toast({
         title: t('toasts.success'),
@@ -118,19 +126,19 @@ export default function ProfilePage() {
     const updatedUser = { ...user, avatar: previewImage };
     
     // Read the latest user list from localStorage
-    const allUsers: User[] = JSON.parse(localStorage.getItem('combinedUsers') || '[]');
+    const allUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
     const userIndex = allUsers.findIndex((u: User) => u.id === user.id);
 
     // Update the user in the list
     if (userIndex > -1) {
       allUsers[userIndex] = updatedUser;
     } else {
-      // If user not in the list for some reason, add them
+      // If user not in the list (e.g. a mock user), add them
       allUsers.push(updatedUser);
     }
     
     // Save the updated list back to localStorage
-    localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
+    localStorage.setItem('users', JSON.stringify(allUsers));
     
     // Update the state for immediate UI feedback
     setUser(updatedUser);
@@ -153,20 +161,12 @@ export default function ProfilePage() {
     if (!user) return;
     
     try {
-        // Remove from 'users'
+        // Remove from 'users' in localStorage
         let users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
         users = users.filter(u => u.id !== user.id);
         localStorage.setItem("users", JSON.stringify(users));
-
-        // Remove from 'combinedUsers'
-        let combinedUsers: User[] = JSON.parse(localStorage.getItem("combinedUsers") || "[]");
-        combinedUsers = combinedUsers.filter(u => u.id !== user.id);
-        localStorage.setItem("combinedUsers", JSON.stringify(combinedUsers));
         
-        // If supervisor, delete their words. If student, delete their progress.
-        // For this app's logic, student progress is stored with the word objects.
-        // If the user is a supervisor, we remove their words. This implicitly removes student progress on those words.
-        // If a student is deleted, we don't need to do anything with words, as they are owned by the supervisor.
+        // If supervisor, delete their words.
         if (user.role === 'supervisor') {
             let allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
             allWords = allWords.filter(w => w.supervisorId !== user.id);

@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, getAllUsers } from "@/lib/data";
+import { User } from "@/lib/data";
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -15,15 +15,15 @@ export default function WelcomePage() {
       try {
         const newUser: User = JSON.parse(decodeURIComponent(userParam));
         
-        // Save the new user to localStorage
+        // Save the new user to the 'users' key in localStorage.
+        // This key holds all dynamically created users.
         const existingUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
-        const updatedUsers = [...existingUsers, newUser];
-        localStorage.setItem("users", JSON.stringify(updatedUsers));
         
-        // Also update the combined users list immediately
-        const allUsers = getAllUsers();
-        localStorage.setItem("combinedUsers", JSON.stringify(allUsers));
-
+        // Prevent adding duplicates
+        if (!existingUsers.some(u => u.id === newUser.id)) {
+            const updatedUsers = [...existingUsers, newUser];
+            localStorage.setItem("users", JSON.stringify(updatedUsers));
+        }
 
         // Redirect to the dashboard
         router.replace(`/dashboard?userId=${newUser.id}`);
