@@ -119,34 +119,26 @@ const registerSchema = z
     name: z.string().min(1, 'Name is required.'),
     email: z.string().email('Invalid email address.'),
     password: z.string().min(6, 'Password must be at least 6 characters.'),
-    role: z.enum(['student', 'supervisor']),
+    role: z.enum(['student']),
     supervisorId: z.string().optional(),
   })
   .refine((data) => {
-      // If the role is student, supervisorId must exist and be valid.
-      if (data.role === 'student') {
-        if (!data.supervisorId || data.supervisorId.trim() === '') {
-            return false;
-        }
-        const allUsers = getAllUsers();
-        const supervisorExists = allUsers.some(u => u.id === data.supervisorId && u.role === 'supervisor');
-        return supervisorExists;
+      if (!data.supervisorId || data.supervisorId.trim() === '') {
+          return false;
       }
-      // If role is not student, we don't need to validate supervisorId.
-      return true;
+      const allUsers = getAllUsers();
+      const supervisorExists = allUsers.some(u => u.id === data.supervisorId && u.role === 'supervisor');
+      return supervisorExists;
   }, {
-    // This message is shown if the .refine check fails.
     message: 'Invalid or missing Supervisor ID.',
-    path: ['supervisorId'], // Associates the error with the supervisorId field.
+    path: ['supervisorId'],
   });
 
 
 export async function register(prevState: any, formData: FormData) {
-    const role = formData.get("role") as "student" | "supervisor";
+    const role = formData.get("role") as "student"; // Hardcoded to student
     const email = formData.get("email") as string;
-    const supervisorId = formData.get("supervisorId") as string | undefined;
     
-    // Check for existing email first
     const allUsers = getAllUsers();
     if (allUsers.find(u => u.email === email)) {
       return {
@@ -160,7 +152,7 @@ export async function register(prevState: any, formData: FormData) {
         email: email,
         password: formData.get("password"),
         role: role,
-        supervisorId: supervisorId,
+        supervisorId: formData.get("supervisorId"),
     });
 
     if (!validatedFields.success) {
@@ -172,17 +164,16 @@ export async function register(prevState: any, formData: FormData) {
         };
     }
 
-    const { name, password } = validatedFields.data;
+    const { name, password, supervisorId } = validatedFields.data;
     
     const newUser: User = {
-        id: role === 'supervisor' ? `sup${Date.now()}` : `user${Date.now()}`,
+        id: `user${Date.now()}`,
         name,
         email,
         password,
         role,
         avatar: "https://placehold.co/100x100.png",
-        // This is the critical fix: ensure supervisorId is assigned if the role is student.
-        supervisorId: role === "student" ? supervisorId : undefined,
+        supervisorId: supervisorId,
     };
     
     const userParam = encodeURIComponent(JSON.stringify(newUser));
