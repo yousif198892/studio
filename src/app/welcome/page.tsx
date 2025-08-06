@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User } from "@/lib/data";
+import { User, mockUsers } from "@/lib/data";
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -15,13 +15,18 @@ export default function WelcomePage() {
       try {
         const newUser: User = JSON.parse(decodeURIComponent(userParam));
         
-        // Get the current list of users from localStorage
-        const existingUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+        // Start with the mock users to ensure they are always present as a base
+        const userMap = new Map<string, User>();
+        mockUsers.forEach(u => userMap.set(u.id, u));
+
+        // Get the current list of users from localStorage and add them to the map
+        const storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+        storedUsers.forEach(u => userMap.set(u.id, u));
         
-        // Use a Map to prevent duplicates, with the new user taking precedence
-        const userMap = new Map(existingUsers.map(u => [u.id, u]));
+        // Add or update the new user from the registration flow
         userMap.set(newUser.id, newUser);
 
+        // Save the consolidated list back to localStorage
         const updatedUsers = Array.from(userMap.values());
         localStorage.setItem("users", JSON.stringify(updatedUsers));
 
