@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { getWordsBySupervisor, Word } from "@/lib/data";
 import {
   Table,
@@ -28,13 +28,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Edit, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function WordsPage() {
   const { t } = useLanguage();
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId") || "sup1";
+  const userId = searchParams.get("userId") || "sup2";
   const [words, setWords] = useState<Word[]>([]);
   const { toast } = useToast();
+
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
 
   const fetchWords = useCallback(() => {
     const supervisorWords = getWordsBySupervisor(userId);
@@ -44,7 +54,6 @@ export default function WordsPage() {
   useEffect(() => {
     fetchWords();
     
-    // This listener ensures the component re-renders if localStorage is changed.
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'userWords') {
             fetchWords();
@@ -59,13 +68,50 @@ export default function WordsPage() {
 
   }, [fetchWords]);
 
+  const uniqueUnits = useMemo(() => {
+    const units = new Set(words.map((word) => word.unit).filter(Boolean));
+    return Array.from(units);
+  }, [words]);
+
+  const lessonsForSelectedUnit = useMemo(() => {
+    if (!selectedUnit) return [];
+    const lessons = new Set(
+      words
+        .filter((word) => word.unit === selectedUnit)
+        .map((word) => word.lesson)
+        .filter(Boolean)
+    );
+    return Array.from(lessons);
+  }, [words, selectedUnit]);
+
+  const filteredWords = useMemo(() => {
+    return words.filter((word) => {
+      const unitMatch = !selectedUnit || word.unit === selectedUnit;
+      const lessonMatch = !selectedLesson || word.lesson === selectedLesson;
+      return unitMatch && lessonMatch;
+    });
+  }, [words, selectedUnit, selectedLesson]);
+
+  const handleUnitChange = (unit: string) => {
+      setSelectedUnit(unit === "all" ? null : unit);
+      setSelectedLesson(null); // Reset lesson when unit changes
+  }
+
+  const handleLessonChange = (lesson: string) => {
+      setSelectedLesson(lesson === "all" ? null : lesson);
+  }
+
+  const clearFilters = () => {
+      setSelectedUnit(null);
+      setSelectedLesson(null);
+  }
+
   const handleDeleteWord = (wordId: string) => {
     try {
         let storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
         const updatedWords = storedWords.filter(w => w.id !== wordId);
         localStorage.setItem('userWords', JSON.stringify(updatedWords));
 
-        // Update state to reflect change immediately
         setWords(updatedWords.filter(w => w.supervisorId === userId));
 
         toast({
@@ -83,7 +129,7 @@ export default function WordsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold font-headline">{t('wordsPage.title')}</h1>
           <p className="text-muted-foreground">{t('wordsPage.description')} </p>
@@ -92,8 +138,37 @@ export default function WordsPage() {
             <Link href={`/dashboard/add-word?userId=${userId}`}>{t('wordsPage.addNew')}</Link>
         </Button>
       </div>
+      <div className="flex items-center space-x-2">
+            <Select onValueChange={handleUnitChange} value={selectedUnit || "all"}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Unit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Units</SelectItem>
+                {uniqueUnits.map((unit) => (
+                  <SelectItem key={unit} value={unit}>
+                    {unit}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={handleLessonChange} value={selectedLesson || "all"} disabled={!selectedUnit}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Lesson" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Lessons</SelectItem>
+                {lessonsForSelectedUnit.map((lesson) => (
+                  <SelectItem key={lesson} value={lesson}>
+                    {lesson}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {(selectedUnit || selectedLesson) && <Button variant="ghost" onClick={clearFilters}>Clear Filters</Button>}
+        </div>
 
-      {words.length > 0 ? (
+      {filteredWords.length > 0 ? (
          <div className="border rounded-lg">
             <Table>
               <TableHeader>
@@ -107,7 +182,7 @@ export default function WordsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {words.map((word) => (
+                {filteredWords.map((word) => (
                   <TableRow key={word.id}>
                     <TableCell>
                       <Image
@@ -159,7 +234,7 @@ export default function WordsPage() {
          </div>
       ) : (
         <div className="text-center text-muted-foreground py-12">
-            <p>You have not added any words yet.</p>
+            <p>{selectedUnit || selectedLesson ? "No words found for the selected filters." : "You have not added any words yet."}</p>
         </div>
       )}
     </div>
