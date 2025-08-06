@@ -159,10 +159,9 @@ export async function register(prevState: any, formData: FormData) {
         supervisorId: supervisorId,
     };
 
-    const validatedFields = registerSchema.safeParse(dataToValidate);
+    const allUsers = getAllUsers();
     
     // Check for existing user *after* supervisor ID check, but before other checks
-    const allUsers = getAllUsers();
     if (allUsers.find(u => u.email === email)) {
       return {
         errors: { email: ["User with this email already exists."] },
@@ -170,6 +169,7 @@ export async function register(prevState: any, formData: FormData) {
       };
     }
 
+    const validatedFields = registerSchema.safeParse(dataToValidate);
 
     if (!validatedFields.success) {
         const errorMap = validatedFields.error.flatten().fieldErrors;
