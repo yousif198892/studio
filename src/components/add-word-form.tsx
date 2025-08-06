@@ -1,35 +1,17 @@
 
 "use client";
 
-import { useFormStatus } from "react-dom";
 import { addWord } from "@/lib/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Word, getWordsBySupervisor } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
-
-function SubmitButton({ isPending }: { isPending: boolean }) {
-  const { t } = useLanguage();
-
-  return (
-    <Button type="submit" disabled={isPending} className="w-full">
-      {isPending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {t('addWord.form.addingButton')}
-        </>
-      ) : (
-        t('addWord.form.addButton')
-      )}
-    </Button>
-  );
-}
 
 const toBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -89,9 +71,9 @@ export function AddWordForm() {
     }
     
     // --- Server action call ---
-    const result = await addWord({}, formData);
+    const result = await addWord(formData);
 
-    if (result.success && result.options) {
+    if (result.success && result.options && result.correctOption) {
         try {
             const imageDataUri = await toBase64(imageInput);
 
@@ -102,8 +84,8 @@ export function AddWordForm() {
                 unit: unitInput,
                 lesson: lessonInput,
                 imageUrl: imageDataUri,
-                options: result.options,
-                correctOption: wordInput,
+                options: [...result.options, result.correctOption], // Combine incorrect and correct options
+                correctOption: result.correctOption,
                 supervisorId: userId,
                 nextReview: new Date(),
                 strength: 0,
@@ -190,7 +172,16 @@ export function AddWordForm() {
           <p className="text-sm text-destructive">{errors.image[0]}</p>
         )}
       </div>
-      <SubmitButton isPending={isPending} />
+      <Button type="submit" disabled={isPending} className="w-full">
+        {isPending ? (
+            <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {t('addWord.form.addingButton')}
+            </>
+        ) : (
+            t('addWord.form.addButton')
+        )}
+        </Button>
     </form>
   );
 }

@@ -15,19 +15,14 @@ const t = (lang: 'en' | 'ar', key: keyof (typeof translations.en.toasts)) => {
 const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
-  userId: z.string().min(1, "User ID is required."),
-  unit: z.string().optional(),
-  lesson: z.string().optional(),
   image: z.instanceof(File).refine(file => file.size > 0, "Image is required."),
 });
 
-export async function addWord(prevState: any, formData: FormData) {
+// This is no longer a formAction, but a regular async function
+export async function addWord(formData: FormData) {
     const validatedFields = addWordSchema.safeParse({
         word: formData.get("word"),
         definition: formData.get("definition"),
-        userId: formData.get("userId"),
-        unit: formData.get("unit"),
-        lesson: formData.get("lesson"),
         image: formData.get("image"),
     });
 
@@ -46,15 +41,6 @@ export async function addWord(prevState: any, formData: FormData) {
   const { word, definition, image } = validatedFields.data;
   
   try {
-    // --- Start of Placeholder Logic ---
-    // We are temporarily bypassing the AI call to test the rest of the flow.
-    const placeholderOptions = [word, "Placeholder Option 1", "Placeholder Option 2", "Placeholder Option 3"];
-    return { success: true, message: "Placeholder word created!", options: placeholderOptions };
-    // --- End of Placeholder Logic ---
-
-
-    /* 
-    // --- Original AI Call (Temporarily Disabled) ---
     const buffer = await image.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${image.type};base64,${base64}`;
@@ -69,8 +55,8 @@ export async function addWord(prevState: any, formData: FormData) {
         throw new Error("AI did not return the expected number of options.");
     }
     
-    return { success: true, message: "Word created!", options: [...aiResponse.options, word] };
-    */
+    // Return the options and the correct word separately
+    return { success: true, message: "Word created!", options: aiResponse.options, correctOption: word };
 
   } catch (error) {
     console.error("Error during word creation:", error);
