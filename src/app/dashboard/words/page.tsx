@@ -65,11 +65,8 @@ export default function WordsPage() {
         const updatedWords = storedWords.filter(w => w.id !== wordId);
         localStorage.setItem('userWords', JSON.stringify(updatedWords));
 
-        // Manually trigger a storage event for same-page updates.
-        window.dispatchEvent(new StorageEvent('storage', {
-            key: 'userWords',
-            newValue: JSON.stringify(updatedWords),
-        }));
+        // Update state to reflect change immediately
+        setWords(updatedWords.filter(w => w.supervisorId === userId));
 
         toast({
             title: t('toasts.success'),
