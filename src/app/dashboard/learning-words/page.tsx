@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { getWordsForStudent, Word } from "@/lib/data";
 import {
@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { WordAudioPlayer } from "@/components/word-audio-player";
+import { RescheduleWordDialog } from "@/components/reschedule-word-dialog";
 
 export default function LearningWordsPage() {
   const searchParams = useSearchParams();
@@ -37,16 +38,25 @@ export default function LearningWordsPage() {
 
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
+  const userId = searchParams.get("userId");
 
-  useEffect(() => {
-    const userId = searchParams.get("userId");
+  const fetchWords = useCallback(() => {
     if (userId) {
       const allWords = getWordsForStudent(userId);
       const learning = allWords.filter((w) => w.strength >= 0);
       setAllLearningWords(learning);
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [userId]);
+
+  useEffect(() => {
+    fetchWords();
+  }, [fetchWords]);
+
+  const handleWordRescheduled = () => {
+    // Re-fetch the words to update the list after rescheduling
+    fetchWords();
+  }
 
   const uniqueUnits = useMemo(() => {
     const units = new Set(allLearningWords.map((word) => word.unit).filter(Boolean));
@@ -142,6 +152,7 @@ export default function LearningWordsPage() {
                 <TableHead>Unit</TableHead>
                 <TableHead>Lesson</TableHead>
                 <TableHead>Definition</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -168,11 +179,20 @@ export default function LearningWordsPage() {
                     <TableCell className="max-w-sm">
                       {word.definition}
                     </TableCell>
+                     <TableCell className="text-right">
+                       {userId && (
+                          <RescheduleWordDialog 
+                            word={word} 
+                            userId={userId} 
+                            onWordRescheduled={handleWordRescheduled}
+                          />
+                       )}
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     No words found for the selected filters.
                   </TableCell>
                 </TableRow>
