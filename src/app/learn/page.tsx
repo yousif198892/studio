@@ -45,22 +45,30 @@ export default function LearnPage() {
     setStartTime(Date.now());
     loadNextWord();
 
+    const cleanup = () => {
+        if (userId && startTime) {
+          const endTime = Date.now();
+          const durationSeconds = Math.round((endTime - startTime) / 1000);
+          
+          const storedStats = localStorage.getItem(`learningStats_${userId}`);
+          const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
+            timeSpentSeconds: 0,
+            totalWordsReviewed: 0,
+            reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+          };
+          stats.timeSpentSeconds += durationSeconds;
+          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+        }
+    }
+
+    // This handles the case where the user navigates away before the component unmounts
+    window.addEventListener('beforeunload', cleanup);
+
     return () => {
-      if (userId && startTime) {
-        const endTime = Date.now();
-        const durationSeconds = Math.round((endTime - startTime) / 1000);
-        
-        const storedStats = localStorage.getItem(`learningStats_${userId}`);
-        const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
-          timeSpentSeconds: 0,
-          totalWordsReviewed: 0,
-          reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
-        };
-        stats.timeSpentSeconds += durationSeconds;
-        localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
-      }
+        cleanup();
+        window.removeEventListener('beforeunload', cleanup);
     };
-  }, [userId, loadNextWord]); // Only run once on mount
+  }, [userId]); // Only run once on mount
 
 
   const handleCorrect = () => {
