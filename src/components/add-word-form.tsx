@@ -53,7 +53,9 @@ export function AddWordForm() {
   
   const userId = searchParams.get("userId") || "sup1";
 
-  const handleClientValidation = (formData: FormData) => {
+  const handleClientValidation = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      const formData = new FormData(e.currentTarget);
       const wordInput = formData.get("word") as string;
       if (wordInput) {
           const existingWords = getWordsBySupervisor(userId);
@@ -63,10 +65,10 @@ export function AddWordForm() {
                   description: "This word already exists in your collection.",
                   variant: "destructive",
               });
-              return false; // Prevent form submission
+              return; // Prevent form submission
           }
       }
-      return true; // Proceed with form submission
+      formAction(formData); // Proceed with form submission
   }
 
   useEffect(() => {
@@ -109,11 +111,7 @@ export function AddWordForm() {
   return (
     <form 
       ref={formRef} 
-      action={(formData) => {
-        if (handleClientValidation(formData)) {
-            formAction(formData);
-        }
-      }} 
+      onSubmit={handleClientValidation}
       className="space-y-4"
     >
       <input type="hidden" name="userId" value={userId || ''} />
