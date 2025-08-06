@@ -11,7 +11,7 @@ import {
 import { getWordsForStudent } from "@/lib/data";
 import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
 import { User } from "@/lib/data";
-import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star } from "lucide-react";
+import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star, GraduationCap, Trophy } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -47,6 +47,8 @@ export default function Dashboard() {
     reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
   });
   const [wordsToReviewCount, setWordsToReviewCount] = useState(0);
+  const [wordsLearningCount, setWordsLearningCount] = useState(0);
+  const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
 
   useEffect(() => {
     const userId = searchParams?.get('userId') as string;
@@ -57,7 +59,13 @@ export default function Dashboard() {
       if (foundUser?.role === 'student') {
         const words = getWordsForStudent(userId);
         const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
+        const mastered = words.filter(w => w.strength === -1).length;
+        const learning = words.length - mastered;
+
         setWordsToReviewCount(toReview);
+        setWordsMasteredCount(mastered);
+        setWordsLearningCount(learning);
+
 
         const storedStats = localStorage.getItem(`learningStats_${userId}`);
         if (storedStats) {
@@ -98,9 +106,6 @@ export default function Dashboard() {
   }
 
   if (user?.role === "student") {
-    const words = getWordsForStudent(user.id);
-    const wordsMastered = words.filter(w => w.strength === -1).length;
-
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.welcome', user.name)}</h1>
@@ -121,6 +126,36 @@ export default function Dashboard() {
                   {t('dashboard.student.reviewDescription')}
                 </p>
               </CardContent>
+            </Card>
+          </Link>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                    Words in Learning
+                </CardTitle>
+                <GraduationCap className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+                <div className="text-2xl font-bold">{wordsLearningCount}</div>
+                <p className="text-xs text-muted-foreground">
+                    Total words in your learning queue.
+                </p>
+            </CardContent>
+          </Card>
+          <Link href={`/dashboard/mastered-words?userId=${user.id}`}>
+            <Card className="hover:bg-muted/50 transition-colors">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        Mastered Words
+                    </CardTitle>
+                    <Trophy className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{wordsMasteredCount}</div>
+                    <p className="text-xs text-muted-foreground">
+                        Words you have successfully mastered.
+                    </p>
+                </CardContent>
             </Card>
           </Link>
         </div>
@@ -148,7 +183,7 @@ export default function Dashboard() {
               </div>
                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <Star className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{wordsMastered}</p>
+                  <p className="text-2xl font-bold">{wordsMasteredCount}</p>
                   <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.masteredWords')}</p>
               </div>
           </CardContent>
