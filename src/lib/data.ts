@@ -68,7 +68,7 @@ export const mockUsers: User[] = [
 ];
 
 export function getAllUsers(): User[] {
-  // Start with the static mock users.
+  // Use a Map to ensure users are unique by ID, preventing duplicates.
   const allUsers = new Map(mockUsers.map(user => [user.id, user]));
 
   // If we're on the client, merge with users from localStorage.

@@ -131,7 +131,8 @@ const registerSchema = z
       });
     }
     if (data.role === 'student') {
-        const supervisor = mockUsers.find(u => u.id === data.supervisorId && u.role === 'supervisor');
+        const allUsers = getAllUsers();
+        const supervisor = allUsers.find(u => u.id === data.supervisorId && u.role === 'supervisor');
         if (!supervisor) {
              ctx.addIssue({
                 code: z.ZodIssueCode.custom,
