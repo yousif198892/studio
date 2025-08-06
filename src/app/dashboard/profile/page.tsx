@@ -23,8 +23,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User, Word, mockUsers } from "@/lib/data";
-import { getUserByIdFromClient } from "@/lib/client-data";
+import { User, Word } from "@/lib/data";
+import { getUserByIdFromClient, getAllUsersFromClient } from "@/lib/client-data";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -80,19 +80,15 @@ export default function ProfilePage() {
       if (!user) return;
       
       const updatedUser = { ...user, name };
-      
-      const allUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-      const userIndex = allUsers.findIndex((u:User) => u.id === user.id);
+
+      // Get all users from client storage helper
+      const allUsers = getAllUsersFromClient();
+      const userIndex = allUsers.findIndex(u => u.id === user.id);
       
       if (userIndex > -1) {
-        allUsers[userIndex] = { ...allUsers[userIndex], ...updatedUser };
-      } else {
-        // This handles updates for mock users who aren't in the 'users' list initially
-        const mockUserIndex = allUsers.findIndex(u => u.id === user.id);
-        if (mockUserIndex === -1) {
-             allUsers.push(updatedUser);
-        }
+          allUsers[userIndex] = { ...allUsers[userIndex], name };
       }
+      
       localStorage.setItem('users', JSON.stringify(allUsers));
       setUser(updatedUser);
 
@@ -124,27 +120,20 @@ export default function ProfilePage() {
   const handlePictureUpload = () => {
     if (!user || !previewImage) return;
 
+    const allUsers = getAllUsersFromClient();
+    const userIndex = allUsers.findIndex((u: User) => u.id === user.id);
     const updatedUser = { ...user, avatar: previewImage };
-    
-    // Get all users currently in localStorage.
-    let storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-    const userIndex = storedUsers.findIndex((u: User) => u.id === user.id);
 
-    // Update the user if they exist in the stored list.
     if (userIndex > -1) {
-      storedUsers[userIndex] = updatedUser;
+      allUsers[userIndex] = updatedUser;
     } else {
-      // If the user is not in the stored list (i.e., they are a mock user),
-      // we need to add them to it so their changes persist.
-      storedUsers.push(updatedUser);
+        // This case should theoretically not be hit with getAllUsersFromClient, but as a safeguard:
+        allUsers.push(updatedUser);
     }
     
-    // Save the updated list back to localStorage.
-    localStorage.setItem('users', JSON.stringify(storedUsers));
-    
-    // Update the state for immediate UI feedback.
+    localStorage.setItem('users', JSON.stringify(allUsers));
     setUser(updatedUser);
-    setPreviewImage(null); // Clear the preview.
+    setPreviewImage(null);
 
     toast({
         title: t('toasts.success'),

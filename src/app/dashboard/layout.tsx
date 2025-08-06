@@ -1,7 +1,7 @@
 
 "use client";
 
-import { redirect, useSearchParams } from "next/navigation";
+import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
@@ -15,6 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
+  const pathname = usePathname(); // Add pathname to track navigation
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +40,7 @@ export default function DashboardLayout({
       setLoading(false);
     }
     fetchUser();
-  }, [searchParams]);
+  }, [searchParams, pathname]); // Re-run effect when pathname changes
 
   if (loading) {
     return null; // Or a loading spinner
