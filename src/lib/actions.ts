@@ -4,7 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { Word, getAllUsers, User } from "./data";
+import { Word, User } from "./data";
 import { redirect } from "next/navigation";
 import { translations } from "./i18n";
 
@@ -141,7 +141,10 @@ export async function register(prevState: any, formData: FormData) {
     
     const { name, email, password, supervisorId } = validatedFields.data;
 
-    const allUsers = getAllUsers();
+    // This is not secure, but necessary for this demo app's architecture.
+    // In a real app, you would query a database.
+    const allUsersClientJson = formData.get('allUsersClient') as string;
+    const allUsers: User[] = allUsersClientJson ? JSON.parse(allUsersClientJson) : [];
     
     if (allUsers.some(u => u.email === email)) {
       return {
@@ -198,10 +201,13 @@ export async function login(prevState: any, formData: FormData) {
     };
   }
 
+  // This is not secure, but necessary for this demo app's architecture.
+  // In a real app, you would query a database.
+  const allUsersClientJson = formData.get('allUsersClient') as string;
+  const allUsers: User[] = allUsersClientJson ? JSON.parse(allUsersClientJson) : [];
+
   const { email, password } = validatedFields.data;
   
-  const allUsers = getAllUsers();
-
   const user = allUsers.find((u) => u.email === email);
 
   if (!user || user.password !== password) {
@@ -241,8 +247,10 @@ export async function createSupervisor(prevState: any, formData: FormData) {
       success: false,
     };
   }
+  
+  const allUsersClientJson = formData.get('allUsersClient') as string;
+  const allUsers: User[] = allUsersClientJson ? JSON.parse(allUsersClientJson) : [];
 
-  const allUsers = getAllUsers();
   if (allUsers.find(u => u.email === validatedFields.data.email)) {
     return {
       errors: { email: ["Supervisor with this email already exists."] },

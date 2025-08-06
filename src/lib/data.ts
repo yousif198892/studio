@@ -1,6 +1,8 @@
 
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
+// These functions are intended for SERVER-SIDE USE. For client-side data fetching,
+// use `src/lib/client-data.ts`.
 
 import { getStudentProgressFromStorage, saveAllStudentProgressInStorage, WordProgress } from './storage';
 
@@ -70,29 +72,17 @@ export function getAllUsers(): User[] {
   const defaultAvatar = "https://placehold.co/100x100.png";
 
   mockUsers.forEach(user => userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar }));
-
-  if (typeof window !== 'undefined') {
-    try {
-      const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-      storedUsers.forEach(user => userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar }));
-    } catch (e) {
-      console.error("Failed to parse users from localStorage", e);
-    }
-  }
+  
+  // In a server context, we can only access the mock data.
+  // The full user list including localStorage users is passed from the client for actions.
 
   return Array.from(userMap.values());
 }
 
 
 // Helper functions to simulate data fetching
-export const getUserById = (id: string): User | undefined => {
-    const allUsers = getAllUsers();
+export const getUserById = (id: string, allUsers: User[]): User | undefined => {
     return allUsers.find(u => u.id === id);
-}
-
-export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
-    const allUsers = getAllUsers();
-    return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 
 const getSupervisorWordsFromStorage = (): Word[] => {
@@ -109,8 +99,13 @@ const getSupervisorWordsFromStorage = (): Word[] => {
 
 export const getWordsForStudent = (studentId: string): Word[] => {
     if (typeof window === 'undefined') return [];
+    
+    // This function is client-side only because it needs the student's supervisorId.
+    // We import a client-side user getter.
+    const { getUserByIdFromClient } = require('./client-data');
 
-    const student = getUserById(studentId);
+
+    const student = getUserByIdFromClient(studentId);
     if (!student?.supervisorId) return [];
 
     const supervisorWords = getWordsBySupervisor(student.supervisorId);

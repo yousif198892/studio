@@ -5,8 +5,9 @@ import { redirect, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { getUserById, type User } from "@/lib/data";
+import { type User } from "@/lib/data";
 import { useEffect, useState } from "react";
+import { getUserByIdFromClient } from "@/lib/client-data";
 
 export default function DashboardLayout({
   children,
@@ -27,7 +28,7 @@ export default function DashboardLayout({
         return;
       }
       
-      const foundUser = getUserById(userId);
+      const foundUser = getUserByIdFromClient(userId);
       
       if (foundUser) {
         setUser(foundUser);

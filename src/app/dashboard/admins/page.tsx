@@ -31,7 +31,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { getAllUsers, User } from "@/lib/data";
+import { User } from "@/lib/data";
+import { getAllUsersFromClient } from "@/lib/client-data";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -45,7 +46,7 @@ export default function AdminsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const allUsers = getAllUsers();
+    const allUsers = getAllUsersFromClient();
     const otherSupervisors = allUsers.filter(
       (u) => u.role === "supervisor" && !u.isMainAdmin
     );

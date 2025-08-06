@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { User } from "@/lib/data";
 import { createSupervisor } from "@/lib/actions";
+import { getAllUsersFromClient } from "@/lib/client-data";
 
 const initialState: {
   message: string;
@@ -76,9 +77,15 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
       });
     }
   }, [state, toast, onSupervisorAdded]);
+  
+  const handleFormAction = (formData: FormData) => {
+    const allUsers = getAllUsersFromClient();
+    formData.append('allUsersClient', JSON.stringify(allUsers));
+    formAction(formData);
+  }
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form ref={formRef} action={handleFormAction} className="space-y-4">
       <div className="grid gap-2">
         <Label htmlFor="name">Full Name</Label>
         <Input id="name" name="name" placeholder="Jane Doe" required />

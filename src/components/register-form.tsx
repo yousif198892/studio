@@ -19,6 +19,7 @@ import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
+import { getAllUsersFromClient } from "@/lib/client-data";
 
 const initialState = {
   message: "",
@@ -53,6 +54,12 @@ export function RegisterForm() {
     }
   }, [studentState, toast, t]);
 
+  const handleFormAction = (formData: FormData) => {
+    const allUsers = getAllUsersFromClient();
+    formData.append('allUsersClient', JSON.stringify(allUsers));
+    studentFormAction(formData);
+}
+
 
   return (
     <Card className="mx-auto max-w-sm w-full">
@@ -66,7 +73,7 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-            <form action={studentFormAction}>
+            <form action={handleFormAction}>
               <input type="hidden" name="role" value="student" />
               <div className="grid gap-4 mt-4">
                 <div className="grid gap-2">

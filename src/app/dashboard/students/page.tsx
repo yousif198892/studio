@@ -8,7 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getStudentsBySupervisorId, getUserById, User } from "@/lib/data";
+import { getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
+import { User } from "@/lib/data";
 import {
     Table,
     TableBody,
@@ -48,9 +49,9 @@ export default function StudentsPage() {
   useEffect(() => {
     const userId = searchParams?.get('userId') as string;
     if (userId) {
-        const currentUser = getUserById(userId);
+        const currentUser = getUserByIdFromClient(userId);
         setUser(currentUser || null);
-        const studentList = getStudentsBySupervisorId(userId);
+        const studentList = getStudentsBySupervisorIdFromClient(userId);
         setStudents(studentList);
     }
   }, [searchParams])
@@ -87,7 +88,7 @@ export default function StudentsPage() {
       // If there was an error, refetch the original list to revert the UI change
       const userId = searchParams?.get('userId') as string;
       if (userId) {
-        setStudents(getStudentsBySupervisorId(userId));
+        setStudents(getStudentsBySupervisorIdFromClient(userId));
       }
     }
   }

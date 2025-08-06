@@ -14,12 +14,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useFormStatus } from "react-dom";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useRef } from "react";
 import { login } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { User } from "@/lib/data";
+import { getAllUsersFromClient } from "@/lib/client-data";
 
 const initialState = {
   message: "",
@@ -50,6 +50,7 @@ export function LoginForm() {
     const { toast } = useToast();
     const { t } = useLanguage();
     const [showPassword, setShowPassword] = useState(false);
+    const allUsersClientRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (state?.message && Object.keys(state.errors || {}).length > 0) {
@@ -67,6 +68,12 @@ export function LoginForm() {
         }
     }, [state, toast, t]);
 
+    const handleFormAction = (formData: FormData) => {
+        const allUsers = getAllUsersFromClient();
+        formData.append('allUsersClient', JSON.stringify(allUsers));
+        formAction(formData);
+    }
+
 
   return (
     <Card className="mx-auto max-w-sm w-full">
@@ -80,7 +87,7 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4">
+        <form action={handleFormAction} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">{t('login.emailLabel')}</Label>
             <Input

@@ -8,7 +8,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getStudentsBySupervisorId, getWordsForStudent, getUserById, User } from "@/lib/data";
+import { getWordsForStudent } from "@/lib/data";
+import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
+import { User } from "@/lib/data";
 import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star } from "lucide-react";
 import {
     Table,
@@ -49,7 +51,7 @@ export default function Dashboard() {
   useEffect(() => {
     const userId = searchParams?.get('userId') as string;
     if (userId) {
-      const foundUser = getUserById(userId);
+      const foundUser = getUserByIdFromClient(userId);
       setUser(foundUser);
       
       if (foundUser?.role === 'student') {
@@ -76,7 +78,7 @@ export default function Dashboard() {
           setStats(initialStats);
         }
       } else if (foundUser?.role === 'supervisor') {
-          const studentList = getStudentsBySupervisorId(userId);
+          const studentList = getStudentsBySupervisorIdFromClient(userId);
           setStudents(studentList);
       }
     }

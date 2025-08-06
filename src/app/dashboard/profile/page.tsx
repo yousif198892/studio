@@ -23,7 +23,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { getAllUsers, getUserById, User, Word } from "@/lib/data";
+import { User, Word } from "@/lib/data";
+import { getUserByIdFromClient } from "@/lib/client-data";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -51,12 +52,12 @@ export default function ProfilePage() {
   useEffect(() => {
     const userId = searchParams.get("userId");
     if (userId) {
-      const foundUser = getUserById(userId);
+      const foundUser = getUserByIdFromClient(userId);
       setUser(foundUser || null);
       if (foundUser) {
           setName(foundUser.name);
           if (foundUser.role === 'student' && foundUser.supervisorId) {
-            const foundSupervisor = getUserById(foundUser.supervisorId);
+            const foundSupervisor = getUserByIdFromClient(foundUser.supervisorId);
             setSupervisor(foundSupervisor || null);
           }
       }
