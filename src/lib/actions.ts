@@ -16,16 +16,18 @@ const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
   image: z.instanceof(File).refine(file => file.size > 0, "Image is required."),
+  unit: z.string().optional(),
+  lesson: z.string().optional(),
 });
 
-// This is no longer a formAction, but a regular async function
 export async function addWord(formData: FormData) {
     const validatedFields = addWordSchema.safeParse({
         word: formData.get("word"),
         definition: formData.get("definition"),
         image: formData.get("image"),
+        unit: formData.get("unit"),
+        lesson: formData.get("lesson"),
     });
-
 
   if (!validatedFields.success) {
     const errorMap = validatedFields.error.flatten().fieldErrors;
