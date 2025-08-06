@@ -183,5 +183,3 @@ export const getMessages = (): Message[] => {
     }
     return baseMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
-
-    

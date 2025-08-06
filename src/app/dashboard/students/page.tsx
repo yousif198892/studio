@@ -42,18 +42,18 @@ export default function StudentsPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
 
-  const userId = searchParams?.get('userId') as string;
   const [user, setUser] = useState<User | null>(null);
   const [students, setStudents] = useState<User[]>([]);
   
   useEffect(() => {
+    const userId = searchParams?.get('userId') as string;
     if (userId) {
         const currentUser = getUserById(userId);
         setUser(currentUser || null);
         const studentList = getStudentsBySupervisorId(userId);
         setStudents(studentList);
     }
-  }, [userId])
+  }, [searchParams])
 
   const handleDelete = (studentId: string) => {
     try {
@@ -85,6 +85,7 @@ export default function StudentsPage() {
         variant: "destructive",
       });
       // If there was an error, refetch the original list to revert the UI change
+      const userId = searchParams?.get('userId') as string;
       if (userId) {
         setStudents(getStudentsBySupervisorId(userId));
       }
