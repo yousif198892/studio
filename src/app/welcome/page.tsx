@@ -18,11 +18,12 @@ export default function WelcomePage() {
         // Get the current list of users from localStorage
         const existingUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
         
-        // Add the new user if they don't already exist
-        if (!existingUsers.some(u => u.id === newUser.id)) {
-            const updatedUsers = [...existingUsers, newUser];
-            localStorage.setItem("users", JSON.stringify(updatedUsers));
-        }
+        // Use a Map to prevent duplicates, with the new user taking precedence
+        const userMap = new Map(existingUsers.map(u => [u.id, u]));
+        userMap.set(newUser.id, newUser);
+
+        const updatedUsers = Array.from(userMap.values());
+        localStorage.setItem("users", JSON.stringify(updatedUsers));
 
         // Redirect to the dashboard
         router.replace(`/dashboard?userId=${newUser.id}`);

@@ -67,9 +67,15 @@ export const mockUsers: User[] = [
 
 export function getAllUsers(): User[] {
   // Use a Map to ensure users are unique by ID, preventing duplicates.
-  const allUsers = new Map(mockUsers.map(user => [user.id, user]));
+  // This is the correct and robust way to merge the two data sources.
+  const allUsers = new Map<string, User>();
 
-  // If we're on the client, merge with users from localStorage.
+  // 1. Add the base mock users first.
+  mockUsers.forEach(user => {
+    allUsers.set(user.id, user);
+  });
+
+  // 2. If we're on the client, merge with users from localStorage.
   if (typeof window !== 'undefined') {
     try {
       const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');

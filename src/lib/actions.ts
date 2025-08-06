@@ -132,6 +132,7 @@ const registerSchema = z
           });
           return;
       }
+      // This is the critical change. We must use getAllUsers() to check against ALL supervisors.
       const allUsers = getAllUsers();
       const supervisor = allUsers.find(u => u.id === data.supervisorId && u.role === 'supervisor');
       if (!supervisor) {
