@@ -67,13 +67,14 @@ export const mockUsers: User[] = [
 
 export function getAllUsers(): User[] {
   const userMap = new Map<string, User>();
+  const defaultAvatar = "https://placehold.co/100x100.png";
 
-  mockUsers.forEach(user => userMap.set(user.id, user));
+  mockUsers.forEach(user => userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar }));
 
   if (typeof window !== 'undefined') {
     try {
       const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-      storedUsers.forEach(user => userMap.set(user.id, user));
+      storedUsers.forEach(user => userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar }));
     } catch (e) {
       console.error("Failed to parse users from localStorage", e);
     }
