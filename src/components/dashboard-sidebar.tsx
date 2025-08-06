@@ -58,6 +58,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         icon: <Target />,
         roles: ["student"],
     },
+     {
+        href: `/dashboard/learning-words?userId=${user.id}`,
+        label: 'Learning Words',
+        icon: <GraduationCap />,
+        roles: ["student"],
+    },
     {
         href: `/dashboard/mastered-words?userId=${user.id}`,
         label: 'Mastered Words',
