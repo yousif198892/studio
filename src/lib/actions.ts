@@ -43,7 +43,7 @@ export async function addWord(prevState: any, formData: FormData) {
     };
   }
 
-  const { word, definition, userId, unit, lesson, image } = validatedFields.data;
+  const { word, definition, image } = validatedFields.data;
   
   try {
     const buffer = await image.arrayBuffer();
@@ -59,24 +59,11 @@ export async function addWord(prevState: any, formData: FormData) {
     if (!aiResponse?.options || aiResponse.options.length < 3) {
         throw new Error("AI did not return the expected number of options.");
     }
-
-    const combinedOptions = [...aiResponse.options, word];
     
-    const newWord: Word = {
-        id: `word${Date.now()}`,
-        word,
-        definition,
-        unit: unit || "",
-        lesson: lesson || "",
-        imageUrl: dataUri, 
-        options: combinedOptions,
-        correctOption: word,
-        supervisorId: userId,
-        nextReview: new Date(),
-        strength: 0,
-    };
-
-    return { success: true, message: "Word created!", newWord: newWord };
+    // The new word will be constructed and saved on the client side
+    // after the action successfully completes. This action's only job
+    // is to validate and get the AI options.
+    return { success: true, message: "Word created!", options: [...aiResponse.options, word] };
 
   } catch (error) {
     console.error("Error during AI word option generation:", error);
