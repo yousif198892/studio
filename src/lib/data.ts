@@ -52,28 +52,8 @@ export const mockMessages: Message[] = [
 ];
 
 export const mockUsers: User[] = [
-  {
-    id: "user1",
-    name: "Alex Johnson",
-    email: "alex@example.com",
-    password: "password123",
-    role: "student",
-    avatar: "https://placehold.co/100x100.png",
-    supervisorId: "sup1",
-    timezone: "America/New_York",
-    fontSize: "base",
-  },
-  {
-    id: "user2",
-    name: "Maria Garcia",
-    email: "maria@example.com",
-    password: "password123",
-    role: "student",
-    avatar: "https://placehold.co/100x100.png",
-    supervisorId: "sup1",
-    timezone: "Europe/Madrid",
-    fontSize: "lg",
-  },
+  // Mock users have been removed as per the user's request for debugging.
+  // The application will now rely on users created during registration and stored in localStorage.
   {
     id: "sup1",
     name: "Yousif",
@@ -84,17 +64,6 @@ export const mockUsers: User[] = [
     timezone: "America/New_York",
     fontSize: "base",
     isMainAdmin: true,
-  },
-  {
-    id: "sup2",
-    name: "Jane Smith",
-    email: "jane.smith@example.com",
-    password: "password123",
-    role: "supervisor",
-    avatar: "https://placehold.co/100x100.png",
-    timezone: "Europe/London",
-    fontSize: "base",
-    isSuspended: false,
   },
 ];
 
