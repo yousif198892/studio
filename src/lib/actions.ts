@@ -158,10 +158,9 @@ export async function register(prevState: any, formData: FormData) {
         role: role,
         supervisorId: supervisorId,
     };
-
-    const allUsers = getAllUsers();
     
-    // Check for existing user *after* supervisor ID check, but before other checks
+    // Check for existing user *before* validation so the error message is specific.
+    const allUsers = getAllUsers();
     if (allUsers.find(u => u.email === email)) {
       return {
         errors: { email: ["User with this email already exists."] },
