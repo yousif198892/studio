@@ -52,8 +52,6 @@ export const mockMessages: Message[] = [
 ];
 
 export const mockUsers: User[] = [
-  // Mock users have been removed as per the user's request for debugging.
-  // The application will now rely on users created during registration and stored in localStorage.
   {
     id: "sup1",
     name: "Yousif",

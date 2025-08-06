@@ -15,12 +15,11 @@ export default function WelcomePage() {
       try {
         const newUser: User = JSON.parse(decodeURIComponent(userParam));
         
-        // Save the new user to the 'users' key in localStorage.
-        // This key holds all dynamically created users.
+        // Get the current list of users from localStorage
         const existingUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
         
-        // Prevent adding duplicates
-        if (!existingUsers.some(u => u.email === newUser.email)) {
+        // Add the new user if they don't already exist
+        if (!existingUsers.some(u => u.id === newUser.id)) {
             const updatedUsers = [...existingUsers, newUser];
             localStorage.setItem("users", JSON.stringify(updatedUsers));
         }

@@ -19,7 +19,7 @@ import { login } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { getAllUsers, User } from "@/lib/data";
+import { User } from "@/lib/data";
 
 const initialState = {
   message: "",
@@ -49,14 +49,7 @@ export function LoginForm() {
     const [state, formAction] = useActionState(login, initialState);
     const { toast } = useToast();
     const { t } = useLanguage();
-    const [dynamicUsers, setDynamicUsers] = useState<User[]>([]);
     const [showPassword, setShowPassword] = useState(false);
-
-    useEffect(() => {
-      // On the client, read all users which includes those from localStorage.
-      const allUsers = getAllUsers();
-      setDynamicUsers(allUsers);
-    }, []);
 
     useEffect(() => {
         if (state?.message && Object.keys(state.errors || {}).length > 0) {
@@ -88,7 +81,6 @@ export function LoginForm() {
       </CardHeader>
       <CardContent>
         <form action={formAction} className="grid gap-4">
-          <input type="hidden" name="dynamicUsers" value={JSON.stringify(dynamicUsers)} />
           <div className="grid gap-2">
             <Label htmlFor="email">{t('login.emailLabel')}</Label>
             <Input

@@ -123,32 +123,44 @@ const registerSchema = z
     supervisorId: z.string().optional().or(z.literal('')),
   })
   .superRefine((data, ctx) => {
-    if (data.role === 'student' && (!data.supervisorId || data.supervisorId.trim() === '')) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['supervisorId'],
-        message: 'Supervisor ID is required for students.',
-      });
-    }
-    if (data.role === 'student') {
-        const allUsers = getAllUsers();
-        const supervisor = allUsers.find(u => u.id === data.supervisorId && u.role === 'supervisor');
-        if (!supervisor) {
-             ctx.addIssue({
-                code: z.ZodIssueCode.custom,
-                path: ['supervisorId'],
-                message: 'Invalid Supervisor ID.',
-            });
-        }
+    if (data.role === 'student' ) {
+      if (!data.supervisorId || data.supervisorId.trim() === '') {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['supervisorId'],
+            message: 'Supervisor ID is required for students.',
+          });
+          return;
+      }
+      const allUsers = getAllUsers();
+      const supervisor = allUsers.find(u => u.id === data.supervisorId && u.role === 'supervisor');
+      if (!supervisor) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              path: ['supervisorId'],
+              message: 'Invalid Supervisor ID.',
+          });
+      }
     }
   });
 
 
 export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role") as "student" | "supervisor";
-    
     const email = formData.get("email") as string;
+    const supervisorId = formData.get("supervisorId") as string;
 
+    const dataToValidate = {
+        name: formData.get("name"),
+        email: email,
+        password: formData.get("password"),
+        role: role,
+        supervisorId: supervisorId,
+    };
+
+    const validatedFields = registerSchema.safeParse(dataToValidate);
+    
+    // Check for existing user *after* supervisor ID check, but before other checks
     const allUsers = getAllUsers();
     if (allUsers.find(u => u.email === email)) {
       return {
@@ -157,18 +169,6 @@ export async function register(prevState: any, formData: FormData) {
       };
     }
 
-    const dataToValidate: any = {
-        name: formData.get("name"),
-        email: email,
-        password: formData.get("password"),
-        role: role,
-    };
-
-    if (role === 'student') {
-        dataToValidate.supervisorId = formData.get("supervisorId");
-    }
-
-    const validatedFields = registerSchema.safeParse(dataToValidate);
 
     if (!validatedFields.success) {
         const errorMap = validatedFields.error.flatten().fieldErrors;
@@ -181,14 +181,14 @@ export async function register(prevState: any, formData: FormData) {
 
     const { name, password } = validatedFields.data;
     
-    const newUser = {
+    const newUser: User = {
         id: role === 'supervisor' ? `sup${Date.now()}` : `user${Date.now()}`,
         name,
         email,
         password,
         role,
         avatar: "https://placehold.co/100x100.png",
-        supervisorId: role === "student" ? validatedFields.data.supervisorId : undefined,
+        supervisorId: role === "student" ? supervisorId : undefined,
     };
     
     const userParam = encodeURIComponent(JSON.stringify(newUser));
@@ -216,13 +216,10 @@ export async function login(prevState: any, formData: FormData) {
 
   const { email, password } = validatedFields.data;
   
-  const dynamicUsersString = formData.get('dynamicUsers') as string | null;
-  const dynamicUsers = dynamicUsersString ? JSON.parse(dynamicUsersString) : [];
-  
-  const allUsers = [...mockUsers, ...dynamicUsers];
-  const uniqueUsers = Array.from(new Map(allUsers.map(user => [user.id, user])).values());
+  // No need to pass users from the client anymore. getAllUsers will handle it.
+  const allUsers = getAllUsers();
 
-  const user = uniqueUsers.find((u) => u.email === email);
+  const user = allUsers.find((u) => u.email === email);
 
   if (!user || user.password !== password) {
     return {
