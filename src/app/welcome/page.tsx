@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, mockUsers } from "@/lib/data";
+import { User } from "@/lib/data";
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -15,22 +15,16 @@ export default function WelcomePage() {
       try {
         const newUser: User = JSON.parse(decodeURIComponent(userParam));
         
-        // Start with the mock users to ensure they are always present as a base
         const userMap = new Map<string, User>();
-        mockUsers.forEach(u => userMap.set(u.id, u));
-
-        // Get the current list of users from localStorage and add them to the map
+        
         const storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
         storedUsers.forEach(u => userMap.set(u.id, u));
         
-        // Add or update the new user from the registration flow
         userMap.set(newUser.id, newUser);
 
-        // Save the consolidated list back to localStorage
         const updatedUsers = Array.from(userMap.values());
         localStorage.setItem("users", JSON.stringify(updatedUsers));
 
-        // Redirect to the dashboard
         router.replace(`/dashboard?userId=${newUser.id}`);
 
       } catch (error) {
@@ -38,7 +32,6 @@ export default function WelcomePage() {
         router.replace("/login");
       }
     } else {
-      // No user data, redirect to login
       router.replace("/login");
     }
   }, [router, searchParams]);

@@ -120,7 +120,7 @@ const registerSchema = z
     email: z.string().email('Invalid email address.'),
     password: z.string().min(6, 'Password must be at least 6 characters.'),
     role: z.enum(['student', 'supervisor']),
-    supervisorId: z.string().optional().or(z.literal('')),
+    supervisorId: z.string().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.role === 'student' ) {
@@ -132,7 +132,6 @@ const registerSchema = z
           });
           return;
       }
-      // This is the critical change. We must use getAllUsers() to check against ALL supervisors.
       const allUsers = getAllUsers();
       const supervisor = allUsers.find(u => u.id === data.supervisorId && u.role === 'supervisor');
       if (!supervisor) {
@@ -149,17 +148,15 @@ const registerSchema = z
 export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role") as "student" | "supervisor";
     const email = formData.get("email") as string;
-    const supervisorId = formData.get("supervisorId") as string;
-
+    
     const dataToValidate = {
         name: formData.get("name"),
         email: email,
         password: formData.get("password"),
         role: role,
-        supervisorId: supervisorId,
+        supervisorId: formData.get("supervisorId") as string | undefined,
     };
     
-    // Check for existing user *before* validation so the error message is specific.
     const allUsers = getAllUsers();
     if (allUsers.find(u => u.email === email)) {
       return {
@@ -179,7 +176,7 @@ export async function register(prevState: any, formData: FormData) {
         };
     }
 
-    const { name, password } = validatedFields.data;
+    const { name, password, supervisorId } = validatedFields.data;
     
     const newUser: User = {
         id: role === 'supervisor' ? `sup${Date.now()}` : `user${Date.now()}`,
@@ -216,7 +213,6 @@ export async function login(prevState: any, formData: FormData) {
 
   const { email, password } = validatedFields.data;
   
-  // No need to pass users from the client anymore. getAllUsers will handle it.
   const allUsers = getAllUsers();
 
   const user = allUsers.find((u) => u.email === email);

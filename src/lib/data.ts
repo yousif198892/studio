@@ -66,16 +66,12 @@ export const mockUsers: User[] = [
 ];
 
 export function getAllUsers(): User[] {
-  // Use a Map to ensure users are unique by ID, which handles merging correctly.
   const allUsers = new Map<string, User>();
 
-  // Add the base mock users first.
   mockUsers.forEach(user => {
     allUsers.set(user.id, user);
   });
 
-  // If in a browser environment, get users from localStorage and overwrite/add to the map.
-  // This ensures that any dynamically created user (or an update to a mock user) is respected.
   if (typeof window !== 'undefined') {
     try {
       const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
