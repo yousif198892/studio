@@ -14,9 +14,10 @@ import Image from "next/image";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle } from "lucide-react";
+import { WordAudioPlayer } from "./word-audio-player";
 
 interface QuizCardProps {
   word: Word;
@@ -75,8 +76,9 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-center text-4xl font-headline">
-          {word.word}
+        <CardTitle className="text-center text-4xl font-headline flex items-center justify-center gap-4">
+          <span>{word.word}</span>
+          <WordAudioPlayer word={word.word} />
         </CardTitle>
         <CardDescription className="text-center text-lg">
           {word.definition}

@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { WordAudioPlayer } from "@/components/word-audio-player";
 
 export default function WordsPage() {
   const { t } = useLanguage();
@@ -193,7 +194,12 @@ export default function WordsPage() {
                         className="rounded-md object-cover"
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{word.word}</TableCell>
+                    <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                            <span>{word.word}</span>
+                            <WordAudioPlayer word={word.word} />
+                        </div>
+                    </TableCell>
                     <TableCell>{word.unit}</TableCell>
                     <TableCell>{word.lesson}</TableCell>
                     <TableCell className="max-w-sm">{word.definition}</TableCell>

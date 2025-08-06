@@ -28,6 +28,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { WordAudioPlayer } from "@/components/word-audio-player";
 
 export default function MasteredWordsPage() {
   const searchParams = useSearchParams();
@@ -156,7 +157,12 @@ export default function MasteredWordsPage() {
                         className="rounded-md object-cover"
                       />
                     </TableCell>
-                    <TableCell className="font-medium">{word.word}</TableCell>
+                    <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                            <span>{word.word}</span>
+                            <WordAudioPlayer word={word.word} />
+                        </div>
+                    </TableCell>
                     <TableCell>{word.unit}</TableCell>
                     <TableCell>{word.lesson}</TableCell>
                     <TableCell className="max-w-sm">
