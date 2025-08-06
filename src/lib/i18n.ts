@@ -183,6 +183,8 @@ export const translations = {
             description: "A complete list of all words you've added.",
             image: "Image",
             word: "Word",
+            unit: "Unit",
+            lesson: "Lesson",
             definition: "Definition",
             actions: "Actions",
         },
@@ -409,6 +411,8 @@ export const translations = {
             description: "قائمة كاملة بجميع الكلمات التي أضفتها.",
             image: "صورة",
             word: "الكلمة",
+            unit: "الوحدة",
+            lesson: "الدرس",
             definition: "التعريف",
             actions: "الإجراءات",
         },
@@ -476,7 +480,7 @@ export type TranslationKey =
     | 'addWord.form.unitLabel' | 'addWord.form.unitPlaceholder' | 'addWord.form.lessonLabel' | 'addWord.form.lessonPlaceholder' | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'
     | 'wordsPage.title' | 'wordsPage.description' | 'wordsPage.addNew'
-    | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.definition' | 'wordsPage.table.actions'
+    | 'wordsPage.table.title' | 'wordsPage.table.description' | 'wordsPage.table.image' | 'wordsPage.table.word' | 'wordsPage.table.unit' | 'wordsPage.table.lesson' | 'wordsPage.table.definition' | 'wordsPage.table.actions'
     | 'wordsPage.deleteDialog.title' | 'wordsPage.deleteDialog.description' | 'wordsPage.deleteDialog.cancel' | 'wordsPage.deleteDialog.continue'
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'

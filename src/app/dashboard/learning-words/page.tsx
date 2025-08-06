@@ -59,6 +59,8 @@ export default function LearningWordsPage() {
               <TableRow>
                 <TableHead className="w-[100px]">Image</TableHead>
                 <TableHead>Word</TableHead>
+                <TableHead>Unit</TableHead>
+                <TableHead>Lesson</TableHead>
                 <TableHead>Definition</TableHead>
               </TableRow>
             </TableHeader>
@@ -76,6 +78,8 @@ export default function LearningWordsPage() {
                       />
                     </TableCell>
                     <TableCell className="font-medium">{word.word}</TableCell>
+                    <TableCell>{word.unit}</TableCell>
+                    <TableCell>{word.lesson}</TableCell>
                     <TableCell className="max-w-sm">
                       {word.definition}
                     </TableCell>
@@ -83,7 +87,7 @@ export default function LearningWordsPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={3} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     You have no words in your learning queue. Add some!
                   </TableCell>
                 </TableRow>

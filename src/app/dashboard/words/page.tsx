@@ -100,6 +100,8 @@ export default function WordsPage() {
                 <TableRow>
                   <TableHead className="w-[100px]">{t('wordsPage.table.image')}</TableHead>
                   <TableHead>{t('wordsPage.table.word')}</TableHead>
+                  <TableHead>{t('wordsPage.table.unit')}</TableHead>
+                  <TableHead>{t('wordsPage.table.lesson')}</TableHead>
                   <TableHead>{t('wordsPage.table.definition')}</TableHead>
                   <TableHead className="text-right">{t('wordsPage.table.actions')}</TableHead>
                 </TableRow>
@@ -117,6 +119,8 @@ export default function WordsPage() {
                       />
                     </TableCell>
                     <TableCell className="font-medium">{word.word}</TableCell>
+                    <TableCell>{word.unit}</TableCell>
+                    <TableCell>{word.lesson}</TableCell>
                     <TableCell className="max-w-sm">{word.definition}</TableCell>
                     <TableCell className="text-right space-x-2">
                         <Button asChild variant="outline" size="icon">
