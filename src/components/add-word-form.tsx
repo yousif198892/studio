@@ -53,22 +53,20 @@ export function AddWordForm() {
   
   const userId = searchParams.get("userId") || "sup1";
 
-  const handleClientValidation = (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      const formData = new FormData(e.currentTarget);
-      const wordInput = formData.get("word") as string;
-      if (wordInput) {
-          const existingWords = getWordsBySupervisor(userId);
-          if (existingWords.some(w => w.word.toLowerCase() === wordInput.toLowerCase())) {
-              toast({
-                  title: t('toasts.error'),
-                  description: "This word already exists in your collection.",
-                  variant: "destructive",
-              });
-              return; // Prevent form submission
-          }
-      }
-      formAction(formData); // Proceed with form submission
+  const clientSideAction = async (formData: FormData) => {
+    const wordInput = formData.get("word") as string;
+    if (wordInput) {
+        const existingWords = getWordsBySupervisor(userId);
+        if (existingWords.some(w => w.word.toLowerCase() === wordInput.toLowerCase())) {
+            toast({
+                title: t('toasts.error'),
+                description: "This word already exists in your collection.",
+                variant: "destructive",
+            });
+            return; // Prevent form submission
+        }
+    }
+    formAction(formData); // Proceed with server action
   }
 
   useEffect(() => {
@@ -111,7 +109,7 @@ export function AddWordForm() {
   return (
     <form 
       ref={formRef} 
-      onSubmit={handleClientValidation}
+      action={clientSideAction}
       className="space-y-4"
     >
       <input type="hidden" name="userId" value={userId || ''} />
