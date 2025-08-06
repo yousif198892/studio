@@ -109,8 +109,7 @@ export function getAllUsers(): User[] {
     const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
     storedUsers.forEach(user => {
         // This ensures that any updates to a user (like profile changes) overwrite the mock/previous data
-        const existingUser = usersMap.get(user.id) || {};
-        usersMap.set(user.id, { ...existingUser, ...user });
+        usersMap.set(user.id, user);
     });
   }
 

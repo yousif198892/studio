@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getStudentsBySupervisorId, getWordsForStudent, getUserById, User } from "@/lib/data";
-import { BookOpen, Target, Users, KeyRound, Trophy, Clock, BarChart, CalendarCheck, Star, BrainCircuit, GraduationCap } from "lucide-react";
+import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -24,7 +24,6 @@ import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
 
 type LearningStats = {
   timeSpentSeconds: number;
@@ -38,7 +37,8 @@ type LearningStats = {
 export default function Dashboard() {
   const searchParams = useSearchParams();
   const { t } = useLanguage();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [students, setStudents] = useState<User[]>([]);
   const [stats, setStats] = useState<LearningStats>({
     timeSpentSeconds: 0,
     totalWordsReviewed: 0,
@@ -52,31 +52,32 @@ export default function Dashboard() {
       const foundUser = getUserById(userId);
       setUser(foundUser);
       
-      const words = getWordsForStudent(userId);
-      const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
-      setWordsToReviewCount(toReview);
+      if (foundUser?.role === 'student') {
+        const words = getWordsForStudent(userId);
+        const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
+        setWordsToReviewCount(toReview);
 
-
-      // Load stats from localStorage
-      const storedStats = localStorage.getItem(`learningStats_${userId}`);
-      if (storedStats) {
-        const parsedStats: LearningStats = JSON.parse(storedStats);
-        const today = new Date().toISOString().split('T')[0];
-        // Reset 'reviewed today' if the date is old
-        if (parsedStats.reviewedToday.date !== today) {
-          parsedStats.reviewedToday = { count: 0, date: today };
-          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(parsedStats));
+        const storedStats = localStorage.getItem(`learningStats_${userId}`);
+        if (storedStats) {
+          const parsedStats: LearningStats = JSON.parse(storedStats);
+          const today = new Date().toISOString().split('T')[0];
+          if (parsedStats.reviewedToday.date !== today) {
+            parsedStats.reviewedToday = { count: 0, date: today };
+            localStorage.setItem(`learningStats_${userId}`, JSON.stringify(parsedStats));
+          }
+          setStats(parsedStats);
+        } else {
+          const initialStats: LearningStats = {
+            timeSpentSeconds: 0,
+            totalWordsReviewed: 0,
+            reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+          };
+          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(initialStats));
+          setStats(initialStats);
         }
-        setStats(parsedStats);
-      } else {
-        // Initialize if no stats are found
-        const initialStats: LearningStats = {
-          timeSpentSeconds: 0,
-          totalWordsReviewed: 0,
-          reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
-        };
-        localStorage.setItem(`learningStats_${userId}`, JSON.stringify(initialStats));
-        setStats(initialStats);
+      } else if (foundUser?.role === 'supervisor') {
+          const studentList = getStudentsBySupervisorId(userId);
+          setStudents(studentList);
       }
     }
   }, [searchParams]);
@@ -155,7 +156,6 @@ export default function Dashboard() {
   }
 
   if (user?.role === "supervisor") {
-    const students = getStudentsBySupervisorId(user.id);
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold font-headline">{t('dashboard.supervisor.title')}</h1>

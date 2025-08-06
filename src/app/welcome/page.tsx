@@ -20,7 +20,7 @@ export default function WelcomePage() {
         const existingUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
         
         // Prevent adding duplicates
-        if (!existingUsers.some(u => u.id === newUser.id)) {
+        if (!existingUsers.some(u => u.email === newUser.email)) {
             const updatedUsers = [...existingUsers, newUser];
             localStorage.setItem("users", JSON.stringify(updatedUsers));
         }
