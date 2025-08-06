@@ -21,7 +21,7 @@ type LearningStats = {
   };
 };
 
-export type ScheduleOption = 'tomorrow' | 'week' | 'month' | 'mastered';
+export type ScheduleOption = 'tomorrow' | 'twoDays' | 'threeDays' | 'week' | 'month' | 'mastered';
 
 export default function LearnPage() {
   const searchParams = useSearchParams();
@@ -82,6 +82,12 @@ export default function LearnPage() {
     switch (option) {
         case 'tomorrow':
             nextReview.setDate(nextReview.getDate() + 1);
+            break;
+        case 'twoDays':
+            nextReview.setDate(nextReview.getDate() + 2);
+            break;
+        case 'threeDays':
+            nextReview.setDate(nextReview.getDate() + 3);
             break;
         case 'week':
             newStrength += 1; // Default SRS increment

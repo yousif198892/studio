@@ -139,12 +139,29 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
 
   const renderScheduleView = () => (
       <CardContent className="flex flex-col items-center justify-center space-y-4 pt-6">
+        <div className="flex justify-center mb-4">
+            <Image
+                src={word.imageUrl}
+                alt={`Image for ${word.word}`}
+                width={150}
+                height={100}
+                className="rounded-lg object-cover"
+            />
+        </div>
         <h3 className="text-xl font-semibold">{t('quizCard.schedule.title')}</h3>
         <p className="text-muted-foreground">{t('quizCard.schedule.description')}</p>
         <div className="w-full space-y-2">
            <Button onClick={() => handleScheduleSelect('tomorrow')} variant="outline" className="w-full justify-start">
                <Calendar className="mr-2 h-4 w-4" />
                {t('quizCard.schedule.tomorrow')}
+           </Button>
+            <Button onClick={() => handleScheduleSelect('twoDays')} variant="outline" className="w-full justify-start">
+               <Calendar className="mr-2 h-4 w-4" />
+               {t('quizCard.schedule.inTwoDays')}
+           </Button>
+            <Button onClick={() => handleScheduleSelect('threeDays')} variant="outline" className="w-full justify-start">
+               <Calendar className="mr-2 h-4 w-4" />
+               {t('quizCard.schedule.inThreeDays')}
            </Button>
            <Button onClick={() => handleScheduleSelect('week')} variant="default" className="w-full justify-start relative">
                <Calendar className="mr-2 h-4 w-4" />

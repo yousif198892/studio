@@ -149,6 +149,8 @@ export const translations = {
             title: "Good job!",
             description: "When should we show you this word again?",
             tomorrow: "Tomorrow",
+            inTwoDays: "In 2 days",
+            inThreeDays: "In 3 days",
             inAWeek: "In a week",
             inAMonth: "In a month",
             mastered: "I won't forget this",
@@ -389,6 +391,8 @@ export const translations = {
             title: "أحسنت!",
             description: "متى نعرض عليك هذه الكلمة مرة أخرى؟",
             tomorrow: "غدًا",
+            inTwoDays: "بعد يومين",
+            inThreeDays: "بعد ثلاثة أيام",
             inAWeek: "بعد أسبوع",
             inAMonth: "بعد شهر",
             mastered: "لن أنسى هذه الكلمة",
@@ -501,7 +505,7 @@ export type TranslationKey =
     | 'dashboard.loading'
     | 'learn.backToDashboard' | 'learn.sessionFinished.title' | 'learn.sessionFinished.description'
     | 'quizCard.checkAnswer'
-    | 'quizCard.schedule.title' | 'quizCard.schedule.description' | 'quizCard.schedule.tomorrow' | 'quizCard.schedule.inAWeek' | 'quizCard.schedule.inAMonth' | 'quizCard.schedule.mastered' | 'quizCard.schedule.recommended'
+    | 'quizCard.schedule.title' | 'quizCard.schedule.description' | 'quizCard.schedule.tomorrow' | 'quizCard.schedule.inTwoDays' | 'quizCard.schedule.inThreeDays' | 'quizCard.schedule.inAWeek' | 'quizCard.schedule.inAMonth' | 'quizCard.schedule.mastered' | 'quizCard.schedule.recommended'
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'
     | 'addWord.form.unitLabel' | 'addWord.form.unitPlaceholder' | 'addWord.form.lessonLabel' | 'addWord.form.lessonPlaceholder' | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'
