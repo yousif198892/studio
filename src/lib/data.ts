@@ -53,7 +53,7 @@ export const mockMessages: Message[] = [
 
 export const mockUsers: User[] = [
   {
-    id: "sup1",
+    id: "sup2",
     name: "Yousif",
     email: "warriorwithinyousif@gmail.com",
     password: "password123",
