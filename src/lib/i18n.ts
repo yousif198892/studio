@@ -143,6 +143,18 @@ export const translations = {
             description: "You've finished your review session for now. Come back later for more!",
         }
     },
+    quizCard: {
+        checkAnswer: "Check Answer",
+        schedule: {
+            title: "Good job!",
+            description: "When should we show you this word again?",
+            tomorrow: "Tomorrow",
+            inAWeek: "In a week",
+            inAMonth: "In a month",
+            mastered: "I won't forget this",
+            recommended: "Recommended"
+        }
+    },
     addWord: {
         title: "Add a New Word",
         description: "Create a new vocabulary card for your students. AI will automatically generate distractor options.",
@@ -371,6 +383,18 @@ export const translations = {
             description: "لقد أنهيت جلسة المراجعة الخاصة بك الآن. عد لاحقًا للمزيد!",
         }
     },
+    quizCard: {
+        checkAnswer: "تحقق من الإجابة",
+        schedule: {
+            title: "أحسنت!",
+            description: "متى نعرض عليك هذه الكلمة مرة أخرى؟",
+            tomorrow: "غدًا",
+            inAWeek: "بعد أسبوع",
+            inAMonth: "بعد شهر",
+            mastered: "لن أنسى هذه الكلمة",
+            recommended: "موصى به"
+        }
+    },
     addWord: {
         title: "إضافة كلمة جديدة",
         description: "أنشئ بطاقة مفردات جديدة لطلابك. سيقوم الذكاء الاصطناعي بإنشاء خيارات مضللة تلقائيًا.",
@@ -476,6 +500,8 @@ export type TranslationKey =
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
     | 'learn.backToDashboard' | 'learn.sessionFinished.title' | 'learn.sessionFinished.description'
+    | 'quizCard.checkAnswer'
+    | 'quizCard.schedule.title' | 'quizCard.schedule.description' | 'quizCard.schedule.tomorrow' | 'quizCard.schedule.inAWeek' | 'quizCard.schedule.inAMonth' | 'quizCard.schedule.mastered' | 'quizCard.schedule.recommended'
     | 'addWord.title' | 'addWord.description' | 'addWord.cardTitle' | 'addWord.cardDescription'
     | 'addWord.form.unitLabel' | 'addWord.form.unitPlaceholder' | 'addWord.form.lessonLabel' | 'addWord.form.lessonPlaceholder' | 'addWord.form.wordLabel' | 'addWord.form.wordPlaceholder' | 'addWord.form.definitionLabel' | 'addWord.form.definitionPlaceholder' | 'addWord.form.imageLabel' | 'addWord.form.addButton' | 'addWord.form.addingButton'
     | 'editWord.title' | 'editWord.description' | 'editWord.cardTitle' | 'editWord.cardDescription' | 'editWord.form.currentImage' | 'editWord.form.imageHelper' | 'editWord.form.saveButton' | 'editWord.form.savingButton'

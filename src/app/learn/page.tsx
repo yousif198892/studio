@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getWordForReview, Word } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
@@ -20,6 +20,8 @@ type LearningStats = {
     date: string;
   };
 };
+
+export type ScheduleOption = 'tomorrow' | 'week' | 'month' | 'mastered';
 
 export default function LearnPage() {
   const searchParams = useSearchParams();
@@ -71,14 +73,29 @@ export default function LearnPage() {
   }, [userId]); // Only run once on mount
 
 
-  const handleCorrect = () => {
+  const handleCorrect = (option: ScheduleOption) => {
     if (!word || !userId) return;
 
-    const newStrength = word.strength + 1;
-    const intervals = [1, 2, 4, 8, 16, 32, 64]; // Spaced repetition intervals in days
-    const newInterval = intervals[Math.min(newStrength, intervals.length - 1)];
+    let newStrength = word.strength;
     const nextReview = new Date();
-    nextReview.setDate(nextReview.getDate() + newInterval);
+
+    switch (option) {
+        case 'tomorrow':
+            nextReview.setDate(nextReview.getDate() + 1);
+            break;
+        case 'week':
+            newStrength += 1; // Default SRS increment
+            const intervals = [1, 2, 4, 8, 16, 32, 64];
+            const newInterval = intervals[Math.min(newStrength, intervals.length - 1)];
+            nextReview.setDate(nextReview.getDate() + newInterval);
+            break;
+        case 'month':
+            nextReview.setMonth(nextReview.getMonth() + 1);
+            break;
+        case 'mastered':
+            newStrength = -1; // Mark as mastered
+            break;
+    }
     
     updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
     updateStats(userId, 1);

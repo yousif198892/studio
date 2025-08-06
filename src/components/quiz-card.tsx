@@ -16,19 +16,25 @@ import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { CheckCircle, XCircle } from "lucide-react";
+import { CheckCircle, XCircle, Star, Calendar } from "lucide-react";
 import { WordAudioPlayer } from "./word-audio-player";
+import type { ScheduleOption } from "@/app/learn/page";
+import { useLanguage } from "@/hooks/use-language";
 
 interface QuizCardProps {
   word: Word;
-  onCorrect: () => void;
+  onCorrect: (option: ScheduleOption) => void;
   onIncorrect: () => void;
 }
 
+type ViewState = 'question' | 'feedback' | 'schedule';
+
 export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
-  const [isAnswered, setIsAnswered] = useState(false);
+  const [viewState, setViewState] = useState<ViewState>('question');
+  const [isCorrect, setIsCorrect] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Shuffle options only when the word changes
@@ -36,27 +42,29 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
     setShuffledOptions(shuffled);
     // Reset state for new word
     setSelectedOption(null);
-    setIsAnswered(false);
+    setViewState('question');
+    setIsCorrect(false);
   }, [word]);
 
 
   const handleSubmit = () => {
     if (!selectedOption) return;
 
-    setIsAnswered(true);
-    const isCorrect = selectedOption === word.correctOption;
+    const correct = selectedOption === word.correctOption;
+    setIsCorrect(correct);
+    setViewState('feedback'); // Show feedback first
 
     setTimeout(() => {
-      if (isCorrect) {
-        onCorrect();
+      if (correct) {
+        setViewState('schedule'); // Move to scheduling view
       } else {
-        onIncorrect();
+        onIncorrect(); // If incorrect, move to next word
       }
-    }, 1500); // Wait 1.5 seconds before moving to the next card
+    }, 1500); // Wait 1.5 seconds before showing schedule or next card
   };
 
   const getOptionState = (option: string) => {
-    if (!isAnswered) return "default";
+    if (viewState !== 'feedback') return "default";
     if (option === word.correctOption) return "correct";
     if (option === selectedOption && option !== word.correctOption) return "incorrect";
     return "default";
@@ -73,17 +81,12 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
       }
   }
 
-  return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle className="text-center text-4xl font-headline flex items-center justify-center gap-4">
-          <span>{word.word}</span>
-          <WordAudioPlayer word={word.word} />
-        </CardTitle>
-        <CardDescription className="text-center text-lg">
-          {word.definition}
-        </CardDescription>
-      </CardHeader>
+  const handleScheduleSelect = (option: ScheduleOption) => {
+    onCorrect(option);
+  }
+
+  const renderQuestionView = () => (
+    <>
       <CardContent className="space-y-6">
         <div className="flex justify-center">
           <Image
@@ -97,7 +100,7 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
         <RadioGroup
           value={selectedOption || ""}
           onValueChange={setSelectedOption}
-          disabled={isAnswered}
+          disabled={viewState !== 'question'}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {shuffledOptions.map((option) => {
@@ -109,7 +112,7 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
                     "flex items-center space-x-3 rounded-lg border p-4 cursor-pointer transition-all",
                     state === "correct" && "border-green-500 bg-green-500/10",
                     state === "incorrect" && "border-destructive bg-destructive/10",
-                     !isAnswered && selectedOption === option && "border-primary bg-primary/10",
+                    viewState === 'question' && selectedOption === option && "border-primary bg-primary/10",
                   )}
                 >
                   <RadioGroupItem value={option} id={option} className={getRadioIndicatorClass(state)} />
@@ -125,12 +128,55 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
       <CardFooter className="flex justify-center">
         <Button
           onClick={handleSubmit}
-          disabled={!selectedOption || isAnswered}
+          disabled={!selectedOption || viewState !== 'question'}
           className="w-full"
         >
-          Check Answer
+          {t('quizCard.checkAnswer')}
         </Button>
       </CardFooter>
+    </>
+  );
+
+  const renderScheduleView = () => (
+      <CardContent className="flex flex-col items-center justify-center space-y-4 pt-6">
+        <h3 className="text-xl font-semibold">{t('quizCard.schedule.title')}</h3>
+        <p className="text-muted-foreground">{t('quizCard.schedule.description')}</p>
+        <div className="w-full space-y-2">
+           <Button onClick={() => handleScheduleSelect('tomorrow')} variant="outline" className="w-full justify-start">
+               <Calendar className="mr-2 h-4 w-4" />
+               {t('quizCard.schedule.tomorrow')}
+           </Button>
+           <Button onClick={() => handleScheduleSelect('week')} variant="default" className="w-full justify-start relative">
+               <Calendar className="mr-2 h-4 w-4" />
+                {t('quizCard.schedule.inAWeek')}
+                <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>
+           </Button>
+           <Button onClick={() => handleScheduleSelect('month')} variant="outline" className="w-full justify-start">
+               <Calendar className="mr-2 h-4 w-4" />
+                {t('quizCard.schedule.inAMonth')}
+           </Button>
+            <Button onClick={() => handleScheduleSelect('mastered')} variant="secondary" className="w-full justify-start">
+               <Star className="mr-2 h-4 w-4" />
+                {t('quizCard.schedule.mastered')}
+           </Button>
+        </div>
+      </CardContent>
+  );
+
+  return (
+    <Card className="w-full">
+      <CardHeader>
+        <CardTitle className="text-center text-4xl font-headline flex items-center justify-center gap-4">
+          <span>{word.word}</span>
+          <WordAudioPlayer word={word.word} />
+        </CardTitle>
+        <CardDescription className="text-center text-lg">
+          {word.definition}
+        </CardDescription>
+      </CardHeader>
+      
+      {viewState === 'schedule' ? renderScheduleView() : renderQuestionView()}
+
     </Card>
   );
 }
