@@ -44,8 +44,7 @@ export default function WordsPage() {
   useEffect(() => {
     fetchWords();
     
-    // This listener ensures the component re-renders if localStorage is changed in another tab/window.
-    // It's also a good fallback for changes within the same app.
+    // This listener ensures the component re-renders if localStorage is changed.
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'userWords') {
             fetchWords();
@@ -66,8 +65,11 @@ export default function WordsPage() {
         const updatedWords = storedWords.filter(w => w.id !== wordId);
         localStorage.setItem('userWords', JSON.stringify(updatedWords));
 
-        // Update state to reflect deletion immediately
-        setWords(prevWords => prevWords.filter(w => w.id !== wordId));
+        // Manually trigger a storage event for same-page updates.
+        window.dispatchEvent(new StorageEvent('storage', {
+            key: 'userWords',
+            newValue: JSON.stringify(updatedWords),
+        }));
 
         toast({
             title: t('toasts.success'),
