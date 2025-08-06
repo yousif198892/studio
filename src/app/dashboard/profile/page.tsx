@@ -23,7 +23,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User, Word } from "@/lib/data";
+import { User, Word, mockUsers } from "@/lib/data";
 import { getUserByIdFromClient } from "@/lib/client-data";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -126,24 +126,25 @@ export default function ProfilePage() {
 
     const updatedUser = { ...user, avatar: previewImage };
     
-    // Read the latest user list from localStorage
-    const allUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-    const userIndex = allUsers.findIndex((u: User) => u.id === user.id);
+    // Get all users currently in localStorage.
+    let storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+    const userIndex = storedUsers.findIndex((u: User) => u.id === user.id);
 
-    // Update the user in the list
+    // Update the user if they exist in the stored list.
     if (userIndex > -1) {
-      allUsers[userIndex] = updatedUser;
+      storedUsers[userIndex] = updatedUser;
     } else {
-      // If user not in the list (e.g. a mock user), add them
-      allUsers.push(updatedUser);
+      // If the user is not in the stored list (i.e., they are a mock user),
+      // we need to add them to it so their changes persist.
+      storedUsers.push(updatedUser);
     }
     
-    // Save the updated list back to localStorage
-    localStorage.setItem('users', JSON.stringify(allUsers));
+    // Save the updated list back to localStorage.
+    localStorage.setItem('users', JSON.stringify(storedUsers));
     
-    // Update the state for immediate UI feedback
+    // Update the state for immediate UI feedback.
     setUser(updatedUser);
-    setPreviewImage(null); // Clear the preview
+    setPreviewImage(null); // Clear the preview.
 
     toast({
         title: t('toasts.success'),
