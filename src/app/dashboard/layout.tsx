@@ -38,8 +38,6 @@ export default function DashboardLayout({
                 const allUsers = getAllUsers();
                 localStorage.setItem('combinedUsers', JSON.stringify(allUsers));
             }
-            // Clear the words from storage to ensure they are deleted.
-            localStorage.removeItem('userWords');
         }
       } else {
          console.error("User not found, redirecting to login.")
