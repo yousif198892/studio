@@ -92,11 +92,6 @@ export function AddWordForm() {
     const result = await addWord({}, formData);
 
     if (result.success && result.options) {
-        toast({
-            title: t('toasts.success'),
-            description: t('toasts.addWordSuccess'),
-        });
-        
         try {
             const imageDataUri = await toBase64(imageInput);
 
@@ -117,6 +112,11 @@ export function AddWordForm() {
             const wordsFromStorage: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
             const updatedWords = [...wordsFromStorage, newWord];
             localStorage.setItem('userWords', JSON.stringify(updatedWords));
+            
+            toast({
+                title: t('toasts.success'),
+                description: t('toasts.addWordSuccess'),
+            });
             
             formRef.current?.reset();
             router.push(`/dashboard/words?userId=${userId}`);
