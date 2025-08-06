@@ -140,8 +140,6 @@ export default function MasteredWordsPage() {
                 <TableHead className="w-[100px]">Image</TableHead>
                 <TableHead>Word</TableHead>
                 <TableHead>Unit</TableHead>
-                <TableHead>Lesson</TableHead>
-                <TableHead>Definition</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -157,22 +155,22 @@ export default function MasteredWordsPage() {
                         className="rounded-md object-cover"
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell>
                         <div className="flex items-center gap-2">
-                            <span>{word.word}</span>
+                            <span className="font-medium">{word.word}</span>
                             <WordAudioPlayer word={word.word} />
                         </div>
+                        <div className="text-xs text-muted-foreground max-w-sm">{word.definition}</div>
                     </TableCell>
-                    <TableCell>{word.unit}</TableCell>
-                    <TableCell>{word.lesson}</TableCell>
-                    <TableCell className="max-w-sm">
-                      {word.definition}
+                    <TableCell>
+                      <div className="font-medium">{word.unit}</div>
+                      <div className="text-xs text-muted-foreground">{word.lesson}</div>
                     </TableCell>
                   </TableRow>
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={3} className="h-24 text-center">
                     No words found for the selected filters.
                   </TableCell>
                 </TableRow>

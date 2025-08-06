@@ -150,8 +150,6 @@ export default function LearningWordsPage() {
                 <TableHead className="w-[100px]">Image</TableHead>
                 <TableHead>Word</TableHead>
                 <TableHead>Unit</TableHead>
-                <TableHead>Lesson</TableHead>
-                <TableHead>Definition</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -168,16 +166,16 @@ export default function LearningWordsPage() {
                         className="rounded-md object-cover"
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
+                    <TableCell>
                         <div className="flex items-center gap-2">
-                            <span>{word.word}</span>
-                            <WordAudioPlayer word={word.word} />
+                           <span className="font-medium">{word.word}</span>
+                           <WordAudioPlayer word={word.word} />
                         </div>
+                        <div className="text-xs text-muted-foreground max-w-sm">{word.definition}</div>
                     </TableCell>
-                    <TableCell>{word.unit}</TableCell>
-                    <TableCell>{word.lesson}</TableCell>
-                    <TableCell className="max-w-sm">
-                      {word.definition}
+                    <TableCell>
+                      <div className="font-medium">{word.unit}</div>
+                      <div className="text-xs text-muted-foreground">{word.lesson}</div>
                     </TableCell>
                      <TableCell className="text-right">
                        {userId && (
@@ -192,7 +190,7 @@ export default function LearningWordsPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={4} className="h-24 text-center">
                     No words found for the selected filters.
                   </TableCell>
                 </TableRow>

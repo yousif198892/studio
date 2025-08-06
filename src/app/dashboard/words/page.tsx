@@ -177,8 +177,6 @@ export default function WordsPage() {
                   <TableHead className="w-[100px]">{t('wordsPage.table.image')}</TableHead>
                   <TableHead>{t('wordsPage.table.word')}</TableHead>
                   <TableHead>{t('wordsPage.table.unit')}</TableHead>
-                  <TableHead>{t('wordsPage.table.lesson')}</TableHead>
-                  <TableHead>{t('wordsPage.table.definition')}</TableHead>
                   <TableHead className="text-right">{t('wordsPage.table.actions')}</TableHead>
                 </TableRow>
               </TableHeader>
@@ -194,15 +192,17 @@ export default function WordsPage() {
                         className="rounded-md object-cover"
                       />
                     </TableCell>
-                    <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                            <span>{word.word}</span>
-                            <WordAudioPlayer word={word.word} />
-                        </div>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                          <span className="font-medium">{word.word}</span>
+                          <WordAudioPlayer word={word.word} />
+                      </div>
+                      <div className="text-xs text-muted-foreground max-w-sm">{word.definition}</div>
                     </TableCell>
-                    <TableCell>{word.unit}</TableCell>
-                    <TableCell>{word.lesson}</TableCell>
-                    <TableCell className="max-w-sm">{word.definition}</TableCell>
+                    <TableCell>
+                      <div className="font-medium">{word.unit}</div>
+                      <div className="text-xs text-muted-foreground">{word.lesson}</div>
+                    </TableCell>
                     <TableCell className="text-right space-x-2">
                         <Button asChild variant="outline" size="icon">
                             <Link href={`/dashboard/edit-word/${word.id}?userId=${userId}`}>
