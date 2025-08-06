@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useState, useActionState } from "react";
+import { useEffect, useRef, useActionState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -53,7 +53,7 @@ export function AddWordForm() {
   
   const userId = searchParams.get("userId") || "sup1";
 
-  const clientSideAction = async (formData: FormData) => {
+  const clientSideAction = (formData: FormData) => {
     const wordInput = formData.get("word") as string;
     if (wordInput) {
         const existingWords = getWordsBySupervisor(userId);
@@ -90,7 +90,10 @@ export function AddWordForm() {
       }
 
       formRef.current?.reset();
-      router.push(`/dashboard/words?userId=${userId}`);
+      // Use a slight delay before redirecting to ensure localStorage is updated
+      setTimeout(() => {
+        router.push(`/dashboard/words?userId=${userId}`);
+      }, 100);
     } else if (state.message && !state.success) {
       const errorMessage = 
         state.errors?.word?.[0] ||
