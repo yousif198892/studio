@@ -4,7 +4,7 @@
 import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { mockUsers, Word, getAllUsers, User, getWordsBySupervisor } from "./data";
+import { Word, getAllUsers, User } from "./data";
 import { redirect } from "next/navigation";
 import { translations } from "./i18n";
 
@@ -122,41 +122,31 @@ const registerSchema = z
     role: z.enum(['student', 'supervisor']),
     supervisorId: z.string().optional(),
   })
-  .superRefine((data, ctx) => {
-    if (data.role === 'student' ) {
-      if (!data.supervisorId || data.supervisorId.trim() === '') {
-          ctx.addIssue({
-            code: z.ZodIssueCode.custom,
-            path: ['supervisorId'],
-            message: 'Supervisor ID is required for students.',
-          });
-          return;
+  .refine((data) => {
+      // If the role is student, supervisorId must exist and be valid.
+      if (data.role === 'student') {
+        if (!data.supervisorId || data.supervisorId.trim() === '') {
+            return false;
+        }
+        const allUsers = getAllUsers();
+        const supervisorExists = allUsers.some(u => u.id === data.supervisorId && u.role === 'supervisor');
+        return supervisorExists;
       }
-      const allUsers = getAllUsers();
-      const supervisor = allUsers.find(u => u.id === data.supervisorId && u.role === 'supervisor');
-      if (!supervisor) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: ['supervisorId'],
-              message: 'Invalid Supervisor ID.',
-          });
-      }
-    }
+      // If role is not student, we don't need to validate supervisorId.
+      return true;
+  }, {
+    // This message is shown if the .refine check fails.
+    message: 'Invalid or missing Supervisor ID.',
+    path: ['supervisorId'], // Associates the error with the supervisorId field.
   });
 
 
 export async function register(prevState: any, formData: FormData) {
     const role = formData.get("role") as "student" | "supervisor";
     const email = formData.get("email") as string;
+    const supervisorId = formData.get("supervisorId") as string | undefined;
     
-    const dataToValidate = {
-        name: formData.get("name"),
-        email: email,
-        password: formData.get("password"),
-        role: role,
-        supervisorId: formData.get("supervisorId") as string | undefined,
-    };
-    
+    // Check for existing email first
     const allUsers = getAllUsers();
     if (allUsers.find(u => u.email === email)) {
       return {
@@ -165,7 +155,13 @@ export async function register(prevState: any, formData: FormData) {
       };
     }
 
-    const validatedFields = registerSchema.safeParse(dataToValidate);
+    const validatedFields = registerSchema.safeParse({
+        name: formData.get("name"),
+        email: email,
+        password: formData.get("password"),
+        role: role,
+        supervisorId: supervisorId,
+    });
 
     if (!validatedFields.success) {
         const errorMap = validatedFields.error.flatten().fieldErrors;
@@ -176,7 +172,7 @@ export async function register(prevState: any, formData: FormData) {
         };
     }
 
-    const { name, password, supervisorId } = validatedFields.data;
+    const { name, password } = validatedFields.data;
     
     const newUser: User = {
         id: role === 'supervisor' ? `sup${Date.now()}` : `user${Date.now()}`,
@@ -185,6 +181,7 @@ export async function register(prevState: any, formData: FormData) {
         password,
         role,
         avatar: "https://placehold.co/100x100.png",
+        // This is the critical fix: ensure supervisorId is assigned if the role is student.
         supervisorId: role === "student" ? supervisorId : undefined,
     };
     

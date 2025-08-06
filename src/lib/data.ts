@@ -51,6 +51,8 @@ export const mockMessages: Message[] = [
     }
 ];
 
+// We only keep the main admin as a mock user to ensure the app can always be administered.
+// All other users (students, other supervisors) will be stored in localStorage.
 export const mockUsers: User[] = [
   {
     id: "sup1",
@@ -65,13 +67,21 @@ export const mockUsers: User[] = [
   },
 ];
 
+/**
+ * Returns a complete, de-duplicated list of all users from both the
+ * initial mock data and localStorage. This is the single source of truth for user data.
+ */
 export function getAllUsers(): User[] {
   const allUsers = new Map<string, User>();
 
+  // Start with the initial hardcoded users (supervisors)
   mockUsers.forEach(user => {
     allUsers.set(user.id, user);
   });
 
+  // Then, load users from localStorage, which may include students
+  // or dynamically created supervisors. This will overwrite mock users
+  // if their IDs match (e.g., if the main admin updates their profile).
   if (typeof window !== 'undefined') {
     try {
       const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
@@ -95,6 +105,7 @@ export const getUserById = (id: string): User | undefined => {
 
 export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
     const allUsers = getAllUsers();
+    // Correctly filter for users who have the matching supervisorId
     return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 

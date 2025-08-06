@@ -3,7 +3,7 @@
 
 import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User } from "@/lib/data";
+import { User, mockUsers } from "@/lib/data";
 
 export default function WelcomePage() {
   const router = useRouter();
@@ -15,16 +15,25 @@ export default function WelcomePage() {
       try {
         const newUser: User = JSON.parse(decodeURIComponent(userParam));
         
+        // This is the critical fix.
+        // We MUST get the existing users and add the new one to the list.
         const userMap = new Map<string, User>();
+
+        // Start with the initial hardcoded users (supervisors)
+        mockUsers.forEach(u => userMap.set(u.id, u));
         
+        // Load users already in localStorage
         const storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
         storedUsers.forEach(u => userMap.set(u.id, u));
         
+        // Add or update the new user
         userMap.set(newUser.id, newUser);
 
+        // Save the complete, merged list back to localStorage.
         const updatedUsers = Array.from(userMap.values());
         localStorage.setItem("users", JSON.stringify(updatedUsers));
 
+        // Redirect to the dashboard.
         router.replace(`/dashboard?userId=${newUser.id}`);
 
       } catch (error) {
