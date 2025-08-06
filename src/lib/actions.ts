@@ -114,64 +114,63 @@ export async function updateWord(prevState: any, formData: FormData) {
 }
 
 
-const registerSchema = z
-  .object({
+const registerSchema = z.object({
     name: z.string().min(1, 'Name is required.'),
     email: z.string().email('Invalid email address.'),
     password: z.string().min(6, 'Password must be at least 6 characters.'),
     role: z.enum(['student']),
     supervisorId: z.string().optional(),
-  })
-  .refine((data) => {
-      if (!data.supervisorId || data.supervisorId.trim() === '') {
-          return false;
-      }
-      const allUsers = getAllUsers();
-      const supervisorExists = allUsers.some(u => u.id === data.supervisorId && u.role === 'supervisor');
-      return supervisorExists;
-  }, {
-    message: 'Invalid or missing Supervisor ID.',
-    path: ['supervisorId'],
   });
 
 
 export async function register(prevState: any, formData: FormData) {
-    const role = formData.get("role") as "student"; // Hardcoded to student
-    const email = formData.get("email") as string;
+    const validatedFields = registerSchema.safeParse({
+        name: formData.get("name"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+        role: "student",
+        supervisorId: formData.get("supervisorId"),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: "Validation failed.",
+        };
+    }
     
+    const { name, email, password, supervisorId } = validatedFields.data;
+
     const allUsers = getAllUsers();
-    if (allUsers.find(u => u.email === email)) {
+    
+    if (allUsers.some(u => u.email === email)) {
       return {
         errors: { email: ["User with this email already exists."] },
         message: "User with this email already exists.",
       };
     }
 
-    const validatedFields = registerSchema.safeParse({
-        name: formData.get("name"),
-        email: email,
-        password: formData.get("password"),
-        role: role,
-        supervisorId: formData.get("supervisorId"),
-    });
-
-    if (!validatedFields.success) {
-        const errorMap = validatedFields.error.flatten().fieldErrors;
-        const firstError = Object.values(errorMap)[0]?.[0] || "Validation failed.";
+    if (!supervisorId || supervisorId.trim() === '') {
         return {
-            errors: errorMap,
-            message: firstError,
+            errors: { supervisorId: ["Supervisor ID is required."] },
+            message: "Supervisor ID is required.",
         };
     }
 
-    const { name, password, supervisorId } = validatedFields.data;
+    const supervisorExists = allUsers.some(u => u.id === supervisorId && u.role === 'supervisor');
+    if (!supervisorExists) {
+         return {
+            errors: { supervisorId: ["Invalid Supervisor ID."] },
+            message: "Invalid Supervisor ID.",
+        };
+    }
     
     const newUser: User = {
         id: `user${Date.now()}`,
         name,
         email,
         password,
-        role,
+        role: 'student',
         avatar: "https://placehold.co/100x100.png",
         supervisorId: supervisorId,
     };

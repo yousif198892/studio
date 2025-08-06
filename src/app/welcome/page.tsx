@@ -15,8 +15,6 @@ export default function WelcomePage() {
       try {
         const newUser: User = JSON.parse(decodeURIComponent(userParam));
         
-        // This is the critical fix.
-        // We MUST get the existing users and add the new one to the list.
         const userMap = new Map<string, User>();
         
         // Load users already in localStorage
