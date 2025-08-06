@@ -42,36 +42,40 @@ export default function StudentsPage() {
   const { t } = useLanguage();
   const { toast } = useToast();
 
-  const userId = searchParams?.get('userId') as string || "sup1";
-  const user = getUserById(userId);
+  const userId = searchParams?.get('userId') as string;
+  const [user, setUser] = useState<User | null>(null);
   const [students, setStudents] = useState<User[]>([]);
   
   useEffect(() => {
-    const studentList = getStudentsBySupervisorId(userId);
-    setStudents(studentList);
+    if (userId) {
+        const currentUser = getUserById(userId);
+        setUser(currentUser || null);
+        const studentList = getStudentsBySupervisorId(userId);
+        setStudents(studentList);
+    }
   }, [userId])
 
   const handleDelete = (studentId: string) => {
     try {
-      // Remove from component state
+      // Remove from component state first for immediate UI feedback
       setStudents(prev => prev.filter(s => s.id !== studentId));
       
       let allUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
       const studentIndex = allUsers.findIndex(u => u.id === studentId);
 
       if (studentIndex > -1) {
-        // Instead of deleting, just detach from the supervisor
+        // Instead of deleting the user, just detach them from the supervisor
         allUsers[studentIndex].supervisorId = undefined;
         localStorage.setItem("users", JSON.stringify(allUsers));
       }
 
-      // Optional: Also clear student's specific progress
+      // Optional: Also clear the student's specific learning progress from the supervisor's words
       localStorage.removeItem(`wordProgress_${studentId}`);
       localStorage.removeItem(`learningStats_${studentId}`);
 
       toast({
         title: "Success!",
-        description: "Student has been removed.",
+        description: "Student has been removed from your list.",
       });
 
     } catch (error) {
@@ -80,6 +84,10 @@ export default function StudentsPage() {
         description: "Could not remove the student.",
         variant: "destructive",
       });
+      // If there was an error, refetch the original list to revert the UI change
+      if (userId) {
+        setStudents(getStudentsBySupervisorId(userId));
+      }
     }
   }
 
@@ -106,47 +114,55 @@ export default function StudentsPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {students.map((student) => (
-                            <TableRow key={student.id}>
-                                <TableCell className="hidden sm:table-cell">
-                                    <Image
-                                    alt="Student avatar"
-                                    className="aspect-square rounded-full object-cover"
-                                    height="64"
-                                    src={student.avatar}
-                                    width="64"
-                                    />
-                                </TableCell>
-                                <TableCell className="font-medium">{student.name}</TableCell>
-                                <TableCell>{student.email}</TableCell>
-                                <TableCell className="text-right">
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button variant="destructive" size="icon">
-                                        <Trash2 className="h-4 w-4" />
-                                        <span className="sr-only">Delete Student</span>
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>
-                                          Are you absolutely sure?
-                                        </AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          This action cannot be undone. This will permanently remove {student.name} from your supervision. Their account will not be deleted, but they will lose access to your words and their progress will be reset.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction onClick={() => handleDelete(student.id)}>
-                                          Continue
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
+                        {students.length > 0 ? (
+                            students.map((student) => (
+                                <TableRow key={student.id}>
+                                    <TableCell className="hidden sm:table-cell">
+                                        <Image
+                                        alt="Student avatar"
+                                        className="aspect-square rounded-full object-cover"
+                                        height="64"
+                                        src={student.avatar}
+                                        width="64"
+                                        />
+                                    </TableCell>
+                                    <TableCell className="font-medium">{student.name}</TableCell>
+                                    <TableCell>{student.email}</TableCell>
+                                    <TableCell className="text-right">
+                                      <AlertDialog>
+                                        <AlertDialogTrigger asChild>
+                                          <Button variant="destructive" size="icon">
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="sr-only">Delete Student</span>
+                                          </Button>
+                                        </AlertDialogTrigger>
+                                        <AlertDialogContent>
+                                          <AlertDialogHeader>
+                                            <AlertDialogTitle>
+                                              Are you absolutely sure?
+                                            </AlertDialogTitle>
+                                            <AlertDialogDescription>
+                                              This action cannot be undone. This will permanently remove {student.name} from your supervision. Their account will not be deleted, but they will lose access to your words and their progress will be reset.
+                                            </AlertDialogDescription>
+                                          </AlertDialogHeader>
+                                          <AlertDialogFooter>
+                                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDelete(student.id)}>
+                                              Continue
+                                            </AlertDialogAction>
+                                          </AlertDialogFooter>
+                                        </AlertDialogContent>
+                                      </AlertDialog>
+                                    </TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={4} className="h-24 text-center">
+                                    No students have registered with your ID yet.
                                 </TableCell>
                             </TableRow>
-                        ))}
+                        )}
                     </TableBody>
                 </Table>
             </CardContent>

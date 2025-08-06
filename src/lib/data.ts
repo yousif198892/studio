@@ -99,22 +99,22 @@ export const mockUsers: User[] = [
 ];
 
 export function getAllUsers(): User[] {
-  const usersMap = new Map<string, User>();
+  // Start with the static mock users.
+  const allUsers = new Map(mockUsers.map(user => [user.id, user]));
 
-  // Load base mock users first
-  mockUsers.forEach(user => usersMap.set(user.id, user));
-
+  // If we're on the client, merge with users from localStorage.
   if (typeof window !== 'undefined') {
-    // Load users created dynamically during the session
-    const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-    storedUsers.forEach(user => {
-        // This ensures that any updates to a user (like profile changes) overwrite the mock/previous data
-        usersMap.set(user.id, user);
-    });
+    try {
+      const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+      storedUsers.forEach(user => {
+        allUsers.set(user.id, user); // Add new or overwrite existing mock users
+      });
+    } catch (e) {
+      console.error("Failed to parse users from localStorage", e);
+    }
   }
 
-  // Return a unique list of users
-  return Array.from(usersMap.values());
+  return Array.from(allUsers.values());
 }
 
 
