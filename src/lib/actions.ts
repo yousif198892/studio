@@ -46,6 +46,15 @@ export async function addWord(prevState: any, formData: FormData) {
   const { word, definition, image } = validatedFields.data;
   
   try {
+    // --- Start of Placeholder Logic ---
+    // We are temporarily bypassing the AI call to test the rest of the flow.
+    const placeholderOptions = [word, "Placeholder Option 1", "Placeholder Option 2", "Placeholder Option 3"];
+    return { success: true, message: "Placeholder word created!", options: placeholderOptions };
+    // --- End of Placeholder Logic ---
+
+
+    /* 
+    // --- Original AI Call (Temporarily Disabled) ---
     const buffer = await image.arrayBuffer();
     const base64 = Buffer.from(buffer).toString("base64");
     const dataUri = `data:${image.type};base64,${base64}`;
@@ -60,13 +69,11 @@ export async function addWord(prevState: any, formData: FormData) {
         throw new Error("AI did not return the expected number of options.");
     }
     
-    // The new word will be constructed and saved on the client side
-    // after the action successfully completes. This action's only job
-    // is to validate and get the AI options.
     return { success: true, message: "Word created!", options: [...aiResponse.options, word] };
+    */
 
   } catch (error) {
-    console.error("Error during AI word option generation:", error);
+    console.error("Error during word creation:", error);
     const errorMessage = "Failed to add word. The AI could not process the request. Please try a different word or image.";
     return { message: errorMessage, errors: {}, success: false };
   }
