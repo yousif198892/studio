@@ -9,7 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
-import { User } from "@/lib/data";
+import { User, Word, getWordsForStudent } from "@/lib/data";
 import {
     Table,
     TableBody,
@@ -23,7 +23,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, BarChart, CalendarCheck, CheckCircle, Clock, Star, Trophy, XCircle } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,7 +36,36 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { format, subDays } from "date-fns";
 
+type LearningStats = {
+  timeSpentSeconds: number;
+  totalWordsReviewed: number;
+  reviewedToday: {
+    count: number;
+    date: string; // YYYY-MM-DD
+  };
+  activityLog: string[]; // ['2024-07-21', '2024-07-22']
+};
+
+type StudentWithStats = User & {
+    stats: LearningStats;
+    wordsLearningCount: number;
+    wordsMasteredCount: number;
+}
+
+const getLast7Days = () => {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const day = subDays(new Date(), i);
+    days.push({
+      date: format(day, "yyyy-MM-dd"),
+      dayInitial: format(day, "E")[0], // 'M', 'T', 'W', etc.
+    });
+  }
+  return days.reverse();
+};
 
 export default function StudentsPage() {
   const searchParams = useSearchParams();
@@ -44,7 +73,8 @@ export default function StudentsPage() {
   const { toast } = useToast();
 
   const [user, setUser] = useState<User | null>(null);
-  const [students, setStudents] = useState<User[]>([]);
+  const [students, setStudents] = useState<StudentWithStats[]>([]);
+  const last7Days = getLast7Days();
   
   useEffect(() => {
     const userId = searchParams?.get('userId') as string;
@@ -52,7 +82,36 @@ export default function StudentsPage() {
         const currentUser = getUserByIdFromClient(userId);
         setUser(currentUser || null);
         const studentList = getStudentsBySupervisorIdFromClient(userId);
-        setStudents(studentList);
+
+        const studentsWithStats = studentList.map(student => {
+            const storedStats = localStorage.getItem(`learningStats_${student.id}`);
+            let stats: LearningStats = {
+                timeSpentSeconds: 0,
+                totalWordsReviewed: 0,
+                reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+                activityLog: [],
+            };
+            if (storedStats) {
+                 const parsedStats: LearningStats = JSON.parse(storedStats);
+                 if (!parsedStats.activityLog) {
+                    parsedStats.activityLog = [];
+                 }
+                 stats = parsedStats;
+            }
+
+            const words = getWordsForStudent(student.id);
+            const mastered = words.filter(w => w.strength === -1).length;
+            const learning = words.length - mastered;
+
+            return {
+                ...student,
+                stats,
+                wordsLearningCount: learning,
+                wordsMasteredCount: mastered,
+            }
+        });
+
+        setStudents(studentsWithStats);
     }
   }, [searchParams])
 
@@ -88,10 +147,24 @@ export default function StudentsPage() {
       // If there was an error, refetch the original list to revert the UI change
       const userId = searchParams?.get('userId') as string;
       if (userId) {
-        setStudents(getStudentsBySupervisorIdFromClient(userId));
+        setStudents(getStudentsBySupervisorIdFromClient(userId).map(s => ({
+            ...s,
+            stats: { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: ''}, activityLog: [] },
+            wordsLearningCount: 0,
+            wordsMasteredCount: 0
+        })));
       }
     }
   }
+
+  const formatTime = (totalSeconds: number) => {
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
 
 
   return (
@@ -104,38 +177,72 @@ export default function StudentsPage() {
                 <CardDescription>{t('studentsPage.allStudents.description')}</CardDescription>
             </CardHeader>
             <CardContent>
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                        <TableHead className="hidden w-[100px] sm:table-cell">
-                            <span className="sr-only">Image</span>
-                        </TableHead>
-                        <TableHead>{t('dashboard.supervisor.myStudents.name')}</TableHead>
-                        <TableHead>{t('dashboard.supervisor.myStudents.email')}</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {students.length > 0 ? (
-                            students.map((student) => (
-                                <TableRow key={student.id}>
-                                    <TableCell className="hidden sm:table-cell">
+                {students.length > 0 ? (
+                    <Accordion type="single" collapsible className="w-full">
+                       {students.map((student) => (
+                           <AccordionItem value={student.id} key={student.id}>
+                               <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
+                                    <div className="flex items-center gap-4 py-2">
                                         <Image
-                                        alt="Student avatar"
-                                        className="aspect-square rounded-full object-cover"
-                                        height="64"
-                                        src={student.avatar}
-                                        width="64"
+                                            alt="Student avatar"
+                                            className="aspect-square rounded-full object-cover"
+                                            height="48"
+                                            src={student.avatar}
+                                            width="48"
                                         />
-                                    </TableCell>
-                                    <TableCell className="font-medium">{student.name}</TableCell>
-                                    <TableCell>{student.email}</TableCell>
-                                    <TableCell className="text-right">
+                                        <div className="text-left">
+                                            <div className="font-medium">{student.name}</div>
+                                            <div className="text-sm text-muted-foreground">{student.email}</div>
+                                        </div>
+                                    </div>
+                               </AccordionTrigger>
+                               <AccordionContent className="p-4 space-y-4">
+                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                      <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                                          <Clock className="h-8 w-8 text-primary mb-2"/>
+                                          <p className="text-2xl font-bold">{formatTime(student.stats.timeSpentSeconds)}</p>
+                                          <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.timeSpent')}</p>
+                                      </div>
+                                      <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                                          <BarChart className="h-8 w-8 text-primary mb-2"/>
+                                          <p className="text-2xl font-bold">{student.stats.totalWordsReviewed}</p>
+                                          <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.wordsReviewed')}</p>
+                                      </div>
+                                      <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                                          <CalendarCheck className="h-8 w-8 text-primary mb-2"/>
+                                          <p className="text-2xl font-bold">{student.stats.reviewedToday.count}</p>
+                                          <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.reviewedToday')}</p>
+                                      </div>
+                                      <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                                          <Trophy className="h-8 w-8 text-primary mb-2"/>
+                                          <p className="text-2xl font-bold">{student.wordsMasteredCount}</p>
+                                          <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.masteredWords')}</p>
+                                      </div>
+                                   </div>
+                                    <div>
+                                      <h3 className="text-md font-semibold mb-2 text-center">Last 7 Days Activity</h3>
+                                      <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
+                                        {last7Days.map(({ date, dayInitial }) => {
+                                          const isActive = student.stats.activityLog.includes(date);
+                                          return (
+                                            <div key={date} className="flex flex-col items-center gap-2">
+                                              <span className="text-sm font-medium text-muted-foreground">{dayInitial}</span>
+                                              {isActive ? (
+                                                <CheckCircle className="h-6 w-6 text-green-500" />
+                                              ) : (
+                                                <XCircle className="h-6 w-6 text-muted-foreground/50" />
+                                              )}
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                    <div className="pt-4 flex justify-end">
                                       <AlertDialog>
                                         <AlertDialogTrigger asChild>
-                                          <Button variant="destructive" size="icon">
-                                            <Trash2 className="h-4 w-4" />
-                                            <span className="sr-only">Delete Student</span>
+                                          <Button variant="destructive">
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Remove Student
                                           </Button>
                                         </AlertDialogTrigger>
                                         <AlertDialogContent>
@@ -155,20 +262,20 @@ export default function StudentsPage() {
                                           </AlertDialogFooter>
                                         </AlertDialogContent>
                                       </AlertDialog>
-                                    </TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={4} className="h-24 text-center">
-                                    No students have registered with your ID yet.
-                                </TableCell>
-                            </TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                                    </div>
+                               </AccordionContent>
+                           </AccordionItem>
+                       ))}
+                    </Accordion>
+                ) : (
+                    <div className="text-center text-muted-foreground py-12">
+                        No students have registered with your ID yet.
+                    </div>
+                )}
             </CardContent>
         </Card>
     </div>
   )
 }
+
+    
