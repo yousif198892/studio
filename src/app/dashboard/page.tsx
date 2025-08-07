@@ -11,7 +11,7 @@ import {
 import { getWordsForStudent } from "@/lib/data";
 import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
 import { User } from "@/lib/data";
-import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star, GraduationCap, Trophy } from "lucide-react";
+import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star, GraduationCap, Trophy, CheckCircle, XCircle } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -26,6 +26,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { format, subDays } from "date-fns";
 
 type LearningStats = {
   timeSpentSeconds: number;
@@ -34,6 +35,19 @@ type LearningStats = {
     count: number;
     date: string; // YYYY-MM-DD
   };
+  activityLog: string[]; // ['2024-07-21', '2024-07-22']
+};
+
+const getLast7Days = () => {
+  const days = [];
+  for (let i = 0; i < 7; i++) {
+    const day = subDays(new Date(), i);
+    days.push({
+      date: format(day, "yyyy-MM-dd"),
+      dayInitial: format(day, "E")[0], // 'M', 'T', 'W', etc.
+    });
+  }
+  return days.reverse();
 };
 
 export default function Dashboard() {
@@ -45,10 +59,12 @@ export default function Dashboard() {
     timeSpentSeconds: 0,
     totalWordsReviewed: 0,
     reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+    activityLog: [],
   });
   const [wordsToReviewCount, setWordsToReviewCount] = useState(0);
   const [wordsLearningCount, setWordsLearningCount] = useState(0);
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
+  const last7Days = getLast7Days();
 
   useEffect(() => {
     const userId = searchParams?.get('userId') as string;
@@ -66,25 +82,32 @@ export default function Dashboard() {
         setWordsMasteredCount(mastered);
         setWordsLearningCount(learning);
 
-
         const storedStats = localStorage.getItem(`learningStats_${userId}`);
         if (storedStats) {
           const parsedStats: LearningStats = JSON.parse(storedStats);
           const today = new Date().toISOString().split('T')[0];
+          // Ensure reviewedToday is reset if the date has changed
           if (parsedStats.reviewedToday.date !== today) {
             parsedStats.reviewedToday = { count: 0, date: today };
             localStorage.setItem(`learningStats_${userId}`, JSON.stringify(parsedStats));
           }
+          // Ensure activityLog exists
+          if (!parsedStats.activityLog) {
+            parsedStats.activityLog = [];
+          }
           setStats(parsedStats);
         } else {
+          // Initialize stats if they don't exist
           const initialStats: LearningStats = {
             timeSpentSeconds: 0,
             totalWordsReviewed: 0,
             reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+            activityLog: [],
           };
           localStorage.setItem(`learningStats_${userId}`, JSON.stringify(initialStats));
           setStats(initialStats);
         }
+
       } else if (foundUser?.role === 'supervisor') {
           const studentList = getStudentsBySupervisorIdFromClient(userId);
           setStudents(studentList);
@@ -188,6 +211,24 @@ export default function Dashboard() {
                   <p className="text-2xl font-bold">{wordsMasteredCount}</p>
                   <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.masteredWords')}</p>
               </div>
+          </CardContent>
+          <CardContent>
+            <h3 className="text-md font-semibold mb-2 text-center">Your Last 7 Days</h3>
+            <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
+              {last7Days.map(({ date, dayInitial }) => {
+                const isActive = stats.activityLog.includes(date);
+                return (
+                  <div key={date} className="flex flex-col items-center gap-2">
+                    <span className="text-sm font-medium text-muted-foreground">{dayInitial}</span>
+                    {isActive ? (
+                      <CheckCircle className="h-6 w-6 text-green-500" />
+                    ) : (
+                      <XCircle className="h-6 w-6 text-muted-foreground/50" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       </div>

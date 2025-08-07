@@ -19,6 +19,7 @@ type LearningStats = {
     count: number;
     date: string;
   };
+  activityLog: string[];
 };
 
 export type ScheduleOption = 'tomorrow' | 'twoDays' | 'week' | 'twoWeeks' | 'month' | 'mastered';
@@ -57,6 +58,7 @@ export default function LearnPage() {
             timeSpentSeconds: 0,
             totalWordsReviewed: 0,
             reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+            activityLog: [],
           };
           stats.timeSpentSeconds += durationSeconds;
           localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
@@ -123,6 +125,7 @@ export default function LearnPage() {
       timeSpentSeconds: 0,
       totalWordsReviewed: 0,
       reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+      activityLog: [],
     };
     
     const today = new Date().toISOString().split('T')[0];
@@ -132,6 +135,11 @@ export default function LearnPage() {
 
     stats.totalWordsReviewed += count;
     stats.reviewedToday.count += count;
+
+    // Log activity
+    if (!stats.activityLog.includes(today)) {
+      stats.activityLog.push(today);
+    }
 
     localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
   };
