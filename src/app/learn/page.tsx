@@ -90,7 +90,7 @@ export default function LearnPage() {
             nextReview.setDate(nextReview.getDate() + 2);
             break;
         case 'week':
-            nextReview.setDate(nextReview.getDate() + 7);
+             nextReview.setDate(nextReview.getDate() + 7);
             break;
         case 'twoWeeks':
             nextReview.setDate(nextReview.getDate() + 14);
@@ -137,6 +137,9 @@ export default function LearnPage() {
     stats.reviewedToday.count += count;
 
     // Log activity
+    if (!stats.activityLog) {
+      stats.activityLog = []; // Ensure activityLog exists
+    }
     if (!stats.activityLog.includes(today)) {
       stats.activityLog.push(today);
     }
