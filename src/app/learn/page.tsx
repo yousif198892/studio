@@ -21,7 +21,7 @@ type LearningStats = {
   };
 };
 
-export type ScheduleOption = 'tomorrow' | 'twoDays' | 'threeDays' | 'week' | 'month' | 'mastered';
+export type ScheduleOption = 'tomorrow' | 'twoDays' | 'week' | 'twoWeeks' | 'month' | 'mastered';
 
 export default function LearnPage() {
   const searchParams = useSearchParams();
@@ -85,10 +85,8 @@ export default function LearnPage() {
             nextReview.setDate(nextReview.getDate() + 1);
             break;
         case 'twoDays':
+            if (word.strength === 0) newStrength = 1;
             nextReview.setDate(nextReview.getDate() + 2);
-            break;
-        case 'threeDays':
-            nextReview.setDate(nextReview.getDate() + 3);
             break;
         case 'week':
             newStrength += 1; // Default SRS increment
@@ -97,6 +95,9 @@ export default function LearnPage() {
             const intervalIndex = Math.min(newStrength -1, intervals.length - 1);
             const newInterval = intervals[intervalIndex];
             nextReview.setDate(nextReview.getDate() + newInterval);
+            break;
+        case 'twoWeeks':
+            nextReview.setDate(nextReview.getDate() + 14);
             break;
         case 'month':
             nextReview.setMonth(nextReview.getMonth() + 1);
