@@ -35,6 +35,8 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
   const [isCorrect, setIsCorrect] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
   const { t } = useLanguage();
+  
+  const isNewWord = word.strength === 0;
 
   useEffect(() => {
     // Shuffle options only when the word changes
@@ -155,18 +157,27 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
                <Calendar className="mr-2 h-4 w-4" />
                {t('quizCard.schedule.tomorrow')}
            </Button>
-            <Button onClick={() => handleScheduleSelect('twoDays')} variant="outline" className="w-full justify-start">
+            <Button 
+                onClick={() => handleScheduleSelect('twoDays')} 
+                variant={isNewWord ? 'default' : 'outline'} 
+                className="w-full justify-start relative"
+            >
                <Calendar className="mr-2 h-4 w-4" />
                {t('quizCard.schedule.inTwoDays')}
+               {isNewWord && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
            </Button>
             <Button onClick={() => handleScheduleSelect('threeDays')} variant="outline" className="w-full justify-start">
                <Calendar className="mr-2 h-4 w-4" />
                {t('quizCard.schedule.inThreeDays')}
            </Button>
-           <Button onClick={() => handleScheduleSelect('week')} variant="default" className="w-full justify-start relative">
+           <Button 
+                onClick={() => handleScheduleSelect('week')} 
+                variant={!isNewWord ? 'default' : 'outline'}
+                className="w-full justify-start relative"
+            >
                <Calendar className="mr-2 h-4 w-4" />
                 {t('quizCard.schedule.inAWeek')}
-                <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>
+                {!isNewWord && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
            </Button>
            <Button onClick={() => handleScheduleSelect('month')} variant="outline" className="w-full justify-start">
                <Calendar className="mr-2 h-4 w-4" />

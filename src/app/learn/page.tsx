@@ -92,8 +92,10 @@ export default function LearnPage() {
             break;
         case 'week':
             newStrength += 1; // Default SRS increment
-            const intervals = [1, 2, 4, 8, 16, 32, 64];
-            const newInterval = intervals[Math.min(newStrength, intervals.length - 1)];
+            // intervals[0] is for strength 0, intervals[1] is for strength 1 etc.
+            const intervals = [2, 4, 8, 16, 32, 64]; 
+            const intervalIndex = Math.min(newStrength -1, intervals.length - 1);
+            const newInterval = intervals[intervalIndex];
             nextReview.setDate(nextReview.getDate() + newInterval);
             break;
         case 'month':
