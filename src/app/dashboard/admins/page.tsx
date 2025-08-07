@@ -74,7 +74,10 @@ export default function AdminsPage() {
       if (userIndex > -1) {
         storedUsers[userIndex] = updatedUser;
       } else {
-        storedUsers.push(updatedUser);
+        // This case handles if the user was somehow not in local storage but was in the mock data
+        const allUsers = getAllUsersFromClient();
+        const updatedAllUsers = allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
+        localStorage.setItem('users', JSON.stringify(updatedAllUsers));
       }
       localStorage.setItem('users', JSON.stringify(storedUsers));
 
