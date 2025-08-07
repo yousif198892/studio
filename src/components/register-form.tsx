@@ -115,14 +115,6 @@ export function RegisterForm() {
                 <StudentSubmitButton />
               </div>
             </form>
-        <div className="my-4 flex items-center">
-            <div className="flex-grow border-t border-muted-foreground"></div>
-            <span className="mx-4 text-xs uppercase text-muted-foreground">{t('register.orContinueWith')}</span>
-            <div className="flex-grow border-t border-muted-foreground"></div>
-        </div>
-        <Button variant="outline" className="w-full">
-          {t('register.registerWithGoogle')}
-        </Button>
         <div className="mt-4 text-center text-sm">
           {t('register.haveAccount')}{" "}
           <Link href="/login" className="underline">

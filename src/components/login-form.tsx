@@ -127,9 +127,6 @@ export function LoginForm() {
             )}
           </div>
           <SubmitButton />
-          <Button variant="outline" className="w-full">
-            {t('login.loginWithGoogle')}
-          </Button>
         </form>
         <div className="mt-4 text-center text-sm">
           {t('login.noAccount')}{" "}
