@@ -38,10 +38,8 @@ export default function SupervisorChatPage() {
 
   useEffect(() => {
     if (supervisorId) {
-      const studentList = getStudentsBySupervisorIdFromClient(supervisorId);
-      setStudents(studentList);
-      
       const allMessages = getSupervisorMessagesForSupervisor(supervisorId);
+      
       const grouped = allMessages.reduce((acc, msg) => {
         const studentId = msg.studentId;
         if (!acc[studentId]) {
@@ -52,6 +50,11 @@ export default function SupervisorChatPage() {
       }, {} as Record<string, SupervisorMessage[]>);
       
       setMessagesByStudent(grouped);
+      
+      // Get all students and filter them to only include those who have sent messages
+      const allStudents = getStudentsBySupervisorIdFromClient(supervisorId);
+      const studentsWhoMessaged = allStudents.filter(student => grouped[student.id]);
+      setStudents(studentsWhoMessaged);
     }
   }, [supervisorId]);
 
