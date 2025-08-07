@@ -1,32 +1,35 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   SupervisorMessage,
   User,
   getSupervisorMessagesForSupervisor,
+  saveSupervisorMessage,
 } from "@/lib/data";
 import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatDistanceToNow } from "date-fns";
+import { format, formatDistanceToNow } from "date-fns";
 import { useSearchParams } from "next/navigation";
 import {
   getStudentsBySupervisorIdFromClient,
+  getUserByIdFromClient,
 } from "@/lib/client-data";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function SupervisorChatPage() {
   const searchParams = useSearchParams();
@@ -35,11 +38,13 @@ export default function SupervisorChatPage() {
     Record<string, SupervisorMessage[]>
   >({});
   const [students, setStudents] = useState<User[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
+  const [newMessage, setNewMessage] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (supervisorId) {
       const allMessages = getSupervisorMessagesForSupervisor(supervisorId);
-      
       const grouped = allMessages.reduce((acc, msg) => {
         const studentId = msg.studentId;
         if (!acc[studentId]) {
@@ -48,112 +53,237 @@ export default function SupervisorChatPage() {
         acc[studentId].push(msg);
         return acc;
       }, {} as Record<string, SupervisorMessage[]>);
-      
       setMessagesByStudent(grouped);
-      
-      // Get all students and filter them to only include those who have sent messages
+
       const allStudents = getStudentsBySupervisorIdFromClient(supervisorId);
-      const studentsWhoMessaged = allStudents.filter(student => grouped[student.id]);
+      const studentsWhoMessaged = allStudents.filter(
+        (student) => grouped[student.id]
+      );
       setStudents(studentsWhoMessaged);
+
+      // Select the first student by default if not already selected
+      if (!selectedStudent && studentsWhoMessaged.length > 0) {
+        setSelectedStudent(studentsWhoMessaged[0]);
+        markMessagesAsRead(studentsWhoMessaged[0].id, grouped);
+      }
     }
   }, [supervisorId]);
 
-  const handleAccordionToggle = (studentId: string) => {
-    const studentMessages = messagesByStudent[studentId] || [];
-    if (studentMessages.every(m => m.read)) return; // No unread messages
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messagesByStudent, selectedStudent]);
 
-    const updatedMessages = studentMessages.map(m => ({ ...m, read: true }));
+  const markMessagesAsRead = (
+    studentId: string,
+    currentMessages: Record<string, SupervisorMessage[]>
+  ) => {
+    const studentMessages = currentMessages[studentId] || [];
+    if (studentMessages.every((m) => m.read)) return;
 
-    // Update component state for immediate feedback
-    setMessagesByStudent(prev => ({
+    const updatedMessages = studentMessages.map((m) => ({ ...m, read: true }));
+
+    setMessagesByStudent((prev) => ({
       ...prev,
       [studentId]: updatedMessages,
     }));
 
-    // Update localStorage
     try {
-      let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
-      
-      const updatedStoredMessages = allStoredMessages.map(m => {
+      let allStoredMessages: SupervisorMessage[] = JSON.parse(
+        localStorage.getItem("supervisorMessages") || "[]"
+      );
+      const updatedStoredMessages = allStoredMessages.map((m) => {
         if (m.supervisorId === supervisorId && m.studentId === studentId) {
           return { ...m, read: true };
         }
         return m;
       });
-      
-      localStorage.setItem('supervisorMessages', JSON.stringify(updatedStoredMessages));
+      localStorage.setItem(
+        "supervisorMessages",
+        JSON.stringify(updatedStoredMessages)
+      );
     } catch (e) {
       console.error("Failed to update message read status in localStorage", e);
     }
   };
 
+  const handleSelectStudent = (student: User) => {
+    setSelectedStudent(student);
+    markMessagesAsRead(student.id, messagesByStudent);
+  };
+
+  const handleSendMessage = () => {
+    if (!newMessage.trim() || !supervisorId || !selectedStudent?.id) return;
+
+    const message: SupervisorMessage = {
+      id: `sup_msg_${Date.now()}`,
+      studentId: selectedStudent.id,
+      supervisorId: supervisorId,
+      senderId: supervisorId, // Supervisor is the sender
+      content: newMessage,
+      createdAt: new Date(),
+      read: false, // This doesn't apply to the sender
+    };
+
+    saveSupervisorMessage(message);
+
+    const updatedStudentMessages = [
+      ...(messagesByStudent[selectedStudent.id] || []),
+      message,
+    ];
+    setMessagesByStudent((prev) => ({
+      ...prev,
+      [selectedStudent.id]: updatedStudentMessages,
+    }));
+
+    setNewMessage("");
+  };
+
+  const supervisor = supervisorId ? getUserByIdFromClient(supervisorId) : null;
+  const currentConversation = selectedStudent
+    ? messagesByStudent[selectedStudent.id] || []
+    : [];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Student Chat</h1>
-      <p className="text-muted-foreground">
-        Read messages from your students below.
+    <div className="flex flex-col h-full">
+      <h1 className="text-3xl font-bold font-headline mb-1">Student Chat</h1>
+      <p className="text-muted-foreground mb-6">
+        Read and reply to messages from your students.
       </p>
-      <Card>
-        <CardHeader>
-          <CardTitle>Your Inbox</CardTitle>
-          <CardDescription>
-            Messages are grouped by student. Click to expand.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {students.length > 0 ? (
-            <Accordion type="multiple" className="w-full">
-              {students.map((student) => {
-                const studentMessages = messagesByStudent[student.id] || [];
-                const unreadCount = studentMessages.filter(m => !m.read).length;
-                return (
-                  <AccordionItem value={student.id} key={student.id}>
-                    <AccordionTrigger 
-                        className="hover:bg-muted/50 px-4 rounded-md"
-                        onClick={() => handleAccordionToggle(student.id)}
+      <Card className="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1">
+        <div className="flex flex-col border-r">
+          <CardHeader>
+            <CardTitle>Your Inbox</CardTitle>
+            <CardDescription>Select a conversation to view.</CardDescription>
+          </CardHeader>
+          <ScrollArea className="flex-1">
+            <CardContent className="p-2">
+              {students.length > 0 ? (
+                students.map((student) => {
+                  const studentMessages = messagesByStudent[student.id] || [];
+                  const unreadCount = studentMessages.filter(
+                    (m) => !m.read && m.senderId === student.id
+                  ).length;
+                  return (
+                    <button
+                      key={student.id}
+                      className={cn(
+                        "flex items-center gap-3 text-left p-2 rounded-lg w-full transition-colors",
+                        selectedStudent?.id === student.id
+                          ? "bg-secondary"
+                          : "hover:bg-muted/50"
+                      )}
+                      onClick={() => handleSelectStudent(student)}
                     >
-                      <div className="flex items-center gap-4 py-2 flex-1">
-                        <Image
-                          alt="Student avatar"
-                          className="aspect-square rounded-full object-cover"
-                          height="48"
-                          src={student.avatar}
-                          width="48"
-                        />
-                        <div className="text-left">
-                          <div className="font-medium">{student.name}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {studentMessages.length > 0
-                              ? `Last message: ${formatDistanceToNow(
-                                  new Date(studentMessages[studentMessages.length - 1].createdAt),
-                                  { addSuffix: true }
-                                )}`
-                              : "No messages yet"}
-                          </div>
-                        </div>
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={student.avatar} />
+                        <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1">
+                        <p className="font-semibold">{student.name}</p>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {studentMessages.length > 0
+                            ? studentMessages[studentMessages.length - 1]
+                                .content
+                            : "No messages yet"}
+                        </p>
                       </div>
-                      {unreadCount > 0 && <Badge>{unreadCount} New</Badge>}
-                    </AccordionTrigger>
-                    <AccordionContent className="p-4 space-y-4 bg-secondary/50 rounded-b-md">
-                        {studentMessages.length > 0 ? [...studentMessages].reverse().map(msg => (
-                            <div key={msg.id} className="flex flex-col">
-                                <p className="text-sm text-muted-foreground">
-                                    {formatDistanceToNow(new Date(msg.createdAt), {addSuffix: true})}
-                                </p>
-                                <p>{msg.content}</p>
-                            </div>
-                        )) : <p className="text-muted-foreground text-center py-4">No messages from this student.</p>}
-                    </AccordionContent>
-                  </AccordionItem>
-                );
-              })}
-            </Accordion>
+                      {unreadCount > 0 && <Badge>{unreadCount}</Badge>}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="text-center text-muted-foreground py-12 px-4">
+                  No students have sent you messages yet.
+                </div>
+              )}
+            </CardContent>
+          </ScrollArea>
+        </div>
+        <div className="flex flex-col h-[calc(100vh-14rem)]">
+          {selectedStudent ? (
+            <>
+              <CardHeader className="flex flex-row items-center gap-4 border-b">
+                <Avatar>
+                  <AvatarImage src={selectedStudent.avatar} />
+                  <AvatarFallback>
+                    {selectedStudent.name.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <CardTitle>{selectedStudent.name}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
+                {currentConversation.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={cn(
+                      "flex items-end gap-2",
+                      msg.senderId === supervisorId
+                        ? "justify-end"
+                        : "justify-start"
+                    )}
+                  >
+                    {msg.senderId !== supervisorId && (
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={selectedStudent.avatar} />
+                        <AvatarFallback>
+                          {selectedStudent.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                    <div
+                      className={cn(
+                        "rounded-lg px-4 py-2 max-w-sm",
+                        msg.senderId === supervisorId
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      )}
+                    >
+                      <p className="text-sm">{msg.content}</p>
+                      <p className="text-xs opacity-75 mt-1 text-right">
+                        {format(new Date(msg.createdAt), "p")}
+                      </p>
+                    </div>
+                    {msg.senderId === supervisorId && supervisor && (
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={supervisor.avatar} />
+                        <AvatarFallback>
+                          {supervisor.name.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                    )}
+                  </div>
+                ))}
+                <div ref={messagesEndRef} />
+              </CardContent>
+              <CardFooter className="pt-4 border-t">
+                <div className="flex w-full items-center space-x-2">
+                  <Input
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    placeholder="Type a message..."
+                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  />
+                  <Button
+                    onClick={handleSendMessage}
+                    disabled={!newMessage.trim()}
+                  >
+                    <Send className="h-4 w-4" />
+                    <span className="sr-only">Send</span>
+                  </Button>
+                </div>
+              </CardFooter>
+            </>
           ) : (
-            <p className="text-center text-muted-foreground py-12">No students have sent you messages yet.</p>
+            <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
+              <p>Select a conversation to start chatting</p>
+            </div>
           )}
-        </CardContent>
+        </div>
       </Card>
     </div>
   );
 }
+
+    
