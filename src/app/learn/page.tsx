@@ -112,7 +112,8 @@ export default function LearnPage() {
     if (!word || !userId) return;
 
     const newStrength = Math.max(0, word.strength - 1);
-    const nextReview = new Date(); // Review again soon
+    const nextReview = new Date();
+    nextReview.setDate(nextReview.getDate() + 1); // Schedule for tomorrow
     
     updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
     updateStats(userId, 1);
@@ -138,7 +139,7 @@ export default function LearnPage() {
 
     // Log activity
     if (!stats.activityLog) {
-      stats.activityLog = []; // Ensure activityLog exists
+      stats.activityLog = []; // Ensure activityLog exists for old data
     }
     if (!stats.activityLog.includes(today)) {
       stats.activityLog.push(today);
