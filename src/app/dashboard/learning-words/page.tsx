@@ -30,11 +30,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { WordAudioPlayer } from "@/components/word-audio-player";
 import { RescheduleWordDialog } from "@/components/reschedule-word-dialog";
+import { formatDistanceToNowStrict, isPast, differenceInHours, differenceInDays } from "date-fns";
 
 export default function LearningWordsPage() {
   const searchParams = useSearchParams();
   const [allLearningWords, setAllLearningWords] = useState<Word[]>([]);
   const [loading, setLoading] = useState(true);
+  const [, setNow] = useState(new Date()); // Used to trigger re-renders for time updates
 
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
@@ -51,6 +53,9 @@ export default function LearningWordsPage() {
 
   useEffect(() => {
     fetchWords();
+     // Set up an interval to update the "time left" every minute
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
   }, [fetchWords]);
 
   const handleWordRescheduled = () => {
@@ -79,9 +84,26 @@ export default function LearningWordsPage() {
       const unitMatch = !selectedUnit || word.unit === selectedUnit;
       const lessonMatch = !selectedLesson || word.lesson === selectedLesson;
       return unitMatch && lessonMatch;
-    });
+    }).sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
   }, [allLearningWords, selectedUnit, selectedLesson]);
   
+  const formatTimeLeft = (date: Date) => {
+    if (isPast(date)) {
+        return <span className="text-destructive font-semibold">Due now</span>;
+    }
+    const totalHours = differenceInHours(date, new Date());
+    const days = Math.floor(totalHours / 24);
+    const hours = totalHours % 24;
+
+    if (days > 0) {
+        return `${days}d ${hours}h left`;
+    }
+    if (totalHours > 0) {
+        return `${hours}h left`;
+    }
+    return formatDistanceToNowStrict(date, { addSuffix: true });
+  }
+
   const handleUnitChange = (unit: string) => {
       setSelectedUnit(unit === "all" ? null : unit);
       setSelectedLesson(null); // Reset lesson when unit changes
@@ -150,6 +172,7 @@ export default function LearningWordsPage() {
                 <TableHead className="w-[100px]">Image</TableHead>
                 <TableHead>Word</TableHead>
                 <TableHead>Unit</TableHead>
+                <TableHead>Next Review</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -177,6 +200,9 @@ export default function LearningWordsPage() {
                       <div className="font-medium">{word.unit}</div>
                       <div className="text-xs text-muted-foreground">{word.lesson}</div>
                     </TableCell>
+                    <TableCell>
+                        <div className="text-sm">{formatTimeLeft(new Date(word.nextReview))}</div>
+                    </TableCell>
                      <TableCell className="text-right">
                        {userId && (
                           <RescheduleWordDialog 
@@ -190,7 +216,7 @@ export default function LearningWordsPage() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No words found for the selected filters.
                   </TableCell>
                 </TableRow>
