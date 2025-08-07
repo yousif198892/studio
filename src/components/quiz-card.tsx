@@ -195,12 +195,9 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="text-center text-4xl font-headline flex items-center justify-center gap-4">
-          <span>{word.word}</span>
+          <span>{word.definition}</span>
           <WordAudioPlayer word={word.word} />
         </CardTitle>
-        <CardDescription className="text-center text-lg">
-          {word.definition}
-        </CardDescription>
       </CardHeader>
       
       {viewState === 'schedule' ? renderScheduleView() : renderQuestionView()}
