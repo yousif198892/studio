@@ -41,6 +41,9 @@ export function RescheduleWordDialog({ word, userId, onWordRescheduled }: Resche
       case 'twoDays':
         nextReview.setDate(nextReview.getDate() + 2);
         break;
+      case 'week':
+        nextReview.setDate(nextReview.getDate() + 7);
+        break;
       case 'twoWeeks':
         nextReview.setDate(nextReview.getDate() + 14);
         break;
@@ -86,6 +89,10 @@ export function RescheduleWordDialog({ word, userId, onWordRescheduled }: Resche
           <Button onClick={() => handleScheduleSelect('twoDays')} variant="outline" className="w-full justify-start">
             <Calendar className="mr-2 h-4 w-4" />
             {t('quizCard.schedule.inTwoDays')}
+          </Button>
+          <Button onClick={() => handleScheduleSelect('week')} variant="outline" className="w-full justify-start">
+            <Calendar className="mr-2 h-4 w-4" />
+            {t('quizCard.schedule.inAWeek')}
           </Button>
            <Button onClick={() => handleScheduleSelect('twoWeeks')} variant="outline" className="w-full justify-start">
             <Calendar className="mr-2 h-4 w-4" />
