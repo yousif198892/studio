@@ -77,7 +77,7 @@ export default function LearnPage() {
   const handleCorrect = (option: ScheduleOption) => {
     if (!word || !userId) return;
 
-    let newStrength = word.strength;
+    let newStrength = word.strength >= 0 ? word.strength + 1 : 0;
     const nextReview = new Date();
 
     switch (option) {
@@ -85,16 +85,10 @@ export default function LearnPage() {
             nextReview.setDate(nextReview.getDate() + 1);
             break;
         case 'twoDays':
-            if (word.strength === 0) newStrength = 1;
             nextReview.setDate(nextReview.getDate() + 2);
             break;
         case 'week':
-            newStrength += 1; // Default SRS increment
-            // intervals[0] is for strength 0, intervals[1] is for strength 1 etc.
-            const intervals = [2, 4, 8, 16, 32, 64]; 
-            const intervalIndex = Math.min(newStrength -1, intervals.length - 1);
-            const newInterval = intervals[intervalIndex];
-            nextReview.setDate(nextReview.getDate() + newInterval);
+            nextReview.setDate(nextReview.getDate() + 7);
             break;
         case 'twoWeeks':
             nextReview.setDate(nextReview.getDate() + 14);
