@@ -1,4 +1,5 @@
 
+
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 // These functions are intended for SERVER-SIDE USE. For client-side data fetching,
@@ -42,6 +43,17 @@ export type Message = {
     message: string;
     createdAt: Date;
 }
+
+export type SupervisorMessage = {
+  id: string;
+  studentId: string;
+  supervisorId: string;
+  senderId: string; // Will be either studentId or supervisorId
+  content: string;
+  createdAt: Date;
+  read: boolean;
+};
+
 
 export const mockMessages: Message[] = [
     {
@@ -174,4 +186,37 @@ export const getMessages = (): Message[] => {
         return uniqueMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
     return baseMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+// --- Supervisor Message Functions ---
+
+const getSupervisorMessagesFromStorage = (): SupervisorMessage[] => {
+    if (typeof window === 'undefined') return [];
+    try {
+        const stored = localStorage.getItem('supervisorMessages');
+        return stored ? JSON.parse(stored) : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+export const getSupervisorMessagesForStudent = (studentId: string, supervisorId: string): SupervisorMessage[] => {
+    const allMessages = getSupervisorMessagesFromStorage();
+    return allMessages
+        .filter(m => m.studentId === studentId && m.supervisorId === supervisorId)
+        .sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
+
+export const getSupervisorMessagesForSupervisor = (supervisorId: string): SupervisorMessage[] => {
+    const allMessages = getSupervisorMessagesFromStorage();
+    return allMessages
+        .filter(m => m.supervisorId === supervisorId)
+        .sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+}
+
+export const saveSupervisorMessage = (message: SupervisorMessage) => {
+    if (typeof window === 'undefined') return;
+    const allMessages = getSupervisorMessagesFromStorage();
+    allMessages.push(message);
+    localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
 }

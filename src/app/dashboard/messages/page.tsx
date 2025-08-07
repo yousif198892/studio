@@ -2,7 +2,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getMessages, Message } from "@/lib/data";
+import {
+  Message,
+  SupervisorMessage,
+  User,
+  getMessages,
+  getSupervisorMessagesForSupervisor,
+} from "@/lib/data";
 import {
   Card,
   CardContent,
@@ -33,8 +39,21 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { useSearchParams } from "next/navigation";
+import {
+  getUserByIdFromClient,
+  getStudentsBySupervisorIdFromClient,
+} from "@/lib/client-data";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
-export default function MessagesPage() {
+function AdminInbox() {
   const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
 
@@ -44,11 +63,10 @@ export default function MessagesPage() {
   }, []);
 
   const handleDelete = (messageId: string) => {
-    // Remove from component state
+    // This logic remains the same for admin messages
     const updatedMessages = messages.filter((m) => m.id !== messageId);
     setMessages(updatedMessages);
 
-    // Remove from localStorage
     try {
       const storedMessages: Message[] = JSON.parse(
         localStorage.getItem("adminMessages") || "[]"
@@ -76,7 +94,7 @@ export default function MessagesPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Inbox</h1>
+      <h1 className="text-3xl font-bold font-headline">Admin Inbox</h1>
       <p className="text-muted-foreground">
         Messages from users requesting supervisor access.
       </p>
@@ -152,4 +170,129 @@ export default function MessagesPage() {
       </Card>
     </div>
   );
+}
+
+function SupervisorInbox() {
+  const searchParams = useSearchParams();
+  const supervisorId = searchParams.get("userId");
+  const [messages, setMessages] = useState<
+    Record<string, SupervisorMessage[]>
+  >({});
+  const [students, setStudents] = useState<User[]>([]);
+
+  useEffect(() => {
+    if (supervisorId) {
+      const studentList = getStudentsBySupervisorIdFromClient(supervisorId);
+      setStudents(studentList);
+      const allMessages = getSupervisorMessagesForSupervisor(supervisorId);
+      const groupedMessages = allMessages.reduce((acc, msg) => {
+        const studentId = msg.studentId;
+        if (!acc[studentId]) {
+          acc[studentId] = [];
+        }
+        acc[studentId].push(msg);
+        return acc;
+      }, {} as Record<string, SupervisorMessage[]>);
+      setMessages(groupedMessages);
+    }
+  }, [supervisorId]);
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-3xl font-bold font-headline">Student Messages</h1>
+      <p className="text-muted-foreground">
+        Read messages from your students below.
+      </p>
+      <Card>
+        <CardHeader>
+          <CardTitle>Your Inbox</CardTitle>
+          <CardDescription>
+            Messages are grouped by student. Click to expand.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {students.length > 0 ? (
+            <Accordion type="multiple" className="w-full">
+              {students.map((student) => {
+                const studentMessages = messages[student.id] || [];
+                const unreadCount = studentMessages.filter(m => !m.read).length;
+                return (
+                  <AccordionItem value={student.id} key={student.id}>
+                    <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
+                      <div className="flex items-center gap-4 py-2 flex-1">
+                        <Image
+                          alt="Student avatar"
+                          className="aspect-square rounded-full object-cover"
+                          height="48"
+                          src={student.avatar}
+                          width="48"
+                        />
+                        <div className="text-left">
+                          <div className="font-medium">{student.name}</div>
+                          <div className="text-sm text-muted-foreground">
+                            {studentMessages.length > 0
+                              ? `Last message: ${formatDistanceToNow(
+                                  new Date(studentMessages[studentMessages.length - 1].createdAt),
+                                  { addSuffix: true }
+                                )}`
+                              : "No messages yet"}
+                          </div>
+                        </div>
+                      </div>
+                      {unreadCount > 0 && <Badge>{unreadCount} New</Badge>}
+                    </AccordionTrigger>
+                    <AccordionContent className="p-4 space-y-4 bg-secondary/50 rounded-b-md">
+                        {studentMessages.length > 0 ? studentMessages.map(msg => (
+                            <div key={msg.id} className="flex flex-col">
+                                <p className="text-sm text-muted-foreground">
+                                    {formatDistanceToNow(new Date(msg.createdAt), {addSuffix: true})}
+                                </p>
+                                <p>{msg.content}</p>
+                            </div>
+                        )) : <p className="text-muted-foreground text-center">No messages from this student.</p>}
+                    </AccordionContent>
+                  </AccordionItem>
+                );
+              })}
+            </Accordion>
+          ) : (
+            <p className="text-center text-muted-foreground py-12">No students or messages to display.</p>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
+
+export default function MessagesPage() {
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (userId) {
+      setUser(getUserByIdFromClient(userId) || null);
+    }
+    setLoading(false);
+  }, [userId]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <div>User not found.</div>;
+  }
+
+  if (user.isMainAdmin) {
+    return <AdminInbox />;
+  }
+
+  if (user.role === "supervisor") {
+    return <SupervisorInbox />;
+  }
+
+  // Fallback for unexpected roles, though students have their own page.
+  return <div>You do not have access to this page.</div>;
 }

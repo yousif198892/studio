@@ -71,6 +71,12 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         roles: ["student"],
     },
     {
+        href: `/dashboard/student-messages?userId=${user.id}`,
+        label: 'Messages',
+        icon: <MessageSquare />,
+        roles: ["student"],
+    },
+    {
         href: `/dashboard/words?userId=${user.id}`,
         label: t('sidebar.myWords'),
         icon: <BookOpen />,
@@ -93,7 +99,6 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         label: 'Messages',
         icon: <MessageSquare />,
         roles: ["supervisor"],
-        requiresMainAdmin: true,
     },
     {
       href: `/dashboard/admins?userId=${user.id}`,
