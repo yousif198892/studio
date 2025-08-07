@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { getWordForReview, Word } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
@@ -29,7 +29,7 @@ export default function LearnPage() {
   const { t } = useLanguage();
   const [word, setWord] = useState<Word | null>(null);
   const [sessionFinished, setSessionFinished] = useState(false);
-  const [startTime, setStartTime] = useState<number | null>(null);
+  const startTimeRef = useRef<number | null>(null);
 
   const userId = searchParams.get("userId");
 
@@ -44,13 +44,13 @@ export default function LearnPage() {
   }, [userId]);
 
   useEffect(() => {
-    setStartTime(Date.now());
+    startTimeRef.current = Date.now();
     loadNextWord();
 
     const cleanup = () => {
-        if (userId && startTime) {
+        if (userId && startTimeRef.current) {
           const endTime = Date.now();
-          const durationSeconds = Math.round((endTime - startTime) / 1000);
+          const durationSeconds = Math.round((endTime - startTimeRef.current) / 1000);
           
           const storedStats = localStorage.getItem(`learningStats_${userId}`);
           const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
@@ -60,6 +60,7 @@ export default function LearnPage() {
           };
           stats.timeSpentSeconds += durationSeconds;
           localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+          startTimeRef.current = null; // Prevent double counting on fast reloads
         }
     }
 
@@ -70,7 +71,7 @@ export default function LearnPage() {
         cleanup();
         window.removeEventListener('beforeunload', cleanup);
     };
-  }, [userId]); // Only run once on mount
+  }, [userId, loadNextWord]);
 
 
   const handleCorrect = (option: ScheduleOption) => {
