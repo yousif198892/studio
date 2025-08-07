@@ -17,7 +17,6 @@ import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle, Star, Calendar } from "lucide-react";
-import { WordAudioPlayer } from "./word-audio-player";
 import type { ScheduleOption } from "@/app/learn/page";
 import { useLanguage } from "@/hooks/use-language";
 
@@ -196,7 +195,6 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
       <CardHeader>
         <CardTitle className="text-center text-4xl font-headline flex items-center justify-center gap-4">
           <span>{word.definition}</span>
-          <WordAudioPlayer word={word.word} />
         </CardTitle>
       </CardHeader>
       
