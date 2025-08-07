@@ -8,7 +8,6 @@ import {
   User,
   getMessages,
   getSupervisorMessagesForSupervisor,
-  saveSupervisorMessage,
 } from "@/lib/data";
 import {
   Card,
@@ -118,53 +117,61 @@ function AdminInbox() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {messages.map((message) => (
-                <TableRow key={message.id}>
-                  <TableCell>
-                    <div className="font-medium">{message.name}</div>
-                    <div className="text-sm text-muted-foreground">
-                      {message.email}
-                    </div>
-                  </TableCell>
-                  <TableCell className="max-w-md">
-                    <p>{message.message}</p>
-                  </TableCell>
-                  <TableCell>
-                    {formatDistanceToNow(new Date(message.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button variant="destructive" size="icon">
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            Are you absolutely sure?
-                          </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            This action cannot be undone. This will permanently
-                            delete the message from {message.name}.
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleDelete(message.id)}
-                          >
-                            Continue
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+              {messages.length > 0 ? (
+                messages.map((message) => (
+                  <TableRow key={message.id}>
+                    <TableCell>
+                      <div className="font-medium">{message.name}</div>
+                      <div className="text-sm text-muted-foreground">
+                        {message.email}
+                      </div>
+                    </TableCell>
+                    <TableCell className="max-w-md">
+                      <p>{message.message}</p>
+                    </TableCell>
+                    <TableCell>
+                      {formatDistanceToNow(new Date(message.createdAt), {
+                        addSuffix: true,
+                      })}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="destructive" size="icon">
+                            <Trash2 className="h-4 w-4" />
+                            <span className="sr-only">Delete</span>
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Are you absolutely sure?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently
+                              delete the message from {message.name}.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction
+                              onClick={() => handleDelete(message.id)}
+                            >
+                              Continue
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    No messages have been received.
                   </TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -195,51 +202,40 @@ function SupervisorInbox() {
         acc[studentId].push(msg);
         return acc;
       }, {} as Record<string, SupervisorMessage[]>);
+      
       setMessagesByStudent(grouped);
     }
   }, [supervisorId]);
 
   const handleAccordionToggle = (studentId: string) => {
-    // Mark messages as read when the accordion is opened
-    const studentMessages = messagesByStudent[studentId];
-    if (!studentMessages || studentMessages.every(m => m.read)) return;
+    const studentMessages = messagesByStudent[studentId] || [];
+    if (studentMessages.every(m => m.read)) return; // No unread messages
 
-    const updatedMessages = studentMessages.map(m => ({...m, read: true}));
-    
-    // Update component state
-    setMessagesByStudent(prev => ({...prev, [studentId]: updatedMessages}));
+    const updatedMessages = studentMessages.map(m => ({ ...m, read: true }));
+
+    // Update component state for immediate feedback
+    setMessagesByStudent(prev => ({
+      ...prev,
+      [studentId]: updatedMessages,
+    }));
 
     // Update localStorage
-    const allMessages = getSupervisorMessagesForSupervisor(supervisorId!);
-    allMessages.forEach(msg => {
-      if (msg.studentId === studentId) {
-        msg.read = true;
-      }
-    });
-
-    const otherMessages = getSupervisorMessagesForSupervisor(supervisorId!).filter(
-      (m) => m.supervisorId !== supervisorId
-    );
-    const combined = [...otherMessages, ...allMessages];
-    
-    // This is not ideal as it doesn't just update one supervisor's messages.
-    // In a real app this would be a targeted DB update.
     try {
-      // For this demo, we'll overwrite the whole storage item.
-      // This is simplified and assumes one supervisor is logged in at a time.
       let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
-      allStoredMessages = allStoredMessages.map(m => {
-          if (m.studentId === studentId && m.supervisorId === supervisorId) {
-              return { ...m, read: true };
-          }
-          return m;
+      
+      const updatedStoredMessages = allStoredMessages.map(m => {
+        if (m.supervisorId === supervisorId && m.studentId === studentId) {
+          return { ...m, read: true };
+        }
+        return m;
       });
-      localStorage.setItem('supervisorMessages', JSON.stringify(allStoredMessages));
-
+      
+      localStorage.setItem('supervisorMessages', JSON.stringify(updatedStoredMessages));
     } catch (e) {
-      console.error("Failed to update message read status", e);
+      console.error("Failed to update message read status in localStorage", e);
     }
-  }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -296,14 +292,14 @@ function SupervisorInbox() {
                                 </p>
                                 <p>{msg.content}</p>
                             </div>
-                        )) : <p className="text-muted-foreground text-center">No messages from this student.</p>}
+                        )) : <p className="text-muted-foreground text-center py-4">No messages from this student.</p>}
                     </AccordionContent>
                   </AccordionItem>
                 );
               })}
             </Accordion>
           ) : (
-            <p className="text-center text-muted-foreground py-12">No students or messages to display.</p>
+            <p className="text-center text-muted-foreground py-12">No students have sent you messages yet.</p>
           )}
         </CardContent>
       </Card>
