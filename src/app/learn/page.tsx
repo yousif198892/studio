@@ -155,10 +155,10 @@ export default function LearnPage() {
     <ClientOnly>
       <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-secondary">
         <div className="w-full max-w-2xl">
-           <Button variant="ghost" asChild className="absolute top-4 left-4">
+           <Button variant="ghost" size="icon" asChild className="absolute top-4 left-4">
                <Link href={`/dashboard?userId=${userId}`}>
-                   <ArrowLeft className="mr-2 h-4 w-4" />
-                   {t('learn.backToDashboard')}
+                   <ArrowLeft className="h-4 w-4" />
+                   <span className="sr-only">{t('learn.backToDashboard')}</span>
                </Link>
            </Button>
 
