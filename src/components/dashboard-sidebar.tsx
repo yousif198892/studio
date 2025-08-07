@@ -72,7 +72,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
     },
     {
         href: `/dashboard/student-messages?userId=${user.id}`,
-        label: 'Messages',
+        label: 'Chat',
         icon: <MessageSquare />,
         roles: ["student"],
     },
@@ -95,10 +95,18 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         roles: ["supervisor"],
     },
     {
-        href: `/dashboard/messages?userId=${user.id}`,
-        label: 'Messages',
+        href: `/dashboard/chat?userId=${user.id}`,
+        label: 'Chat',
         icon: <MessageSquare />,
         roles: ["supervisor"],
+        requiresMainAdmin: false,
+    },
+     {
+      href: `/dashboard/messages?userId=${user.id}`,
+      label: 'Requests',
+      icon: <Shield />,
+      roles: ["supervisor"],
+      requiresMainAdmin: true,
     },
     {
       href: `/dashboard/admins?userId=${user.id}`,
