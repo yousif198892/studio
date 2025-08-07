@@ -166,17 +166,13 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
                {isNewWord && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
            </Button>
            <Button 
-                onClick={() => handleScheduleSelect('week')} 
+                onClick={() => handleScheduleSelect('twoWeeks')} 
                 variant={!isNewWord ? 'default' : 'outline'}
                 className="w-full justify-start relative"
             >
                <Calendar className="mr-2 h-4 w-4" />
-                {t('quizCard.schedule.inAWeek')}
-                {!isNewWord && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
-           </Button>
-           <Button onClick={() => handleScheduleSelect('twoWeeks')} variant="outline" className="w-full justify-start">
-               <Calendar className="mr-2 h-4 w-4" />
                 {t('quizCard.schedule.inTwoWeeks')}
+                {!isNewWord && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
            </Button>
            <Button onClick={() => handleScheduleSelect('month')} variant="outline" className="w-full justify-start">
                <Calendar className="mr-2 h-4 w-4" />

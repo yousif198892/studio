@@ -21,7 +21,7 @@ type LearningStats = {
   };
 };
 
-export type ScheduleOption = 'tomorrow' | 'twoDays' | 'week' | 'twoWeeks' | 'month' | 'mastered';
+export type ScheduleOption = 'tomorrow' | 'twoDays' | 'twoWeeks' | 'month' | 'mastered';
 
 export default function LearnPage() {
   const searchParams = useSearchParams();
@@ -77,7 +77,7 @@ export default function LearnPage() {
   const handleCorrect = (option: ScheduleOption) => {
     if (!word || !userId) return;
 
-    let newStrength = word.strength >= 0 ? word.strength + 1 : 0;
+    let newStrength = word.strength >= 0 ? word.strength + 1 : 1;
     const nextReview = new Date();
 
     switch (option) {
@@ -86,9 +86,6 @@ export default function LearnPage() {
             break;
         case 'twoDays':
             nextReview.setDate(nextReview.getDate() + 2);
-            break;
-        case 'week':
-            nextReview.setDate(nextReview.getDate() + 7);
             break;
         case 'twoWeeks':
             nextReview.setDate(nextReview.getDate() + 14);
