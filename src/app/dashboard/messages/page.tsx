@@ -8,6 +8,7 @@ import {
   User,
   getMessages,
   getSupervisorMessagesForSupervisor,
+  saveSupervisorMessage,
 } from "@/lib/data";
 import {
   Card,
@@ -175,7 +176,7 @@ function AdminInbox() {
 function SupervisorInbox() {
   const searchParams = useSearchParams();
   const supervisorId = searchParams.get("userId");
-  const [messages, setMessages] = useState<
+  const [messagesByStudent, setMessagesByStudent] = useState<
     Record<string, SupervisorMessage[]>
   >({});
   const [students, setStudents] = useState<User[]>([]);
@@ -184,8 +185,9 @@ function SupervisorInbox() {
     if (supervisorId) {
       const studentList = getStudentsBySupervisorIdFromClient(supervisorId);
       setStudents(studentList);
+      
       const allMessages = getSupervisorMessagesForSupervisor(supervisorId);
-      const groupedMessages = allMessages.reduce((acc, msg) => {
+      const grouped = allMessages.reduce((acc, msg) => {
         const studentId = msg.studentId;
         if (!acc[studentId]) {
           acc[studentId] = [];
@@ -193,9 +195,51 @@ function SupervisorInbox() {
         acc[studentId].push(msg);
         return acc;
       }, {} as Record<string, SupervisorMessage[]>);
-      setMessages(groupedMessages);
+      setMessagesByStudent(grouped);
     }
   }, [supervisorId]);
+
+  const handleAccordionToggle = (studentId: string) => {
+    // Mark messages as read when the accordion is opened
+    const studentMessages = messagesByStudent[studentId];
+    if (!studentMessages || studentMessages.every(m => m.read)) return;
+
+    const updatedMessages = studentMessages.map(m => ({...m, read: true}));
+    
+    // Update component state
+    setMessagesByStudent(prev => ({...prev, [studentId]: updatedMessages}));
+
+    // Update localStorage
+    const allMessages = getSupervisorMessagesForSupervisor(supervisorId!);
+    allMessages.forEach(msg => {
+      if (msg.studentId === studentId) {
+        msg.read = true;
+      }
+    });
+
+    const otherMessages = getSupervisorMessagesForSupervisor(supervisorId!).filter(
+      (m) => m.supervisorId !== supervisorId
+    );
+    const combined = [...otherMessages, ...allMessages];
+    
+    // This is not ideal as it doesn't just update one supervisor's messages.
+    // In a real app this would be a targeted DB update.
+    try {
+      // For this demo, we'll overwrite the whole storage item.
+      // This is simplified and assumes one supervisor is logged in at a time.
+      let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
+      allStoredMessages = allStoredMessages.map(m => {
+          if (m.studentId === studentId && m.supervisorId === supervisorId) {
+              return { ...m, read: true };
+          }
+          return m;
+      });
+      localStorage.setItem('supervisorMessages', JSON.stringify(allStoredMessages));
+
+    } catch (e) {
+      console.error("Failed to update message read status", e);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -214,11 +258,14 @@ function SupervisorInbox() {
           {students.length > 0 ? (
             <Accordion type="multiple" className="w-full">
               {students.map((student) => {
-                const studentMessages = messages[student.id] || [];
+                const studentMessages = messagesByStudent[student.id] || [];
                 const unreadCount = studentMessages.filter(m => !m.read).length;
                 return (
                   <AccordionItem value={student.id} key={student.id}>
-                    <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
+                    <AccordionTrigger 
+                        className="hover:bg-muted/50 px-4 rounded-md"
+                        onClick={() => handleAccordionToggle(student.id)}
+                    >
                       <div className="flex items-center gap-4 py-2 flex-1">
                         <Image
                           alt="Student avatar"
@@ -242,7 +289,7 @@ function SupervisorInbox() {
                       {unreadCount > 0 && <Badge>{unreadCount} New</Badge>}
                     </AccordionTrigger>
                     <AccordionContent className="p-4 space-y-4 bg-secondary/50 rounded-b-md">
-                        {studentMessages.length > 0 ? studentMessages.map(msg => (
+                        {studentMessages.length > 0 ? [...studentMessages].reverse().map(msg => (
                             <div key={msg.id} className="flex flex-col">
                                 <p className="text-sm text-muted-foreground">
                                     {formatDistanceToNow(new Date(msg.createdAt), {addSuffix: true})}
@@ -293,6 +340,6 @@ export default function MessagesPage() {
     return <SupervisorInbox />;
   }
 
-  // Fallback for unexpected roles, though students have their own page.
+  // Fallback for unexpected roles.
   return <div>You do not have access to this page.</div>;
 }
