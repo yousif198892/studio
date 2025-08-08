@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { TestTube2, Bold, Italic, Underline, Palette, AlignLeft, AlignCenter, AlignRight, AlignJustify, CaseSensitive, Edit, Save } from 'lucide-react';
+import { TestTube2, Bold, Italic, Underline, Palette, AlignLeft, AlignCenter, AlignRight, AlignJustify, CaseSensitive, Edit, Save, Image as ImageIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
@@ -24,6 +24,7 @@ export default function PresentSimplePage() {
     const [isEditing, setIsEditing] = useState(false);
     const { toast } = useToast();
     const editorRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [content, setContent] = useState("");
 
     useEffect(() => {
@@ -80,6 +81,29 @@ export default function PresentSimplePage() {
         document.execCommand(command, false, value);
         editorRef.current?.focus();
     }
+
+    const handleInsertImageClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const dataUrl = e.target?.result as string;
+                 // Ensure focus is on the editor before inserting
+                editorRef.current?.focus();
+                // Use execCommand to insert the image at the cursor position
+                document.execCommand('insertHTML', false, `<img src="${dataUrl}" style="max-width: 100%; height: auto; border-radius: 0.5rem; margin: 0.5rem 0;" />`);
+            };
+            reader.readAsDataURL(file);
+        }
+        // Reset file input value to allow selecting the same file again
+        if(event.target) {
+            event.target.value = '';
+        }
+    };
     
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
@@ -120,8 +144,22 @@ export default function PresentSimplePage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                              <div className="border rounded-md">
+                                <ScrollArea className="h-72">
+                                    <div
+                                        ref={editorRef}
+                                        id="explanation"
+                                        contentEditable={isEditing}
+                                        dangerouslySetInnerHTML={{ __html: content }}
+                                        className={cn(
+                                            "prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full p-4 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                                            isEditing && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                            !isEditing && "bg-muted/50 select-text cursor-text"
+                                        )}
+                                        suppressContentEditableWarning={true}
+                                    />
+                                </ScrollArea>
                                 {isEditing && (
-                                    <div className="p-2 border-b flex items-center flex-wrap gap-1">
+                                    <div className="p-2 border-t flex items-center flex-wrap gap-1">
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('bold')}} title="Bold"><Bold className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('italic')}} title="Italic"><Italic className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('underline')}} title="Underline"><Underline className="h-4 w-4"/></Button>
@@ -132,6 +170,13 @@ export default function PresentSimplePage() {
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('justifyCenter')}} title="Align Center"><AlignCenter className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('justifyRight')}} title="Align Right"><AlignRight className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('justifyFull')}} title="Align Justify"><AlignJustify className="h-4 w-4"/></Button>
+                                        
+                                        <div className="h-6 border-l mx-2"></div>
+                                         <Button variant="ghost" size="icon" onMouseDown={(e) => { e.preventDefault(); handleInsertImageClick(); }} title="Insert Image">
+                                            <ImageIcon className="h-4 w-4" />
+                                        </Button>
+                                        <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+
 
                                         <div className="h-6 border-l mx-2"></div>
 
@@ -148,34 +193,20 @@ export default function PresentSimplePage() {
                                             </SelectContent>
                                         </Select>
 
-                                        <Select>
+                                        <Select onValueChange={(color) => handleFormat('foreColor', color)}>
                                             <SelectTrigger className="w-[120px] h-9 ml-2">
                                                  <Palette className="h-4 w-4 mr-2" />
                                                 <SelectValue placeholder="Color" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="black" onMouseDown={(e) => {e.preventDefault(); handleFormat('foreColor', 'black')}}>Black</SelectItem>
-                                                <SelectItem value="red" onMouseDown={(e) => {e.preventDefault(); handleFormat('foreColor', 'red')}}>Red</SelectItem>
-                                                <SelectItem value="blue" onMouseDown={(e) => {e.preventDefault(); handleFormat('foreColor', 'blue')}}>Blue</SelectItem>
-                                                <SelectItem value="green" onMouseDown={(e) => {e.preventDefault(); handleFormat('foreColor', 'green')}}>Green</SelectItem>
+                                                <SelectItem value="black">Black</SelectItem>
+                                                <SelectItem value="red">Red</SelectItem>
+                                                <SelectItem value="blue">Blue</SelectItem>
+                                                <SelectItem value="green">Green</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
                                 )}
-                                <ScrollArea className="h-72">
-                                    <div
-                                        ref={editorRef}
-                                        id="explanation"
-                                        contentEditable={isEditing}
-                                        dangerouslySetInnerHTML={{ __html: content }}
-                                        className={cn(
-                                            "prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full p-4 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-                                            isEditing && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                                            !isEditing && "bg-muted/50 select-text cursor-text"
-                                        )}
-                                        suppressContentEditableWarning={true}
-                                    />
-                                </ScrollArea>
                             </div>
                         </CardContent>
                     </Card>
@@ -204,3 +235,5 @@ export default function PresentSimplePage() {
 
     
 }
+
+    
