@@ -47,26 +47,6 @@ export default function StudentMessagesPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (userId) {
-      const currentStudent = getUserByIdFromClient(userId);
-      setStudent(currentStudent || null);
-      if (currentStudent?.supervisorId) {
-        const currentSupervisor = getUserByIdFromClient(
-          currentStudent.supervisorId
-        );
-        setSupervisor(currentSupervisor || null);
-        const studentMessages = getSupervisorMessagesForStudent(userId, currentStudent.supervisorId);
-        setMessages(studentMessages);
-        markMessagesAsRead(userId, currentStudent.supervisorId, studentMessages);
-      }
-    }
-  }, [userId]);
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
-  
   const markMessagesAsRead = (studentId: string, supervisorId: string, currentMessages: SupervisorMessage[]) => {
       const hasUnread = currentMessages.some(m => !m.read && m.senderId === supervisorId);
       if (!hasUnread) return;
@@ -93,6 +73,26 @@ export default function StudentMessagesPage() {
       }
   }
 
+  useEffect(() => {
+    if (userId) {
+      const currentStudent = getUserByIdFromClient(userId);
+      setStudent(currentStudent || null);
+      if (currentStudent?.supervisorId) {
+        const currentSupervisor = getUserByIdFromClient(
+          currentStudent.supervisorId
+        );
+        setSupervisor(currentSupervisor || null);
+        const studentMessages = getSupervisorMessagesForStudent(userId, currentStudent.supervisorId);
+        setMessages(studentMessages);
+        markMessagesAsRead(userId, currentStudent.supervisorId, studentMessages);
+      }
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+  
   const handleSendMessage = () => {
     if (!newMessage.trim() || !userId || !supervisor?.id) return;
 
@@ -215,3 +215,5 @@ export default function StudentMessagesPage() {
     </div>
   );
 }
+
+    
