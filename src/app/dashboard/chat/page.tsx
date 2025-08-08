@@ -130,7 +130,13 @@ export default function ChatPage() {
         setConversations(partners);
         if (contactToSelect) {
             const contact = partners.find(p => p.id === contactToSelect);
-            if (contact) handleSelectContact(contact);
+            if (contact) {
+              handleSelectContact(contact)
+            } else {
+              // Clear selection if contact not found (e.g. invalid URL)
+              setSelectedContact(null);
+              setMessages([]);
+            }
         }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -232,6 +238,12 @@ export default function ChatPage() {
         savePeerMessage(message);
     }
     
+    // This is a bit of a trick to force a re-render of messages after sending
+    // It's not ideal, but works for this localStorage-based demo.
+    setTimeout(() => {
+        handleSelectContact(selectedContact);
+    }, 100);
+
     loadConversations();
     setNewMessage("");
   };
@@ -288,7 +300,7 @@ export default function ChatPage() {
             </CardContent>
           </ScrollArea>
         </div>
-        <div className="flex flex-col h-[calc(100vh-21rem)]">
+        <div className="flex flex-col h-[calc(100vh-17rem)]">
           {selectedContact ? (
             <>
               <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
