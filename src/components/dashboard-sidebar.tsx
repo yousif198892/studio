@@ -46,6 +46,7 @@ type DashboardSidebarProps = {
   adminsCount?: number;
   learningWordsCount?: number;
   masteredWordsCount?: number;
+  chatConversationsCount?: number;
 };
 
 export function DashboardSidebar({ 
@@ -57,6 +58,7 @@ export function DashboardSidebar({
   adminsCount = 0,
   learningWordsCount = 0,
   masteredWordsCount = 0,
+  chatConversationsCount = 0,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const userRole = user.role;
@@ -95,6 +97,7 @@ export function DashboardSidebar({
         icon: <MessageSquare />,
         roles: ["student"],
         unreadCount: unreadChatCount,
+        totalCount: chatConversationsCount,
     },
     {
         href: `/dashboard/words?userId=${user.id}`,
@@ -123,6 +126,7 @@ export function DashboardSidebar({
         roles: ["supervisor"],
         requiresMainAdmin: false,
         unreadCount: unreadChatCount,
+        totalCount: chatConversationsCount,
     },
      {
       href: `/dashboard/messages?userId=${user.id}`,

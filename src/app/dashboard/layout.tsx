@@ -27,8 +27,10 @@ export default function DashboardLayout({
   const [adminsCount, setAdminsCount] = useState(0);
   const [learningWordsCount, setLearningWordsCount] = useState(0);
   const [masteredWordsCount, setMasteredWordsCount] = useState(0);
+  const [chatConversationsCount, setChatConversationsCount] = useState(0);
 
-  const fetchUserAndCounts = () => {
+
+  const fetchUserAndCounts = useCallback(() => {
     const userId = searchParams?.get('userId') as string;
     
     if (!userId) {
@@ -59,6 +61,7 @@ export default function DashboardLayout({
           
           const students = getStudentsBySupervisorIdFromClient(userId);
           setStudentsCount(students.length);
+          setChatConversationsCount(students.length);
 
       } else if (foundUser.role === 'student' && foundUser.supervisorId) {
            const studentMessages = getSupervisorMessagesForStudent(foundUser.id, foundUser.supervisorId);
@@ -70,6 +73,7 @@ export default function DashboardLayout({
            const mastered = studentWords.filter(w => w.strength === -1).length;
            setLearningWordsCount(learning);
            setMasteredWordsCount(mastered);
+           setChatConversationsCount(foundUser.supervisorId ? 1 : 0);
       }
 
     } else {
@@ -77,13 +81,11 @@ export default function DashboardLayout({
        redirect("/login");
     }
     setLoading(false);
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
-    // Initial fetch
     fetchUserAndCounts();
-
-    // Set up a listener for storage changes to keep counts in sync
     const handleStorageChange = () => {
       fetchUserAndCounts();
     };
@@ -92,8 +94,7 @@ export default function DashboardLayout({
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParams]);
+  }, [fetchUserAndCounts]);
 
   if (loading) {
     return null; // Or a loading spinner
@@ -116,6 +117,7 @@ export default function DashboardLayout({
             adminsCount={adminsCount}
             learningWordsCount={learningWordsCount}
             masteredWordsCount={masteredWordsCount}
+            chatConversationsCount={chatConversationsCount}
           />
           <div className="flex-1 flex flex-col">
             <DashboardHeader />
