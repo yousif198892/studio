@@ -5,7 +5,7 @@ import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { Message, SupervisorMessage, User, getMessages, getSupervisorMessagesForSupervisor, Word, getWordsBySupervisor, getAllUsers } from "@/lib/data";
+import { Message, SupervisorMessage, User, getMessages, getSupervisorMessagesForSupervisor, Word, getWordsBySupervisor, getAllUsers, getWordsForStudent } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { getAllUsersFromClient, getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
 
@@ -25,6 +25,8 @@ export default function DashboardLayout({
   const [wordsCount, setWordsCount] = useState(0);
   const [studentsCount, setStudentsCount] = useState(0);
   const [adminsCount, setAdminsCount] = useState(0);
+  const [learningWordsCount, setLearningWordsCount] = useState(0);
+  const [masteredWordsCount, setMasteredWordsCount] = useState(0);
 
 
   useEffect(() => {
@@ -66,6 +68,12 @@ export default function DashboardLayout({
              const studentMessages = getSupervisorMessagesForStudent(userId, foundUser.supervisorId);
              const unread = studentMessages.filter(m => !m.read && m.senderId !== userId).length;
              setUnreadChatCount(unread);
+
+             const studentWords = getWordsForStudent(userId);
+             const learning = studentWords.filter(w => w.strength >= 0).length;
+             const mastered = studentWords.filter(w => w.strength === -1).length;
+             setLearningWordsCount(learning);
+             setMasteredWordsCount(mastered);
         }
 
       } else {
@@ -96,6 +104,8 @@ export default function DashboardLayout({
             wordsCount={wordsCount}
             studentsCount={studentsCount}
             adminsCount={adminsCount}
+            learningWordsCount={learningWordsCount}
+            masteredWordsCount={masteredWordsCount}
           />
           <div className="flex-1 flex flex-col">
             <DashboardHeader />

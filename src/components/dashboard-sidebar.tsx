@@ -44,6 +44,8 @@ type DashboardSidebarProps = {
   wordsCount?: number;
   studentsCount?: number;
   adminsCount?: number;
+  learningWordsCount?: number;
+  masteredWordsCount?: number;
 };
 
 export function DashboardSidebar({ 
@@ -53,6 +55,8 @@ export function DashboardSidebar({
   wordsCount = 0,
   studentsCount = 0,
   adminsCount = 0,
+  learningWordsCount = 0,
+  masteredWordsCount = 0,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const userRole = user.role;
@@ -76,12 +80,14 @@ export function DashboardSidebar({
         label: 'Learning Words',
         icon: <GraduationCap />,
         roles: ["student"],
+        totalCount: learningWordsCount,
     },
     {
         href: `/dashboard/mastered-words?userId=${user.id}`,
         label: 'Mastered Words',
         icon: <Trophy />,
         roles: ["student"],
+        totalCount: masteredWordsCount,
     },
     {
         href: `/dashboard/student-messages?userId=${user.id}`,
@@ -174,10 +180,10 @@ export function DashboardSidebar({
                     <span>{item.label}</span>
                   </div>
                    <div className="ml-auto flex items-center gap-2">
-                    {item.totalCount > 0 && (
+                    {(item.totalCount ?? 0) > 0 && (
                       <SidebarMenuBadge>{item.totalCount}</SidebarMenuBadge>
                     )}
-                    {item.unreadCount > 0 && (
+                    {(item.unreadCount ?? 0) > 0 && (
                       <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
                           {item.unreadCount}
                       </SidebarMenuBadge>
