@@ -158,6 +158,9 @@ export default function ChatPage() {
       if (contact) {
         handleSelectContact(contact);
       }
+    } else {
+        setSelectedContact(null);
+        setMessages([]);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversations, contactToSelect]);
@@ -311,7 +314,7 @@ export default function ChatPage() {
             </CardContent>
           </ScrollArea>
         </div>
-        <div className="flex flex-col h-[calc(100vh-12rem)]">
+        <div className="flex flex-col h-[calc(100vh-10rem)]">
           {selectedContact ? (
             <>
               <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
