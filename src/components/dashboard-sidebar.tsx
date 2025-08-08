@@ -41,9 +41,19 @@ type DashboardSidebarProps = {
   user: User;
   unreadChatCount?: number;
   unreadRequestsCount?: number;
+  wordsCount?: number;
+  studentsCount?: number;
+  adminsCount?: number;
 };
 
-export function DashboardSidebar({ user, unreadChatCount = 0, unreadRequestsCount = 0 }: DashboardSidebarProps) {
+export function DashboardSidebar({ 
+  user, 
+  unreadChatCount = 0, 
+  unreadRequestsCount = 0,
+  wordsCount = 0,
+  studentsCount = 0,
+  adminsCount = 0,
+}: DashboardSidebarProps) {
   const pathname = usePathname();
   const userRole = user.role;
   const { t } = useLanguage();
@@ -78,13 +88,14 @@ export function DashboardSidebar({ user, unreadChatCount = 0, unreadRequestsCoun
         label: 'Chat',
         icon: <MessageSquare />,
         roles: ["student"],
-        badgeCount: unreadChatCount,
+        unreadCount: unreadChatCount,
     },
     {
         href: `/dashboard/words?userId=${user.id}`,
         label: t('sidebar.myWords'),
         icon: <BookOpen />,
         roles: ["supervisor"],
+        totalCount: wordsCount,
     },
     {
       href: `/dashboard/add-word?userId=${user.id}`,
@@ -97,6 +108,7 @@ export function DashboardSidebar({ user, unreadChatCount = 0, unreadRequestsCoun
         label: t('sidebar.myStudents'),
         icon: <Users />,
         roles: ["supervisor"],
+        totalCount: studentsCount,
     },
     {
         href: `/dashboard/chat?userId=${user.id}`,
@@ -104,7 +116,7 @@ export function DashboardSidebar({ user, unreadChatCount = 0, unreadRequestsCoun
         icon: <MessageSquare />,
         roles: ["supervisor"],
         requiresMainAdmin: false,
-        badgeCount: unreadChatCount,
+        unreadCount: unreadChatCount,
     },
      {
       href: `/dashboard/messages?userId=${user.id}`,
@@ -112,7 +124,7 @@ export function DashboardSidebar({ user, unreadChatCount = 0, unreadRequestsCoun
       icon: <Shield />,
       roles: ["supervisor"],
       requiresMainAdmin: true,
-      badgeCount: unreadRequestsCount,
+      unreadCount: unreadRequestsCount,
     },
     {
       href: `/dashboard/admins?userId=${user.id}`,
@@ -120,6 +132,7 @@ export function DashboardSidebar({ user, unreadChatCount = 0, unreadRequestsCoun
       icon: <Shield />,
       roles: ["supervisor"],
       requiresMainAdmin: true,
+      totalCount: adminsCount,
     },
     {
       href: `/dashboard/profile?userId=${user.id}`,
@@ -160,11 +173,16 @@ export function DashboardSidebar({ user, unreadChatCount = 0, unreadRequestsCoun
                     {item.icon}
                     <span>{item.label}</span>
                   </div>
-                   {item.badgeCount > 0 && (
-                    <SidebarMenuBadge className="ml-auto bg-destructive text-destructive-foreground">
-                        {item.badgeCount}
-                    </SidebarMenuBadge>
-                  )}
+                   <div className="ml-auto flex items-center gap-2">
+                    {item.totalCount > 0 && (
+                      <SidebarMenuBadge>{item.totalCount}</SidebarMenuBadge>
+                    )}
+                    {item.unreadCount > 0 && (
+                      <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
+                          {item.unreadCount}
+                      </SidebarMenuBadge>
+                    )}
+                   </div>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

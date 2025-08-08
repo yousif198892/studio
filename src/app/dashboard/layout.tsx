@@ -5,9 +5,9 @@ import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { Message, SupervisorMessage, User, getMessages, getSupervisorMessagesForSupervisor } from "@/lib/data";
+import { Message, SupervisorMessage, User, getMessages, getSupervisorMessagesForSupervisor, Word, getWordsBySupervisor, getAllUsers } from "@/lib/data";
 import { useEffect, useState } from "react";
-import { getUserByIdFromClient } from "@/lib/client-data";
+import { getAllUsersFromClient, getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
 
 export default function DashboardLayout({
   children,
@@ -18,8 +18,14 @@ export default function DashboardLayout({
   const pathname = usePathname(); // Add pathname to track navigation
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  
+  // State for counts
   const [unreadChatCount, setUnreadChatCount] = useState(0);
   const [unreadRequestsCount, setUnreadRequestsCount] = useState(0);
+  const [wordsCount, setWordsCount] = useState(0);
+  const [studentsCount, setStudentsCount] = useState(0);
+  const [adminsCount, setAdminsCount] = useState(0);
+
 
   useEffect(() => {
     const fetchUserAndCounts = () => {
@@ -32,19 +38,28 @@ export default function DashboardLayout({
       }
       
       const foundUser = getUserByIdFromClient(userId);
+      const allUsers = getAllUsersFromClient();
       
       if (foundUser) {
         setUser(foundUser);
+        
         // Calculate counts based on role
         if (foundUser.role === 'supervisor') {
             if (foundUser.isMainAdmin) {
                 const adminMessages = getMessages();
-                // Assuming admin requests are always "new" until deleted.
                 setUnreadRequestsCount(adminMessages.length);
+                const otherAdmins = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin).length;
+                setAdminsCount(otherAdmins);
             }
             const supervisorMessages = getSupervisorMessagesForSupervisor(foundUser.id);
             const unread = supervisorMessages.filter(m => !m.read && m.senderId !== userId).length;
             setUnreadChatCount(unread);
+
+            const words = getWordsBySupervisor(userId);
+            setWordsCount(words.length);
+            
+            const students = getStudentsBySupervisorIdFromClient(userId);
+            setStudentsCount(students.length);
 
         } else if (foundUser.role === 'student' && foundUser.supervisorId) {
              const { getSupervisorMessagesForStudent } = require('@/lib/data');
@@ -78,6 +93,9 @@ export default function DashboardLayout({
             user={user} 
             unreadChatCount={unreadChatCount} 
             unreadRequestsCount={unreadRequestsCount}
+            wordsCount={wordsCount}
+            studentsCount={studentsCount}
+            adminsCount={adminsCount}
           />
           <div className="flex-1 flex flex-col">
             <DashboardHeader />
