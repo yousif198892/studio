@@ -7,10 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { TestTube2, Bold, Italic, Underline } from 'lucide-react';
+import { TestTube2, Bold, Italic, Underline, Palette } from 'lucide-react';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TENSE_NAME = "Present Simple";
 const STORAGE_KEY = `grammar_explanation_${TENSE_NAME.replace(/\s/g, '_')}`;
@@ -41,8 +40,8 @@ export default function PresentSimplePage() {
         }
     }
     
-    const handleFormat = (command: string) => {
-        document.execCommand(command, false, undefined);
+    const handleFormat = (command: string, value?: string) => {
+        document.execCommand(command, false, value);
         editorRef.current?.focus();
     }
 
@@ -69,6 +68,18 @@ export default function PresentSimplePage() {
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('bold')}}><Bold className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('italic')}}><Italic className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('underline')}}><Underline className="h-4 w-4"/></Button>
+                                        <Select onValueChange={(color) => handleFormat('foreColor', color)}>
+                                            <SelectTrigger className="w-[120px] h-9 ml-2">
+                                                 <Palette className="h-4 w-4 mr-2" />
+                                                <SelectValue placeholder="Color" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="black">Black</SelectItem>
+                                                <SelectItem value="red">Red</SelectItem>
+                                                <SelectItem value="blue">Blue</SelectItem>
+                                                <SelectItem value="green">Green</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </div>
                                     <div
                                         ref={editorRef}
@@ -76,7 +87,7 @@ export default function PresentSimplePage() {
                                         contentEditable={true}
                                         dangerouslySetInnerHTML={{ __html: explanation }}
                                         onBlur={(e) => setExplanation(e.currentTarget.innerHTML)}
-                                        className="prose min-h-[300px] w-full rounded-md p-4 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                        className="prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full rounded-md p-4 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                                         suppressContentEditableWarning={true}
                                     />
                                 </div>
