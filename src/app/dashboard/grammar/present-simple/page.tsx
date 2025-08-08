@@ -1,15 +1,16 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { TestTube2 } from 'lucide-react';
+import { TestTube2, Bold, Italic, Underline } from 'lucide-react';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 const TENSE_NAME = "Present Simple";
 const STORAGE_KEY = `grammar_explanation_${TENSE_NAME.replace(/\s/g, '_')}`;
@@ -19,6 +20,7 @@ export default function PresentSimplePage() {
     const userId = searchParams.get('userId');
     const [explanation, setExplanation] = useState("");
     const { toast } = useToast();
+    const editorRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const savedExplanation = localStorage.getItem(STORAGE_KEY);
@@ -28,11 +30,20 @@ export default function PresentSimplePage() {
     }, []);
 
     const handleSave = () => {
-        localStorage.setItem(STORAGE_KEY, explanation);
-        toast({
-            title: "Success!",
-            description: "Explanation for Present Simple has been saved."
-        });
+        if (editorRef.current) {
+            const content = editorRef.current.innerHTML;
+            localStorage.setItem(STORAGE_KEY, content);
+            setExplanation(content);
+            toast({
+                title: "Success!",
+                description: "Explanation for Present Simple has been saved."
+            });
+        }
+    }
+    
+    const handleFormat = (command: string) => {
+        document.execCommand(command, false, undefined);
+        editorRef.current?.focus();
     }
 
     return (
@@ -53,13 +64,22 @@ export default function PresentSimplePage() {
                         <CardContent className="space-y-4">
                             <div>
                                 <Label htmlFor="explanation" className="sr-only">Explanation</Label>
-                                <Textarea
-                                    id="explanation"
-                                    value={explanation}
-                                    onChange={(e) => setExplanation(e.target.value)}
-                                    placeholder={`e.g., Use the Present Simple for habits, routines, and general truths...`}
-                                    rows={15}
-                                />
+                                 <div className="border rounded-md">
+                                    <div className="p-2 border-b flex items-center gap-1">
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('bold')}}><Bold className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('italic')}}><Italic className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('underline')}}><Underline className="h-4 w-4"/></Button>
+                                    </div>
+                                    <div
+                                        ref={editorRef}
+                                        id="explanation"
+                                        contentEditable={true}
+                                        dangerouslySetInnerHTML={{ __html: explanation }}
+                                        onBlur={(e) => setExplanation(e.currentTarget.innerHTML)}
+                                        className="prose min-h-[300px] w-full rounded-md p-4 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                        suppressContentEditableWarning={true}
+                                    />
+                                </div>
                             </div>
                             <Button onClick={handleSave}>Save Explanation</Button>
                         </CardContent>
