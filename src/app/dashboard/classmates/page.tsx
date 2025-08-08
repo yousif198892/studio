@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { User, PeerMessage, getPeerConversationsForStudent } from "@/lib/data";
+import { User, getConversationsForStudent } from "@/lib/data";
 import { getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,11 +29,14 @@ export default function ClassmatesPage() {
                     setClassmates(foundClassmates);
 
                     // Get unread message counts for each classmate
-                    const conversations = getPeerConversationsForStudent(userId);
+                    const { peer: peerConversations } = getConversationsForStudent(userId);
                     const counts: Record<string, number> = {};
-                    for (const classmateId in conversations) {
-                        const unreadCount = conversations[classmateId].filter(m => !m.read && m.senderId === classmateId).length;
-                        counts[classmateId] = unreadCount;
+                    for (const classmate of foundClassmates) {
+                        const conversation = peerConversations[classmate.id] || [];
+                        const unreadCount = conversation.filter(m => !m.read && m.senderId === classmate.id).length;
+                        if (unreadCount > 0) {
+                            counts[classmate.id] = unreadCount;
+                        }
                     }
                     setUnreadCounts(counts);
                 }
@@ -62,6 +65,7 @@ export default function ClassmatesPage() {
                     {classmates.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {classmates.map(classmate => {
+                                const unreadCount = unreadCounts[classmate.id] || 0;
                                 return (
                                     <div key={classmate.id} className="p-4 border rounded-lg flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
@@ -77,6 +81,14 @@ export default function ClassmatesPage() {
                                                 <p className="text-sm text-muted-foreground">{classmate.email}</p>
                                             </div>
                                         </div>
+                                         <Link href={`/dashboard/chat?userId=${userId}&contactId=${classmate.id}`} passHref>
+                                            <Button variant="ghost" size="icon" className="relative">
+                                                <MessageSquare className="h-5 w-5"/>
+                                                {unreadCount > 0 && (
+                                                    <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{unreadCount}</Badge>
+                                                )}
+                                            </Button>
+                                        </Link>
                                     </div>
                                 );
                             })}

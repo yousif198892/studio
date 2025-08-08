@@ -9,11 +9,13 @@ import {
   saveSupervisorMessage,
   deleteSupervisorMessage,
   deleteConversation,
-  getStudentsBySupervisorIdFromClient,
-  getUserByIdFromClient,
   savePeerMessage,
   PeerMessage,
 } from "@/lib/data";
+import {
+  getStudentsBySupervisorIdFromClient,
+  getUserByIdFromClient,
+} from "@/lib/client-data";
 import {
   Card,
   CardContent,
@@ -290,7 +292,7 @@ export default function ChatPage() {
             </CardContent>
           </ScrollArea>
         </div>
-        <div className="flex flex-col h-[calc(100vh-14rem)]">
+        <div className="flex flex-col h-[calc(100vh-21rem)]">
           {selectedContact ? (
             <>
               <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
