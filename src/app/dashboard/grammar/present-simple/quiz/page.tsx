@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { generateGrammarQuiz, GrammarQuizQuestion } from '@/ai/flows/generate-grammar-quiz';
+import { generateGrammarQuiz } from '@/ai/flows/generate-grammar-quiz';
+import type { GrammarQuizQuestion } from '@/ai/flows/generate-grammar-quiz';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';

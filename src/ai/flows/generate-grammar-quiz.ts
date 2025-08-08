@@ -67,8 +67,8 @@ const prompt = ai.definePrompt({
 });
 
 
-// Define the main flow function
-export const generateGrammarQuiz = ai.defineFlow(
+// Define the internal flow function
+const generateGrammarQuizFlow = ai.defineFlow(
   {
     name: 'generateGrammarQuizFlow',
     inputSchema: GenerateGrammarQuizInputSchema,
@@ -87,3 +87,8 @@ export const generateGrammarQuiz = ai.defineFlow(
     return output;
   }
 );
+
+// Export a simple async wrapper function for the server action
+export async function generateGrammarQuiz(input: GenerateGrammarQuizInput): Promise<GenerateGrammarQuizOutput> {
+    return generateGrammarQuizFlow(input);
+}
