@@ -34,15 +34,33 @@ export default function PresentSimplePage() {
 
     const handleSave = () => {
         if (editorRef.current) {
-            const newContent = editorRef.current.innerHTML;
-            localStorage.setItem(STORAGE_KEY, newContent);
-            setExplanation(newContent);
-            setContent(newContent);
-            setIsEditing(false);
-            toast({
-                title: "Success!",
-                description: "Explanation for Present Simple has been saved."
-            });
+            try {
+                const newContent = editorRef.current.innerHTML;
+                localStorage.setItem(STORAGE_KEY, newContent);
+                setExplanation(newContent);
+                setContent(newContent);
+                setIsEditing(false);
+                toast({
+                    title: "Success!",
+                    description: "Explanation for Present Simple has been saved."
+                });
+            } catch (error) {
+                if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.code === 22)) {
+                     toast({
+                        title: "Error: Content Too Large",
+                        description: "The explanation is too large to save. Please reduce its size or complexity.",
+                        variant: "destructive",
+                        duration: 10000,
+                    });
+                } else {
+                    toast({
+                        title: "Error",
+                        description: "An unknown error occurred while saving.",
+                        variant: "destructive",
+                    });
+                }
+                console.error("Failed to save to localStorage:", error);
+            }
         }
     }
     
@@ -138,10 +156,10 @@ export default function PresentSimplePage() {
                                                 <SelectValue placeholder="Color" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="black" onSelect={() => handleFormat('foreColor', 'black')}>Black</SelectItem>
-                                                <SelectItem value="red" onSelect={() => handleFormat('foreColor', 'red')}>Red</SelectItem>
-                                                <SelectItem value="blue" onSelect={() => handleFormat('foreColor', 'blue')}>Blue</SelectItem>
-                                                <SelectItem value="green" onSelect={() => handleFormat('foreColor', 'green')}>Green</SelectItem>
+                                                <SelectItem value="black" onMouseDown={(e) => {e.preventDefault(); handleFormat('foreColor', 'black')}}>Black</SelectItem>
+                                                <SelectItem value="red" onMouseDown={(e) => {e.preventDefault(); handleFormat('foreColor', 'red')}}>Red</SelectItem>
+                                                <SelectItem value="blue" onMouseDown={(e) => {e.preventDefault(); handleFormat('foreColor', 'blue')}}>Blue</SelectItem>
+                                                <SelectItem value="green" onMouseDown={(e) => {e.preventDefault(); handleFormat('foreColor', 'green')}}>Green</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -173,3 +191,4 @@ export default function PresentSimplePage() {
     );
 
     
+}
