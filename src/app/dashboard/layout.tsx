@@ -34,7 +34,6 @@ export default function DashboardLayout({
     const userId = searchParams?.get('userId') as string;
     
     if (!userId) {
-      setLoading(false);
       redirect("/login");
       return;
     }
@@ -80,12 +79,14 @@ export default function DashboardLayout({
        console.error("User not found, will redirect.");
        redirect("/login");
     }
-    setLoading(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   useEffect(() => {
+    setLoading(true);
     fetchUserAndCounts();
+    setLoading(false);
+    
     const handleStorageChange = () => {
       fetchUserAndCounts();
     };
@@ -94,7 +95,7 @@ export default function DashboardLayout({
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     };
-  }, [fetchUserAndCounts]);
+  }, [fetchUserAndCounts, pathname, searchParams]); // Re-run if path or params change
 
   if (loading) {
     return null; // Or a loading spinner

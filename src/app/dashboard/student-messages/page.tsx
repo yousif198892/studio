@@ -50,28 +50,25 @@ export default function StudentMessagesPage() {
   const { toast } = useToast();
   
   const markMessagesAsRead = useCallback((studentId: string, supervisorId: string) => {
-    const studentMessages = getSupervisorMessagesForStudent(studentId, supervisorId);
-    const hasUnread = studentMessages.some(m => !m.read && m.senderId === supervisorId);
-
-    if (!hasUnread) return;
-
+    if (typeof window === 'undefined') return;
+    
     try {
-      let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
-      let wasChanged = false;
-      const updatedStoredMessages = allStoredMessages.map(m => {
-        if (m.studentId === studentId && m.senderId === supervisorId && !m.read) {
-          wasChanged = true;
-          return { ...m, read: true };
-        }
-        return m;
-      });
+        let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
+        let wasChanged = false;
+        const updatedStoredMessages = allStoredMessages.map(m => {
+            if (m.studentId === studentId && m.supervisorId === supervisorId && m.senderId === supervisorId && !m.read) {
+                wasChanged = true;
+                return { ...m, read: true };
+            }
+            return m;
+        });
 
-      if (wasChanged) {
-        localStorage.setItem('supervisorMessages', JSON.stringify(updatedStoredMessages));
-        window.dispatchEvent(new Event('storage'));
-      }
+        if (wasChanged) {
+            localStorage.setItem('supervisorMessages', JSON.stringify(updatedStoredMessages));
+            window.dispatchEvent(new Event('storage')); // Notify other tabs/components
+        }
     } catch (e) {
-      console.error("Failed to update read status", e);
+        console.error("Failed to update read status", e);
     }
   }, []);
 
@@ -85,6 +82,7 @@ export default function StudentMessagesPage() {
         if (currentSupervisor) {
             const studentMessages = getSupervisorMessagesForStudent(userId, currentSupervisor.id);
             setMessages(studentMessages);
+            // This is the critical part: mark as read after fetching data.
             markMessagesAsRead(userId, currentSupervisor.id);
         }
       }
@@ -93,6 +91,12 @@ export default function StudentMessagesPage() {
 
   useEffect(() => {
     fetchAndSetData();
+     // Listen for storage changes to update chat in real-time
+    const handleStorageChange = () => fetchAndSetData();
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, [fetchAndSetData]);
 
   useEffect(() => {
@@ -114,6 +118,7 @@ export default function StudentMessagesPage() {
 
     saveSupervisorMessage(message);
     
+    // Re-fetch messages after sending to update the view
     const updatedMessages = getSupervisorMessagesForStudent(userId, supervisor.id);
     setMessages(updatedMessages);
 
