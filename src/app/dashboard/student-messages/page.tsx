@@ -170,7 +170,7 @@ export default function StudentMessagesPage() {
             </CardContent>
           </ScrollArea>
         </div>
-        <div className="flex flex-col h-[calc(100vh-12rem)]">
+        <div className="flex flex-col h-[calc(100vh-10rem)]">
             <>
               <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
                 <div className="flex items-center gap-4">
@@ -270,3 +270,5 @@ export default function StudentMessagesPage() {
     </div>
   );
 }
+
+    
