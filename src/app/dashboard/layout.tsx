@@ -5,7 +5,7 @@ import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { Message, SupervisorMessage, User, getMessages, getSupervisorMessagesForSupervisor, Word, getWordsBySupervisor, getAllUsers, getWordsForStudent, getSupervisorMessagesForStudent } from "@/lib/data";
+import { User, getMessages, getSupervisorMessagesForSupervisor, Word, getWordsBySupervisor, getAllUsers, getWordsForStudent, getSupervisorMessagesForStudent } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { getAllUsersFromClient, getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
 
@@ -15,7 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
-  const pathname = usePathname(); // Add pathname to track navigation
+  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -30,8 +30,8 @@ export default function DashboardLayout({
 
 
   useEffect(() => {
+    // This function will run on the client side after hydration.
     const fetchUserAndCounts = () => {
-      // In a real app, this would come from a session or a more robust user management system.
       const userId = searchParams?.get('userId') as string;
       
       if (!userId) {
@@ -65,11 +65,11 @@ export default function DashboardLayout({
             setStudentsCount(students.length);
 
         } else if (foundUser.role === 'student' && foundUser.supervisorId) {
-             const studentMessages = getSupervisorMessagesForStudent(userId, foundUser.supervisorId);
-             const unread = studentMessages.filter(m => !m.read && m.senderId !== userId).length;
+             const studentMessages = getSupervisorMessagesForStudent(foundUser.id, foundUser.supervisorId);
+             const unread = studentMessages.filter(m => !m.read && m.senderId !== foundUser.id).length;
              setUnreadChatCount(unread);
 
-             const studentWords = getWordsForStudent(userId);
+             const studentWords = getWordsForStudent(foundUser.id);
              const learning = studentWords.filter(w => w.strength >= 0).length;
              const mastered = studentWords.filter(w => w.strength === -1).length;
              setLearningWordsCount(learning);
@@ -84,8 +84,13 @@ export default function DashboardLayout({
       }
       setLoading(false);
     }
-    fetchUserAndCounts();
-  }, [searchParams, pathname]); // Re-run effect when pathname changes
+
+    // Ensure this runs only on the client where localStorage is available.
+    if (typeof window !== 'undefined') {
+        fetchUserAndCounts();
+    }
+
+  }, [searchParams, pathname]);
 
   if (loading) {
     return null; // Or a loading spinner
