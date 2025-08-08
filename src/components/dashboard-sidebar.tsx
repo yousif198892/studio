@@ -18,6 +18,7 @@ import {
   Shield,
   Trophy,
   Target,
+  SpellCheck,
 } from "lucide-react";
 
 import {
@@ -97,9 +98,8 @@ export function DashboardSidebar({
         href: `/dashboard/chat?userId=${user.id}`,
         label: 'Chat',
         icon: <MessageSquare />,
-        roles: ["student"],
+        roles: ["student", "supervisor"],
         unreadCount: unreadChatCount,
-        totalCount: chatConversationsCount,
     },
     {
         href: `/dashboard/classmates?userId=${user.id}`,
@@ -122,20 +122,17 @@ export function DashboardSidebar({
       roles: ["supervisor"],
     },
     {
+        href: `/dashboard/grammar?userId=${user.id}`,
+        label: 'Grammar',
+        icon: <SpellCheck />,
+        roles: ["supervisor"],
+    },
+    {
         href: `/dashboard/students?userId=${user.id}`,
         label: t('sidebar.myStudents'),
         icon: <Users />,
         roles: ["supervisor"],
         totalCount: studentsCount,
-    },
-    {
-        href: `/dashboard/chat?userId=${user.id}`,
-        label: 'Chat',
-        icon: <MessageSquare />,
-        roles: ["supervisor"],
-        requiresMainAdmin: false,
-        unreadCount: unreadChatCount,
-        totalCount: chatConversationsCount,
     },
      {
       href: `/dashboard/messages?userId=${user.id}`,
