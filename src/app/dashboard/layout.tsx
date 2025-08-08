@@ -35,18 +35,19 @@ export default function DashboardLayout({
       const userId = searchParams?.get('userId') as string;
       
       if (!userId) {
+        setLoading(false);
         redirect("/login");
         return;
       }
       
       const foundUser = getUserByIdFromClient(userId);
-      const allUsers = getAllUsersFromClient();
       
       if (foundUser) {
         setUser(foundUser);
         
         // Calculate counts based on role
         if (foundUser.role === 'supervisor') {
+            const allUsers = getAllUsersFromClient();
             if (foundUser.isMainAdmin) {
                 const adminMessages = getMessages();
                 setRequestsCount(adminMessages.length);
@@ -77,7 +78,9 @@ export default function DashboardLayout({
 
       } else {
          console.error("User not found, redirecting to login.")
+         setLoading(false);
          redirect("/login");
+         return;
       }
       setLoading(false);
     }
