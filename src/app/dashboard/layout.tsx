@@ -28,13 +28,12 @@ export default function DashboardLayout({
   const [learningWordsCount, setLearningWordsCount] = useState(0);
   const [masteredWordsCount, setMasteredWordsCount] = useState(0);
 
-
-  const fetchUserAndCounts = useCallback(() => {
+  const fetchUserAndCounts = () => {
     const userId = searchParams?.get('userId') as string;
     
     if (!userId) {
       setLoading(false);
-      // We can't redirect from here during render, so we'll let the effect handle it.
+      redirect("/login");
       return;
     }
     
@@ -43,7 +42,6 @@ export default function DashboardLayout({
     if (foundUser) {
       setUser(foundUser);
       
-      // Calculate counts based on role
       if (foundUser.role === 'supervisor') {
           const allUsers = getAllUsersFromClient();
           if (foundUser.isMainAdmin) {
@@ -76,9 +74,10 @@ export default function DashboardLayout({
 
     } else {
        console.error("User not found, will redirect.");
+       redirect("/login");
     }
     setLoading(false);
-  }, [searchParams]);
+  };
 
   useEffect(() => {
     // Initial fetch
@@ -90,16 +89,11 @@ export default function DashboardLayout({
     };
     window.addEventListener('storage', handleStorageChange);
 
-    // Redirect if user is not found after initial check
-    if (!loading && !user) {
-        redirect("/login");
-    }
-
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     };
-
-  }, [fetchUserAndCounts, loading, user]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   if (loading) {
     return null; // Or a loading spinner
