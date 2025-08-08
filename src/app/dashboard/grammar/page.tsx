@@ -11,7 +11,9 @@ export default function GrammarPage() {
     const userId = searchParams.get('userId');
 
     const tenses = [
-        { name: "Present Simple", href: `/dashboard/grammar/present-simple?userId=${userId}` }
+        { name: "Present Simple", href: `/dashboard/grammar/present-simple?userId=${userId}` },
+        { name: "Past Simple", href: `/dashboard/grammar/past-simple?userId=${userId}` },
+        { name: "Present Continuous", href: `/dashboard/grammar/present-continuous?userId=${userId}` }
     ];
 
     return (

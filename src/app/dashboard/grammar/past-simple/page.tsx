@@ -6,14 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { TestTube2 } from 'lucide-react';
 import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
 
-const TENSE_NAME = "Present Simple";
+const TENSE_NAME = "Past Simple";
 
-export default function PresentSimplePage() {
+export default function PastSimplePage() {
     const searchParams = useSearchParams();
     const userId = searchParams.get('userId');
-    const { toast } = useToast();
 
     return (
         <div className="space-y-6">
@@ -31,7 +29,7 @@ export default function PresentSimplePage() {
                     </CardHeader>
                     <CardContent>
                         <Button asChild className="w-full">
-                            <Link href={`/dashboard/grammar/present-simple/quiz?userId=${userId}`}>
+                            <Link href={`/dashboard/grammar/past-simple/quiz?userId=${userId}`}>
                                 <TestTube2 className="mr-2 h-4 w-4" />
                                 Preview Test
                             </Link>
