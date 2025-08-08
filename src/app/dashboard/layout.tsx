@@ -5,7 +5,7 @@ import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { Message, SupervisorMessage, User, getMessages, getSupervisorMessagesForSupervisor, Word, getWordsBySupervisor, getAllUsers, getWordsForStudent } from "@/lib/data";
+import { Message, SupervisorMessage, User, getMessages, getSupervisorMessagesForSupervisor, Word, getWordsBySupervisor, getAllUsers, getWordsForStudent, getSupervisorMessagesForStudent } from "@/lib/data";
 import { useEffect, useState } from "react";
 import { getAllUsersFromClient, getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
 
@@ -64,7 +64,6 @@ export default function DashboardLayout({
             setStudentsCount(students.length);
 
         } else if (foundUser.role === 'student' && foundUser.supervisorId) {
-             const { getSupervisorMessagesForStudent } = require('@/lib/data');
              const studentMessages = getSupervisorMessagesForStudent(userId, foundUser.supervisorId);
              const unread = studentMessages.filter(m => !m.read && m.senderId !== userId).length;
              setUnreadChatCount(unread);
