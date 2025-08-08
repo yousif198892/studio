@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { TestTube2, Bold, Italic, Underline, Palette } from 'lucide-react';
+import { TestTube2, Bold, Italic, Underline, Palette, AlignLeft, AlignCenter, AlignRight, AlignJustify, CaseSensitive } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -64,10 +64,33 @@ export default function PresentSimplePage() {
                             <div>
                                 <Label htmlFor="explanation" className="sr-only">Explanation</Label>
                                  <div className="border rounded-md">
-                                    <div className="p-2 border-b flex items-center gap-1">
-                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('bold')}}><Bold className="h-4 w-4"/></Button>
-                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('italic')}}><Italic className="h-4 w-4"/></Button>
-                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('underline')}}><Underline className="h-4 w-4"/></Button>
+                                    <div className="p-2 border-b flex items-center flex-wrap gap-1">
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('bold')}} title="Bold"><Bold className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('italic')}} title="Italic"><Italic className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('underline')}} title="Underline"><Underline className="h-4 w-4"/></Button>
+                                        
+                                        <div className="h-6 border-l mx-2"></div>
+
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('justifyLeft')}} title="Align Left"><AlignLeft className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('justifyCenter')}} title="Align Center"><AlignCenter className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('justifyRight')}} title="Align Right"><AlignRight className="h-4 w-4"/></Button>
+                                        <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('justifyFull')}} title="Align Justify"><AlignJustify className="h-4 w-4"/></Button>
+
+                                        <div className="h-6 border-l mx-2"></div>
+
+                                        <Select onValueChange={(size) => handleFormat('fontSize', size)}>
+                                            <SelectTrigger className="w-[140px] h-9">
+                                                 <CaseSensitive className="h-4 w-4 mr-2" />
+                                                <SelectValue placeholder="Font Size" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="3">Normal</SelectItem>
+                                                <SelectItem value="5">Large</SelectItem>
+                                                <SelectItem value="7">Heading</SelectItem>
+                                                <SelectItem value="2">Small</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+
                                         <Select onValueChange={(color) => handleFormat('foreColor', color)}>
                                             <SelectTrigger className="w-[120px] h-9 ml-2">
                                                  <Palette className="h-4 w-4 mr-2" />
