@@ -53,7 +53,7 @@ export default function StudentMessagesPage() {
     if (typeof window === 'undefined') return;
     
     try {
-        let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
+        let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]' );
         let wasChanged = false;
         const updatedStoredMessages = allStoredMessages.map(m => {
             if (m.studentId === studentId && m.supervisorId === supervisorId && m.senderId === supervisorId && !m.read) {
@@ -82,8 +82,9 @@ export default function StudentMessagesPage() {
         if (currentSupervisor) {
             const studentMessages = getSupervisorMessagesForStudent(userId, currentSupervisor.id);
             setMessages(studentMessages);
-            // This is the critical part: mark as read after fetching data.
-            markMessagesAsRead(userId, currentSupervisor.id);
+            if (userId && currentSupervisor.id) {
+              markMessagesAsRead(userId, currentSupervisor.id);
+            }
         }
       }
     }
@@ -118,7 +119,6 @@ export default function StudentMessagesPage() {
 
     saveSupervisorMessage(message);
     
-    // Re-fetch messages after sending to update the view
     const updatedMessages = getSupervisorMessagesForStudent(userId, supervisor.id);
     setMessages(updatedMessages);
 
@@ -170,7 +170,7 @@ export default function StudentMessagesPage() {
             </CardContent>
           </ScrollArea>
         </div>
-        <div className="flex flex-col h-[calc(100vh-14rem)]">
+        <div className="flex flex-col h-[calc(100vh-12rem)]">
             <>
               <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
                 <div className="flex items-center gap-4">

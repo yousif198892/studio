@@ -259,7 +259,7 @@ export default function SupervisorChatPage() {
             </CardContent>
           </ScrollArea>
         </div>
-        <div className="flex flex-col h-[calc(100vh-14rem)]">
+        <div className="flex flex-col h-[calc(100vh-12rem)]">
           {selectedStudent ? (
             <>
               <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
