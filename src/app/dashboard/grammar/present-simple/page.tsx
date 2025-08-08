@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 const TENSE_NAME = "Present Simple";
 const STORAGE_KEY = `grammar_explanation_${TENSE_NAME.replace(/\s/g, '_')}`;
+const CONTENT_LIMIT = 2000000; // Approx 2MB to stay safely within localStorage limits
 
 export default function PresentSimplePage() {
     const searchParams = useSearchParams();
@@ -34,8 +35,19 @@ export default function PresentSimplePage() {
 
     const handleSave = () => {
         if (editorRef.current) {
+            const newContent = editorRef.current.innerHTML;
+
+            if (newContent.length > CONTENT_LIMIT) {
+                 toast({
+                    title: "Error: Content Too Large",
+                    description: `The explanation is too long. Please reduce its size. Limit: ${CONTENT_LIMIT} characters.`,
+                    variant: "destructive",
+                    duration: 10000,
+                });
+                return;
+            }
+
             try {
-                const newContent = editorRef.current.innerHTML;
                 localStorage.setItem(STORAGE_KEY, newContent);
                 setExplanation(newContent);
                 setContent(newContent);
@@ -108,22 +120,8 @@ export default function PresentSimplePage() {
                         </CardHeader>
                         <CardContent className="space-y-4">
                              <div className="border rounded-md">
-                                <ScrollArea className="h-72">
-                                    <div
-                                        ref={editorRef}
-                                        id="explanation"
-                                        contentEditable={isEditing}
-                                        dangerouslySetInnerHTML={{ __html: content }}
-                                        className={cn(
-                                            "prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full p-4 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
-                                            isEditing && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                                            !isEditing && "bg-muted/50 select-text cursor-text"
-                                        )}
-                                        suppressContentEditableWarning={true}
-                                    />
-                                </ScrollArea>
                                 {isEditing && (
-                                    <div className="p-2 border-t flex items-center flex-wrap gap-1">
+                                    <div className="p-2 border-b flex items-center flex-wrap gap-1">
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('bold')}} title="Bold"><Bold className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('italic')}} title="Italic"><Italic className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('underline')}} title="Underline"><Underline className="h-4 w-4"/></Button>
@@ -164,6 +162,20 @@ export default function PresentSimplePage() {
                                         </Select>
                                     </div>
                                 )}
+                                <ScrollArea className="h-72">
+                                    <div
+                                        ref={editorRef}
+                                        id="explanation"
+                                        contentEditable={isEditing}
+                                        dangerouslySetInnerHTML={{ __html: content }}
+                                        className={cn(
+                                            "prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full p-4 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                                            isEditing && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                            !isEditing && "bg-muted/50 select-text cursor-text"
+                                        )}
+                                        suppressContentEditableWarning={true}
+                                    />
+                                </ScrollArea>
                             </div>
                         </CardContent>
                     </Card>
