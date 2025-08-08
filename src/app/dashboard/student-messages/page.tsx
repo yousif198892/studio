@@ -52,7 +52,7 @@ export default function StudentMessagesPage() {
       if (!hasUnread) return;
       
       const updatedMessages = currentMessages.map(m => {
-          if (m.senderId === supervisorId) {
+          if (m.senderId === supervisorId) { // Only mark messages FROM supervisor as read
               return { ...m, read: true };
           }
           return m;
@@ -84,6 +84,8 @@ export default function StudentMessagesPage() {
         setSupervisor(currentSupervisor || null);
         const studentMessages = getSupervisorMessagesForStudent(userId, currentStudent.supervisorId);
         setMessages(studentMessages);
+        
+        // This should be called here to mark messages as read when the page loads.
         markMessagesAsRead(userId, currentStudent.supervisorId, studentMessages);
       }
     }

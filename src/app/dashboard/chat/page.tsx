@@ -97,7 +97,7 @@ export default function SupervisorChatPage() {
     if (!hasUnread) return;
 
     const updatedMessages = studentMessages.map((m) => {
-        if (m.senderId === studentId) {
+        if (m.senderId === studentId) { // Only mark messages FROM the student as read
             return { ...m, read: true };
         }
         return m;
@@ -142,7 +142,7 @@ export default function SupervisorChatPage() {
       senderId: supervisorId,
       content: newMessage,
       createdAt: new Date(),
-      read: true, // Supervisor's own message is already "read"
+      read: true, // Supervisor's own message is already "read" by them
     };
 
     saveSupervisorMessage(message);
@@ -189,7 +189,8 @@ export default function SupervisorChatPage() {
     });
 
     if (selectedStudent?.id === studentId) {
-        setSelectedStudent(null);
+        const remainingStudents = students.filter(s => s.id !== studentId);
+        setSelectedStudent(remainingStudents.length > 0 ? remainingStudents[0] : null);
     }
 
     toast({
