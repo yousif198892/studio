@@ -28,6 +28,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuBadge,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "./logo";
@@ -35,12 +36,15 @@ import { Button } from "@/components/ui/button";
 import { type User } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { cn } from "@/lib/utils";
+import { Badge } from "./ui/badge";
 
 type DashboardSidebarProps = {
   user: User;
+  unreadChatCount?: number;
+  unreadRequestsCount?: number;
 };
 
-export function DashboardSidebar({ user }: DashboardSidebarProps) {
+export function DashboardSidebar({ user, unreadChatCount = 0, unreadRequestsCount = 0 }: DashboardSidebarProps) {
   const pathname = usePathname();
   const userRole = user.role;
   const { t } = useLanguage();
@@ -75,6 +79,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         label: 'Chat',
         icon: <MessageSquare />,
         roles: ["student"],
+        badgeCount: unreadChatCount,
     },
     {
         href: `/dashboard/words?userId=${user.id}`,
@@ -100,6 +105,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         icon: <MessageSquare />,
         roles: ["supervisor"],
         requiresMainAdmin: false,
+        badgeCount: unreadChatCount,
     },
      {
       href: `/dashboard/messages?userId=${user.id}`,
@@ -107,6 +113,7 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
       icon: <Shield />,
       roles: ["supervisor"],
       requiresMainAdmin: true,
+      badgeCount: unreadRequestsCount,
     },
     {
       href: `/dashboard/admins?userId=${user.id}`,
@@ -145,15 +152,22 @@ export function DashboardSidebar({ user }: DashboardSidebarProps) {
         <SidebarMenu>
           {filteredMenuItems.map((item) => (
             <SidebarMenuItem key={item.href}>
-              <Link href={item.href}>
+              <Link href={item.href} className="flex-1">
                 <SidebarMenuButton
                   isActive={pathname === item.href.split('?')[0]}
                   className="w-full justify-start"
                 >
-                  {item.icon}
-                  <span>{item.label}</span>
+                  <div className="flex items-center gap-2">
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </div>
                 </SidebarMenuButton>
               </Link>
+              {item.badgeCount > 0 && (
+                 <Badge variant="destructive" className="ml-auto">
+                    {item.badgeCount}
+                </Badge>
+              )}
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
