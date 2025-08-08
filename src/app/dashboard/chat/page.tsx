@@ -140,7 +140,7 @@ export default function ChatPage() {
         }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, contactToSelect]);
+  }, [userId]);
 
   useEffect(() => {
     loadConversations();
@@ -150,6 +150,17 @@ export default function ChatPage() {
       window.removeEventListener("storage", handleStorageChange);
     };
   }, [loadConversations]);
+  
+    useEffect(() => {
+    // Check if there is a contactId in the URL on initial load
+    if (contactToSelect) {
+      const contact = conversations.find(p => p.id === contactToSelect);
+      if (contact) {
+        handleSelectContact(contact);
+      }
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversations, contactToSelect]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -300,7 +311,7 @@ export default function ChatPage() {
             </CardContent>
           </ScrollArea>
         </div>
-        <div className="flex flex-col h-[calc(100vh-17rem)]">
+        <div className="flex flex-col h-[calc(100vh-12rem)]">
           {selectedContact ? (
             <>
               <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
@@ -391,5 +402,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
