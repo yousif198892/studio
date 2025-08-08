@@ -18,7 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { format, formatDistanceToNow } from "date-fns";
+import { format } from "date-fns";
 import { useSearchParams } from "next/navigation";
 import {
   getStudentsBySupervisorIdFromClient,
@@ -91,10 +91,17 @@ export default function SupervisorChatPage() {
     studentId: string,
     currentMessages: Record<string, SupervisorMessage[]>
   ) => {
+    if (!supervisorId) return;
     const studentMessages = currentMessages[studentId] || [];
-    if (studentMessages.every((m) => m.read)) return;
+    const hasUnread = studentMessages.some(m => !m.read && m.senderId === studentId);
+    if (!hasUnread) return;
 
-    const updatedMessages = studentMessages.map((m) => ({ ...m, read: true }));
+    const updatedMessages = studentMessages.map((m) => {
+        if (m.senderId === studentId) {
+            return { ...m, read: true };
+        }
+        return m;
+    });
 
     setMessagesByStudent((prev) => ({
       ...prev,
@@ -106,7 +113,7 @@ export default function SupervisorChatPage() {
         localStorage.getItem("supervisorMessages") || "[]"
       );
       const updatedStoredMessages = allStoredMessages.map((m) => {
-        if (m.supervisorId === supervisorId && m.studentId === studentId) {
+        if (m.supervisorId === supervisorId && m.studentId === studentId && m.senderId === studentId) {
           return { ...m, read: true };
         }
         return m;
@@ -135,7 +142,7 @@ export default function SupervisorChatPage() {
       senderId: supervisorId,
       content: newMessage,
       createdAt: new Date(),
-      read: false,
+      read: true, // Supervisor's own message is already "read"
     };
 
     saveSupervisorMessage(message);
@@ -244,7 +251,7 @@ export default function SupervisorChatPage() {
                         </button>
                         <AlertDialog>
                             <AlertDialogTrigger asChild>
-                               <Button variant="ghost" size="icon" className="h-8 w-8 transition-opacity">
+                               <Button variant="ghost" size="icon" className="h-8 w-8">
                                    <Trash2 className="h-4 w-4 text-destructive"/>
                                </Button>
                            </AlertDialogTrigger>

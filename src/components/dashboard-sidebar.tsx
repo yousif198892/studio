@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 type DashboardSidebarProps = {
   user: User;
   unreadChatCount?: number;
-  unreadRequestsCount?: number;
+  requestsCount?: number;
   wordsCount?: number;
   studentsCount?: number;
   adminsCount?: number;
@@ -49,7 +49,7 @@ type DashboardSidebarProps = {
 export function DashboardSidebar({ 
   user, 
   unreadChatCount = 0, 
-  unreadRequestsCount = 0,
+  requestsCount = 0,
   wordsCount = 0,
   studentsCount = 0,
   adminsCount = 0,
@@ -124,7 +124,7 @@ export function DashboardSidebar({
       icon: <Shield />,
       roles: ["supervisor"],
       requiresMainAdmin: true,
-      unreadCount: unreadRequestsCount,
+      totalCount: requestsCount,
     },
     {
       href: `/dashboard/admins?userId=${user.id}`,

@@ -21,7 +21,7 @@ export default function DashboardLayout({
   
   // State for counts
   const [unreadChatCount, setUnreadChatCount] = useState(0);
-  const [unreadRequestsCount, setUnreadRequestsCount] = useState(0);
+  const [requestsCount, setRequestsCount] = useState(0);
   const [wordsCount, setWordsCount] = useState(0);
   const [studentsCount, setStudentsCount] = useState(0);
   const [adminsCount, setAdminsCount] = useState(0);
@@ -47,7 +47,7 @@ export default function DashboardLayout({
         if (foundUser.role === 'supervisor') {
             if (foundUser.isMainAdmin) {
                 const adminMessages = getMessages();
-                setUnreadRequestsCount(adminMessages.length);
+                setRequestsCount(adminMessages.length);
                 const otherAdmins = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin).length;
                 setAdminsCount(otherAdmins);
             }
@@ -92,7 +92,7 @@ export default function DashboardLayout({
           <DashboardSidebar 
             user={user} 
             unreadChatCount={unreadChatCount} 
-            unreadRequestsCount={unreadRequestsCount}
+            requestsCount={requestsCount}
             wordsCount={wordsCount}
             studentsCount={studentsCount}
             adminsCount={adminsCount}

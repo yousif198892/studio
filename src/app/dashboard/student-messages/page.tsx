@@ -56,9 +56,9 @@ export default function StudentMessagesPage() {
           currentStudent.supervisorId
         );
         setSupervisor(currentSupervisor || null);
-        setMessages(
-          getSupervisorMessagesForStudent(userId, currentStudent.supervisorId)
-        );
+        const studentMessages = getSupervisorMessagesForStudent(userId, currentStudent.supervisorId);
+        setMessages(studentMessages);
+        markMessagesAsRead(userId, currentStudent.supervisorId, studentMessages);
       }
     }
   }, [userId]);
@@ -66,6 +66,32 @@ export default function StudentMessagesPage() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+  
+  const markMessagesAsRead = (studentId: string, supervisorId: string, currentMessages: SupervisorMessage[]) => {
+      const hasUnread = currentMessages.some(m => !m.read && m.senderId === supervisorId);
+      if (!hasUnread) return;
+      
+      const updatedMessages = currentMessages.map(m => {
+          if (m.senderId === supervisorId) {
+              return { ...m, read: true };
+          }
+          return m;
+      });
+      setMessages(updatedMessages);
+
+      try {
+        let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
+        const updatedStoredMessages = allStoredMessages.map(m => {
+            if (m.studentId === studentId && m.senderId === supervisorId) {
+                return { ...m, read: true };
+            }
+            return m;
+        });
+        localStorage.setItem('supervisorMessages', JSON.stringify(updatedStoredMessages));
+      } catch (e) {
+          console.error("Failed to update read status", e);
+      }
+  }
 
   const handleSendMessage = () => {
     if (!newMessage.trim() || !userId || !supervisor?.id) return;
