@@ -10,20 +10,12 @@ import {
 } from "@/components/ui/card";
 import { getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
 import { User, Word, getWordsForStudent } from "@/lib/data";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Trash2, BarChart, CalendarCheck, CheckCircle, Clock, Star, Trophy, XCircle } from "lucide-react";
+import { Trash2, BarChart, CalendarCheck, CheckCircle, Clock, Star, Trophy, XCircle, MessageSquare } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,6 +30,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { format, subDays } from "date-fns";
+import Link from "next/link";
 
 type LearningStats = {
   timeSpentSeconds: number;
@@ -75,9 +68,9 @@ export default function StudentsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [students, setStudents] = useState<StudentWithStats[]>([]);
   const last7Days = getLast7Days();
+  const userId = searchParams?.get('userId') as string;
   
   useEffect(() => {
-    const userId = searchParams?.get('userId') as string;
     if (userId) {
         const currentUser = getUserByIdFromClient(userId);
         setUser(currentUser || null);
@@ -113,7 +106,7 @@ export default function StudentsPage() {
 
         setStudents(studentsWithStats);
     }
-  }, [searchParams])
+  }, [userId])
 
   const handleDelete = (studentId: string) => {
     try {
@@ -182,7 +175,7 @@ export default function StudentsPage() {
                        {students.map((student) => (
                            <AccordionItem value={student.id} key={student.id}>
                                <AccordionTrigger className="hover:bg-muted/50 px-4 rounded-md">
-                                    <div className="flex items-center gap-4 py-2">
+                                    <div className="flex items-center gap-4 py-2 flex-1">
                                         <Image
                                             alt="Student avatar"
                                             className="aspect-square rounded-full object-cover"
@@ -195,6 +188,11 @@ export default function StudentsPage() {
                                             <div className="text-sm text-muted-foreground">{student.email}</div>
                                         </div>
                                     </div>
+                                    <Button asChild variant="ghost" size="icon" className="mr-4" onClick={(e) => e.stopPropagation()}>
+                                        <Link href={`/dashboard/chat?userId=${userId}&studentId=${student.id}`}>
+                                            <MessageSquare className="h-5 w-5"/>
+                                        </Link>
+                                    </Button>
                                </AccordionTrigger>
                                <AccordionContent className="p-4 space-y-4">
                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -277,5 +275,3 @@ export default function StudentsPage() {
     </div>
   )
 }
-
-    

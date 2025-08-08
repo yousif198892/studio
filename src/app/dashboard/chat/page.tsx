@@ -48,6 +48,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function SupervisorChatPage() {
   const searchParams = useSearchParams();
   const supervisorId = searchParams.get("userId");
+  const studentToSelect = searchParams.get("studentId");
   const [messagesByStudent, setMessagesByStudent] = useState<
     Record<string, SupervisorMessage[]>
   >({});
@@ -71,17 +72,20 @@ export default function SupervisorChatPage() {
       setMessagesByStudent(grouped);
 
       const allStudents = getStudentsBySupervisorIdFromClient(supervisorId);
-      const studentsWhoMessaged = allStudents.filter(
-        (student) => grouped[student.id]
-      );
-      setStudents(studentsWhoMessaged);
+      setStudents(allStudents);
 
-      if (!selectedStudent && studentsWhoMessaged.length > 0) {
-        setSelectedStudent(studentsWhoMessaged[0]);
-        markMessagesAsRead(studentsWhoMessaged[0].id, grouped);
+      if (studentToSelect) {
+        const student = allStudents.find(s => s.id === studentToSelect);
+        if (student) {
+            setSelectedStudent(student);
+            markMessagesAsRead(student.id, grouped);
+        }
+      } else if (!selectedStudent && allStudents.length > 0) {
+        setSelectedStudent(allStudents[0]);
+        markMessagesAsRead(allStudents[0].id, grouped);
       }
     }
-  }, [supervisorId]);
+  }, [supervisorId, studentToSelect]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -122,6 +126,7 @@ export default function SupervisorChatPage() {
         "supervisorMessages",
         JSON.stringify(updatedStoredMessages)
       );
+       window.dispatchEvent(new Event('storage'));
     } catch (e) {
       console.error("Failed to update message read status in localStorage", e);
     }
@@ -180,22 +185,16 @@ export default function SupervisorChatPage() {
     if (!supervisorId) return;
     deleteConversation(studentId, supervisorId);
 
-    // Update state
-    setStudents(prev => prev.filter(s => s.id !== studentId));
+    // Update state by clearing messages for that student
     setMessagesByStudent(prev => {
         const newMessages = {...prev};
         delete newMessages[studentId];
         return newMessages;
     });
 
-    if (selectedStudent?.id === studentId) {
-        const remainingStudents = students.filter(s => s.id !== studentId);
-        setSelectedStudent(remainingStudents.length > 0 ? remainingStudents[0] : null);
-    }
-
     toast({
-        title: "Conversation Deleted",
-        description: "The entire conversation has been removed.",
+        title: "Conversation Cleared",
+        description: "The conversation history with this student has been removed.",
     });
   }
 
@@ -213,8 +212,8 @@ export default function SupervisorChatPage() {
       <Card className="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1">
         <div className="flex flex-col border-r">
           <CardHeader>
-            <CardTitle>Your Inbox</CardTitle>
-            <CardDescription>Select a conversation to view.</CardDescription>
+            <CardTitle>Your Students</CardTitle>
+            <CardDescription>Select a student to chat with.</CardDescription>
           </CardHeader>
           <ScrollArea className="flex-1">
             <CardContent className="p-2">
@@ -224,6 +223,8 @@ export default function SupervisorChatPage() {
                   const unreadCount = studentMessages.filter(
                     (m) => !m.read && m.senderId === student.id
                   ).length;
+                  const lastMessage = studentMessages.length > 0 ? studentMessages[studentMessages.length-1] : null;
+
                   return (
                     <div key={student.id} className="flex items-center gap-1 group">
                         <button
@@ -242,39 +243,17 @@ export default function SupervisorChatPage() {
                         <div className="flex-1">
                             <p className="font-semibold">{student.name}</p>
                             <p className="text-xs text-muted-foreground truncate">
-                            {studentMessages.length > 0
-                                ? studentMessages[studentMessages.length - 1]
-                                    .content
-                                : "No messages yet"}
+                            {lastMessage ? lastMessage.content : "No messages yet"}
                             </p>
                         </div>
                         {unreadCount > 0 && <Badge>{unreadCount}</Badge>}
                         </button>
-                        <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                               <Button variant="ghost" size="icon" className="h-8 w-8">
-                                   <Trash2 className="h-4 w-4 text-destructive"/>
-                               </Button>
-                           </AlertDialogTrigger>
-                           <AlertDialogContent>
-                               <AlertDialogHeader>
-                                   <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
-                                   <AlertDialogDescription>
-                                       This will permanently delete your entire conversation with {student.name}. This action cannot be undone.
-                                   </AlertDialogDescription>
-                               </AlertDialogHeader>
-                               <AlertDialogFooter>
-                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                   <AlertDialogAction onClick={() => handleDeleteConversation(student.id)}>Delete</AlertDialogAction>
-                               </AlertDialogFooter>
-                           </AlertDialogContent>
-                       </AlertDialog>
                     </div>
                   );
                 })
               ) : (
                 <div className="text-center text-muted-foreground py-12 px-4">
-                  No students have sent you messages yet.
+                  You do not have any students yet.
                 </div>
               )}
             </CardContent>
@@ -283,16 +262,37 @@ export default function SupervisorChatPage() {
         <div className="flex flex-col h-[calc(100vh-14rem)]">
           {selectedStudent ? (
             <>
-              <CardHeader className="flex flex-row items-center gap-4 border-b">
-                <Avatar>
-                  <AvatarImage src={selectedStudent.avatar} />
-                  <AvatarFallback>
-                    {selectedStudent.name.charAt(0)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <CardTitle>{selectedStudent.name}</CardTitle>
+              <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
+                <div className="flex items-center gap-4">
+                    <Avatar>
+                        <AvatarImage src={selectedStudent.avatar} />
+                        <AvatarFallback>
+                            {selectedStudent.name.charAt(0)}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div>
+                        <CardTitle>{selectedStudent.name}</CardTitle>
+                    </div>
                 </div>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="outline" size="icon" className="h-8 w-8">
+                            <Trash2 className="h-4 w-4 text-destructive"/>
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                This will permanently delete your entire conversation with {selectedStudent.name}. This action cannot be undone.
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteConversation(selectedStudent.id)}>Delete</AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
               </CardHeader>
               <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
                 {currentConversation.map((msg) => (
@@ -381,7 +381,7 @@ export default function SupervisorChatPage() {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-              <p>Select a conversation to start chatting</p>
+              <p>Select a student to start chatting</p>
             </div>
           )}
         </div>
@@ -389,5 +389,3 @@ export default function SupervisorChatPage() {
     </div>
   );
 }
-
-    
