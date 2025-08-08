@@ -7,7 +7,8 @@ import {
   User,
   getSupervisorMessagesForSupervisor,
   saveSupervisorMessage,
-  deleteSupervisorMessage
+  deleteSupervisorMessage,
+  deleteConversation,
 } from "@/lib/data";
 import {
   Card,
@@ -168,6 +169,28 @@ export default function SupervisorChatPage() {
     });
   }
 
+  const handleDeleteConversation = (studentId: string) => {
+    if (!supervisorId) return;
+    deleteConversation(studentId, supervisorId);
+
+    // Update state
+    setStudents(prev => prev.filter(s => s.id !== studentId));
+    setMessagesByStudent(prev => {
+        const newMessages = {...prev};
+        delete newMessages[studentId];
+        return newMessages;
+    });
+
+    if (selectedStudent?.id === studentId) {
+        setSelectedStudent(null);
+    }
+
+    toast({
+        title: "Conversation Deleted",
+        description: "The entire conversation has been removed.",
+    });
+  }
+
   const supervisor = supervisorId ? getUserByIdFromClient(supervisorId) : null;
   const currentConversation = selectedStudent
     ? messagesByStudent[selectedStudent.id] || []
@@ -194,31 +217,51 @@ export default function SupervisorChatPage() {
                     (m) => !m.read && m.senderId === student.id
                   ).length;
                   return (
-                    <button
-                      key={student.id}
-                      className={cn(
-                        "flex items-center gap-3 text-left p-2 rounded-lg w-full transition-colors",
-                        selectedStudent?.id === student.id
-                          ? "bg-secondary"
-                          : "hover:bg-muted/50"
-                      )}
-                      onClick={() => handleSelectStudent(student)}
-                    >
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={student.avatar} />
-                        <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <p className="font-semibold">{student.name}</p>
-                        <p className="text-xs text-muted-foreground truncate">
-                          {studentMessages.length > 0
-                            ? studentMessages[studentMessages.length - 1]
-                                .content
-                            : "No messages yet"}
-                        </p>
-                      </div>
-                      {unreadCount > 0 && <Badge>{unreadCount}</Badge>}
-                    </button>
+                    <div key={student.id} className="flex items-center gap-1 group">
+                        <button
+                        className={cn(
+                            "flex items-center gap-3 text-left p-2 rounded-lg w-full transition-colors",
+                            selectedStudent?.id === student.id
+                            ? "bg-secondary"
+                            : "hover:bg-muted/50"
+                        )}
+                        onClick={() => handleSelectStudent(student)}
+                        >
+                        <Avatar className="h-10 w-10">
+                            <AvatarImage src={student.avatar} />
+                            <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1">
+                            <p className="font-semibold">{student.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                            {studentMessages.length > 0
+                                ? studentMessages[studentMessages.length - 1]
+                                    .content
+                                : "No messages yet"}
+                            </p>
+                        </div>
+                        {unreadCount > 0 && <Badge>{unreadCount}</Badge>}
+                        </button>
+                        <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                               <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                                   <Trash2 className="h-4 w-4 text-destructive"/>
+                               </Button>
+                           </AlertDialogTrigger>
+                           <AlertDialogContent>
+                               <AlertDialogHeader>
+                                   <AlertDialogTitle>Delete this conversation?</AlertDialogTitle>
+                                   <AlertDialogDescription>
+                                       This will permanently delete your entire conversation with {student.name}. This action cannot be undone.
+                                   </AlertDialogDescription>
+                               </AlertDialogHeader>
+                               <AlertDialogFooter>
+                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                   <AlertDialogAction onClick={() => handleDeleteConversation(student.id)}>Delete</AlertDialogAction>
+                               </AlertDialogFooter>
+                           </AlertDialogContent>
+                       </AlertDialog>
+                    </div>
                   );
                 })
               ) : (

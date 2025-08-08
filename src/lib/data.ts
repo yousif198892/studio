@@ -228,4 +228,10 @@ export const deleteSupervisorMessage = (messageId: string) => {
     localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
 }
 
+export const deleteConversation = (studentId: string, supervisorId: string) => {
+    if (typeof window === 'undefined') return;
+    let allMessages = getSupervisorMessagesFromStorage();
+    allMessages = allMessages.filter(m => !(m.studentId === studentId && m.supervisorId === supervisorId));
+    localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
+}
     
