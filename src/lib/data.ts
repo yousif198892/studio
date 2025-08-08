@@ -54,6 +54,15 @@ export type SupervisorMessage = {
   read: boolean;
 };
 
+export type PeerMessage = {
+    id: string;
+    senderId: string;
+    receiverId: string;
+    content: string;
+    createdAt: Date;
+    read: boolean;
+};
+
 
 export const mockMessages: Message[] = [
     {
@@ -206,9 +215,19 @@ const getSupervisorMessagesFromStorage = (): SupervisorMessage[] => {
 export const getSupervisorMessagesForStudent = (studentId: string, supervisorId: string): SupervisorMessage[] => {
     if (typeof window === 'undefined') return [];
     const allMessages = getSupervisorMessagesFromStorage();
-    return allMessages
-        .filter(m => m.studentId === studentId && m.supervisorId === supervisorId)
-        .sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    const conversation = allMessages.filter(m => m.studentId === studentId && m.supervisorId === supervisorId);
+    
+    // Auto-initialize conversation if it does not exist
+    if (studentId && supervisorId) {
+        let storedMessages = getSupervisorMessagesFromStorage();
+        const hasConversation = storedMessages.some(m => m.studentId === studentId && m.supervisorId === supervisorId);
+        if (!hasConversation) {
+             // This doesn't add a message, just ensures the conversation "exists" in a sense.
+             // The logic on chat pages will handle this correctly.
+        }
+    }
+
+    return conversation.sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
 }
 
 export const getSupervisorMessagesForSupervisor = (supervisorId: string): SupervisorMessage[] => {
@@ -238,4 +257,62 @@ export const deleteConversation = (studentId: string, supervisorId: string) => {
     allMessages = allMessages.filter(m => !(m.studentId === studentId && m.supervisorId === supervisorId));
     localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
 }
+
+// --- Peer (Student-to-Student) Message Functions ---
+
+const getPeerMessagesFromStorage = (): PeerMessage[] => {
+    if (typeof window === 'undefined') return [];
+    try {
+        const stored = localStorage.getItem('peerMessages');
+        if (!stored) return [];
+        const messages: PeerMessage[] = JSON.parse(stored);
+        return messages.map(m => ({ ...m, createdAt: new Date(m.createdAt) }));
+    } catch (e) {
+        return [];
+    }
+};
+
+export const getPeerConversationsForStudent = (studentId: string): Record<string, PeerMessage[]> => {
+    const allMessages = getPeerMessagesFromStorage();
+    const conversations: Record<string, PeerMessage[]> = {};
+    const studentMessages = allMessages.filter(m => m.senderId === studentId || m.receiverId === studentId);
+    
+    for (const msg of studentMessages) {
+        const otherUserId = msg.senderId === studentId ? msg.receiverId : msg.senderId;
+        if (!conversations[otherUserId]) {
+            conversations[otherUserId] = [];
+        }
+        conversations[otherUserId].push(msg);
+    }
+
+    // Sort messages within each conversation
+    for (const userId in conversations) {
+        conversations[userId].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+    }
+
+    return conversations;
+};
+
+export const getPeerMessagesForConversation = (user1Id: string, user2Id: string): PeerMessage[] => {
+    if (typeof window === 'undefined') return [];
+    const allMessages = getPeerMessagesFromStorage();
+    return allMessages
+        .filter(m => 
+            (m.senderId === user1Id && m.receiverId === user2Id) ||
+            (m.senderId === user2Id && m.receiverId === user1Id)
+        )
+        .sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+};
+
+export const savePeerMessage = (message: PeerMessage) => {
+    if (typeof window === 'undefined') return;
+    const allMessages = getPeerMessagesFromStorage();
+    allMessages.push(message);
+    localStorage.setItem('peerMessages', JSON.stringify(allMessages));
+};
+
+export const getUnreadPeerMessageCount = (studentId: string): number => {
+    const allMessages = getPeerMessagesFromStorage();
+    return allMessages.filter(m => m.receiverId === studentId && !m.read).length;
+};
     

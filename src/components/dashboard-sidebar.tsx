@@ -39,10 +39,12 @@ import { cn } from "@/lib/utils";
 
 type DashboardSidebarProps = {
   user: User;
-  unreadChatCount?: number;
+  unreadSupervisorChatCount?: number;
+  unreadPeerChatCount?: number;
   requestsCount?: number;
   wordsCount?: number;
   studentsCount?: number;
+  classmatesCount?: number;
   adminsCount?: number;
   learningWordsCount?: number;
   masteredWordsCount?: number;
@@ -51,10 +53,12 @@ type DashboardSidebarProps = {
 
 export function DashboardSidebar({ 
   user, 
-  unreadChatCount = 0, 
+  unreadSupervisorChatCount = 0, 
+  unreadPeerChatCount = 0,
   requestsCount = 0,
   wordsCount = 0,
   studentsCount = 0,
+  classmatesCount = 0,
   adminsCount = 0,
   learningWordsCount = 0,
   masteredWordsCount = 0,
@@ -93,11 +97,19 @@ export function DashboardSidebar({
     },
     {
         href: `/dashboard/student-messages?userId=${user.id}`,
-        label: 'Chat',
+        label: 'Supervisor Chat',
         icon: <MessageSquare />,
         roles: ["student"],
-        unreadCount: unreadChatCount,
+        unreadCount: unreadSupervisorChatCount,
         totalCount: chatConversationsCount,
+    },
+    {
+        href: `/dashboard/classmates?userId=${user.id}`,
+        label: 'Classmates',
+        icon: <Users />,
+        roles: ["student"],
+        unreadCount: unreadPeerChatCount,
+        totalCount: classmatesCount,
     },
     {
         href: `/dashboard/words?userId=${user.id}`,
@@ -121,11 +133,11 @@ export function DashboardSidebar({
     },
     {
         href: `/dashboard/chat?userId=${user.id}`,
-        label: 'Chat',
+        label: 'Student Chats',
         icon: <MessageSquare />,
         roles: ["supervisor"],
         requiresMainAdmin: false,
-        unreadCount: unreadChatCount,
+        unreadCount: unreadSupervisorChatCount,
         totalCount: chatConversationsCount,
     },
      {
