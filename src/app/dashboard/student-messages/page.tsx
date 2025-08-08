@@ -13,8 +13,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Send } from "lucide-react";
+import { Send, Trash2 } from "lucide-react";
 import {
+  deleteSupervisorMessage,
   getSupervisorMessagesForStudent,
   saveSupervisorMessage,
   SupervisorMessage,
@@ -23,6 +24,18 @@ import {
 import { getUserByIdFromClient } from "@/lib/client-data";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function StudentMessagesPage() {
   const searchParams = useSearchParams();
@@ -32,6 +45,7 @@ export default function StudentMessagesPage() {
   const [messages, setMessages] = useState<SupervisorMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (userId) {
@@ -71,6 +85,15 @@ export default function StudentMessagesPage() {
     setNewMessage("");
   };
 
+  const handleDeleteMessage = (messageId: string) => {
+    deleteSupervisorMessage(messageId);
+    setMessages(prev => prev.filter(m => m.id !== messageId));
+    toast({
+        title: "Message Deleted",
+        description: "Your message has been removed.",
+    });
+  }
+
   if (!student || !supervisor) {
     return <div>Loading chat...</div>;
   }
@@ -92,7 +115,7 @@ export default function StudentMessagesPage() {
             <div
               key={msg.id}
               className={cn(
-                "flex items-end gap-2",
+                "flex items-end gap-2 group",
                 msg.senderId === userId ? "justify-end" : "justify-start"
               )}
             >
@@ -102,18 +125,41 @@ export default function StudentMessagesPage() {
                   <AvatarFallback>{supervisor.name.charAt(0)}</AvatarFallback>
                 </Avatar>
               )}
-              <div
-                className={cn(
-                  "rounded-lg px-4 py-2 max-w-sm",
-                  msg.senderId === userId
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted"
-                )}
-              >
-                <p className="text-sm">{msg.content}</p>
-                <p className="text-xs opacity-75 mt-1 text-right">
-                  {format(new Date(msg.createdAt), "p")}
-                </p>
+               <div className="flex items-center gap-2">
+                 {msg.senderId === userId && (
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Trash2 className="h-4 w-4 text-destructive"/>
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    This will permanently delete this message. This action cannot be undone.
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => handleDeleteMessage(msg.id)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                  <div
+                    className={cn(
+                      "rounded-lg px-4 py-2 max-w-sm",
+                      msg.senderId === userId
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted"
+                    )}
+                  >
+                    <p className="text-sm">{msg.content}</p>
+                    <p className="text-xs opacity-75 mt-1 text-right">
+                      {format(new Date(msg.createdAt), "p")}
+                    </p>
+                  </div>
               </div>
               {msg.senderId === userId && (
                 <Avatar className="h-8 w-8">
