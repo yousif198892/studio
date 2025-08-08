@@ -64,7 +64,16 @@ export default function PresentSimplePage() {
                             <div>
                                 <Label htmlFor="explanation" className="sr-only">Explanation</Label>
                                  <div className="border rounded-md">
-                                    <div className="p-2 border-b flex items-center flex-wrap gap-1">
+                                    <div
+                                        ref={editorRef}
+                                        id="explanation"
+                                        contentEditable={true}
+                                        dangerouslySetInnerHTML={{ __html: explanation }}
+                                        onBlur={(e) => setExplanation(e.currentTarget.innerHTML)}
+                                        className="prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full rounded-t-md p-4 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                        suppressContentEditableWarning={true}
+                                    />
+                                    <div className="p-2 border-t flex items-center flex-wrap gap-1">
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('bold')}} title="Bold"><Bold className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('italic')}} title="Italic"><Italic className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('underline')}} title="Underline"><Underline className="h-4 w-4"/></Button>
@@ -104,15 +113,6 @@ export default function PresentSimplePage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div
-                                        ref={editorRef}
-                                        id="explanation"
-                                        contentEditable={true}
-                                        dangerouslySetInnerHTML={{ __html: explanation }}
-                                        onBlur={(e) => setExplanation(e.currentTarget.innerHTML)}
-                                        className="prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full rounded-md p-4 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
-                                        suppressContentEditableWarning={true}
-                                    />
                                 </div>
                             </div>
                             <Button onClick={handleSave}>Save Explanation</Button>
