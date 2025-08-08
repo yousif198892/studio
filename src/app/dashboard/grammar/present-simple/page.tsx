@@ -61,7 +61,7 @@ export default function PresentSimplePage() {
                 if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
                      toast({
                         title: "Error: Storage Full",
-                        description: "The explanation is too large to save. Please reduce its size or complexity.",
+                        description: "The explanation is too large to save. Please reduce its size or remove some images.",
                         variant: "destructive",
                         duration: 10000,
                     });
@@ -235,3 +235,5 @@ export default function PresentSimplePage() {
 
     
 }
+
+    
