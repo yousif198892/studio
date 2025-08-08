@@ -39,8 +39,7 @@ import { cn } from "@/lib/utils";
 
 type DashboardSidebarProps = {
   user: User;
-  unreadSupervisorChatCount?: number;
-  unreadPeerChatCount?: number;
+  unreadChatCount?: number;
   requestsCount?: number;
   wordsCount?: number;
   studentsCount?: number;
@@ -53,8 +52,7 @@ type DashboardSidebarProps = {
 
 export function DashboardSidebar({ 
   user, 
-  unreadSupervisorChatCount = 0, 
-  unreadPeerChatCount = 0,
+  unreadChatCount = 0,
   requestsCount = 0,
   wordsCount = 0,
   studentsCount = 0,
@@ -96,11 +94,11 @@ export function DashboardSidebar({
         totalCount: masteredWordsCount,
     },
     {
-        href: `/dashboard/student-messages?userId=${user.id}`,
-        label: 'Supervisor Chat',
+        href: `/dashboard/chat?userId=${user.id}`,
+        label: 'Chat',
         icon: <MessageSquare />,
         roles: ["student"],
-        unreadCount: unreadSupervisorChatCount,
+        unreadCount: unreadChatCount,
         totalCount: chatConversationsCount,
     },
     {
@@ -108,7 +106,6 @@ export function DashboardSidebar({
         label: 'Classmates',
         icon: <Users />,
         roles: ["student"],
-        unreadCount: unreadPeerChatCount,
         totalCount: classmatesCount,
     },
     {
@@ -133,11 +130,11 @@ export function DashboardSidebar({
     },
     {
         href: `/dashboard/chat?userId=${user.id}`,
-        label: 'Student Chats',
+        label: 'Chat',
         icon: <MessageSquare />,
         roles: ["supervisor"],
         requiresMainAdmin: false,
-        unreadCount: unreadSupervisorChatCount,
+        unreadCount: unreadChatCount,
         totalCount: chatConversationsCount,
     },
      {

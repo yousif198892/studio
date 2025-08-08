@@ -189,7 +189,7 @@ export default function StudentsPage() {
                                         </div>
                                     </div>
                                     <Button asChild variant="ghost" size="icon" className="mr-4" onClick={(e) => e.stopPropagation()}>
-                                        <Link href={`/dashboard/chat?userId=${userId}&studentId=${student.id}`}>
+                                        <Link href={`/dashboard/chat?userId=${userId}&contactId=${student.id}`}>
                                             <MessageSquare className="h-5 w-5"/>
                                         </Link>
                                     </Button>

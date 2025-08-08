@@ -49,20 +49,19 @@ export default function ClassmatesPage() {
         <div className="space-y-6">
             <h1 className="text-3xl font-bold font-headline">My Classmates</h1>
             <p className="text-muted-foreground">
-                See and chat with other students from your class.
+                See other students from your class.
             </p>
             <Card>
                 <CardHeader>
                     <CardTitle>Class List</CardTitle>
                     <CardDescription>
-                        A list of all students learning under your supervisor.
+                        A list of all students learning under your supervisor. Go to the unified "Chat" page to message them.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     {classmates.length > 0 ? (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {classmates.map(classmate => {
-                                const unreadCount = unreadCounts[classmate.id] || 0;
                                 return (
                                     <div key={classmate.id} className="p-4 border rounded-lg flex items-center justify-between gap-4">
                                         <div className="flex items-center gap-3">
@@ -77,17 +76,6 @@ export default function ClassmatesPage() {
                                                 <p className="font-semibold">{classmate.name}</p>
                                                 <p className="text-sm text-muted-foreground">{classmate.email}</p>
                                             </div>
-                                        </div>
-                                        <div className="relative">
-                                            <Button asChild variant="outline" size="icon">
-                                                <Link href={`/dashboard/peer-chat?userId=${userId}&classmateId=${classmate.id}`}>
-                                                    <MessageSquare className="h-5 w-5" />
-                                                    <span className="sr-only">Chat with {classmate.name}</span>
-                                                </Link>
-                                            </Button>
-                                            {unreadCount > 0 && (
-                                                <Badge className="absolute -top-2 -right-2 h-5 w-5 justify-center p-0">{unreadCount}</Badge>
-                                            )}
                                         </div>
                                     </div>
                                 );
