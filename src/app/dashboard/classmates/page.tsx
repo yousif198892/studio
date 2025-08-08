@@ -3,19 +3,24 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { User, getConversationsForStudent } from "@/lib/data";
+import { User, getConversationsForStudent, Word, getWordsForStudent } from "@/lib/data";
 import { getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, GraduationCap, Trophy } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+
+type ClassmateWithStats = User & {
+    learningCount: number;
+    masteredCount: number;
+};
 
 export default function ClassmatesPage() {
     const searchParams = useSearchParams();
     const userId = searchParams.get("userId");
-    const [classmates, setClassmates] = useState<User[]>([]);
+    const [classmates, setClassmates] = useState<ClassmateWithStats[]>([]);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
     useEffect(() => {
@@ -24,11 +29,22 @@ export default function ClassmatesPage() {
                 const currentUser = getUserByIdFromClient(userId);
                 if (currentUser && currentUser.supervisorId) {
                     const allStudents = getStudentsBySupervisorIdFromClient(currentUser.supervisorId);
-                    // Filter out the current user to get only classmates
-                    const foundClassmates = allStudents.filter(student => student.id !== userId);
+                    
+                    const foundClassmates = allStudents
+                        .filter(student => student.id !== userId)
+                        .map(student => {
+                             const words = getWordsForStudent(student.id);
+                             const mastered = words.filter(w => w.strength === -1).length;
+                             const learning = words.length - mastered;
+                             return {
+                                 ...student,
+                                 learningCount: learning,
+                                 masteredCount: mastered
+                             }
+                        });
+
                     setClassmates(foundClassmates);
 
-                    // Get unread message counts for each classmate
                     const { peer: peerConversations } = getConversationsForStudent(userId);
                     const counts: Record<string, number> = {};
                     for (const classmate of foundClassmates) {
@@ -43,7 +59,6 @@ export default function ClassmatesPage() {
             }
         };
         fetchData();
-        // Also listen to storage changes to update unread counts in real-time
         window.addEventListener('storage', fetchData);
         return () => window.removeEventListener('storage', fetchData);
     }, [userId]);
@@ -52,7 +67,7 @@ export default function ClassmatesPage() {
         <div className="space-y-6">
             <h1 className="text-3xl font-bold font-headline">My Classmates</h1>
             <p className="text-muted-foreground">
-                See other students from your class.
+                See other students from your class and their progress.
             </p>
             <Card>
                 <CardHeader>
@@ -67,28 +82,42 @@ export default function ClassmatesPage() {
                             {classmates.map(classmate => {
                                 const unreadCount = unreadCounts[classmate.id] || 0;
                                 return (
-                                    <div key={classmate.id} className="p-4 border rounded-lg flex items-center justify-between gap-4">
-                                        <div className="flex items-center gap-3">
-                                            <Image 
-                                                src={classmate.avatar}
-                                                alt={classmate.name}
-                                                width={40}
-                                                height={40}
-                                                className="rounded-full"
-                                            />
-                                            <div>
-                                                <p className="font-semibold">{classmate.name}</p>
-                                                <p className="text-sm text-muted-foreground">{classmate.email}</p>
+                                    <div key={classmate.id} className="p-4 border rounded-lg flex flex-col gap-4">
+                                        <div className="flex items-center justify-between gap-4 w-full">
+                                            <div className="flex items-center gap-3">
+                                                <Image 
+                                                    src={classmate.avatar}
+                                                    alt={classmate.name}
+                                                    width={40}
+                                                    height={40}
+                                                    className="rounded-full"
+                                                />
+                                                <div>
+                                                    <p className="font-semibold">{classmate.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{classmate.email}</p>
+                                                </div>
+                                            </div>
+                                             <Link href={`/dashboard/chat?userId=${userId}&contactId=${classmate.id}`} passHref>
+                                                <Button variant="ghost" size="icon" className="relative">
+                                                    <MessageSquare className="h-5 w-5"/>
+                                                    {unreadCount > 0 && (
+                                                        <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{unreadCount}</Badge>
+                                                    )}
+                                                </Button>
+                                            </Link>
+                                        </div>
+                                        <div className="flex items-center justify-around gap-4 pt-3 border-t">
+                                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <GraduationCap className="h-5 w-5 text-primary"/>
+                                                <span className="font-semibold text-foreground">{classmate.learningCount}</span>
+                                                <span>Learning</span>
+                                            </div>
+                                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                <Trophy className="h-5 w-5 text-amber-500"/>
+                                                <span className="font-semibold text-foreground">{classmate.masteredCount}</span>
+                                                <span>Mastered</span>
                                             </div>
                                         </div>
-                                         <Link href={`/dashboard/chat?userId=${userId}&contactId=${classmate.id}`} passHref>
-                                            <Button variant="ghost" size="icon" className="relative">
-                                                <MessageSquare className="h-5 w-5"/>
-                                                {unreadCount > 0 && (
-                                                    <Badge className="absolute -top-1 -right-1 h-4 w-4 justify-center p-0">{unreadCount}</Badge>
-                                                )}
-                                            </Button>
-                                        </Link>
                                     </div>
                                 );
                             })}
