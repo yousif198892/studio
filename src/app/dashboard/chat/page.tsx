@@ -90,8 +90,6 @@ export default function ChatPage() {
       if (contactToSelect) {
         const contact = partners.find(p => p.id === contactToSelect);
         if (contact) handleSelectContact(contact);
-      } else if (!selectedContact && partners.length > 0) {
-        handleSelectContact(partners[0]);
       }
 
     } else if (user?.role === 'student') {
@@ -133,8 +131,6 @@ export default function ChatPage() {
         if (contactToSelect) {
             const contact = partners.find(p => p.id === contactToSelect);
             if (contact) handleSelectContact(contact);
-        } else if (!selectedContact && partners.length > 0) {
-            handleSelectContact(partners[0]);
         }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -383,3 +379,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
