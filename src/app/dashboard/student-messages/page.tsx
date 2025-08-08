@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,31 +47,31 @@ export default function StudentMessagesPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const markMessagesAsRead = (studentId: string, supervisorId: string, currentMessages: SupervisorMessage[]) => {
-      const hasUnread = currentMessages.some(m => !m.read && m.senderId === supervisorId);
-      if (!hasUnread) return;
-      
-      const updatedMessages = currentMessages.map(m => {
-          if (m.senderId === supervisorId) { // Only mark messages FROM supervisor as read
-              return { ...m, read: true };
-          }
-          return m;
-      });
-      setMessages(updatedMessages);
+  const markMessagesAsRead = useCallback((studentId: string, supervisorId: string) => {
+    const studentMessages = getSupervisorMessagesForStudent(studentId, supervisorId);
+    const hasUnread = studentMessages.some(m => !m.read && m.senderId === supervisorId);
+    if (!hasUnread) return;
 
-      try {
-        let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
-        const updatedStoredMessages = allStoredMessages.map(m => {
-            if (m.studentId === studentId && m.senderId === supervisorId) {
-                return { ...m, read: true };
-            }
-            return m;
-        });
+    try {
+      let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
+      let wasChanged = false;
+      const updatedStoredMessages = allStoredMessages.map(m => {
+        if (m.studentId === studentId && m.senderId === supervisorId && !m.read) {
+          wasChanged = true;
+          return { ...m, read: true };
+        }
+        return m;
+      });
+
+      if (wasChanged) {
         localStorage.setItem('supervisorMessages', JSON.stringify(updatedStoredMessages));
-      } catch (e) {
-          console.error("Failed to update read status", e);
+        // Force a storage event to trigger layout update
+        window.dispatchEvent(new Event('storage'));
       }
-  }
+    } catch (e) {
+      console.error("Failed to update read status", e);
+    }
+  }, []);
 
   useEffect(() => {
     if (userId) {
@@ -86,10 +86,10 @@ export default function StudentMessagesPage() {
         setMessages(studentMessages);
         
         // This should be called here to mark messages as read when the page loads.
-        markMessagesAsRead(userId, currentStudent.supervisorId, studentMessages);
+        markMessagesAsRead(userId, currentStudent.supervisorId);
       }
     }
-  }, [userId]);
+  }, [userId, markMessagesAsRead]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,7 +109,11 @@ export default function StudentMessagesPage() {
     };
 
     saveSupervisorMessage(message);
-    setMessages((prev) => [...prev, message]);
+    
+    // Re-fetch messages from the source of truth to update UI
+    const updatedMessages = getSupervisorMessagesForStudent(userId, supervisor.id);
+    setMessages(updatedMessages);
+
     setNewMessage("");
   };
 
@@ -217,5 +221,4 @@ export default function StudentMessagesPage() {
     </div>
   );
 }
-
     

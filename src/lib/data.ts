@@ -194,13 +194,17 @@ const getSupervisorMessagesFromStorage = (): SupervisorMessage[] => {
     if (typeof window === 'undefined') return [];
     try {
         const stored = localStorage.getItem('supervisorMessages');
-        return stored ? JSON.parse(stored) : [];
+        if (!stored) return [];
+        const messages: SupervisorMessage[] = JSON.parse(stored);
+        // Ensure dates are correctly parsed into Date objects
+        return messages.map(m => ({ ...m, createdAt: new Date(m.createdAt) }));
     } catch (e) {
         return [];
     }
 }
 
 export const getSupervisorMessagesForStudent = (studentId: string, supervisorId: string): SupervisorMessage[] => {
+    if (typeof window === 'undefined') return [];
     const allMessages = getSupervisorMessagesFromStorage();
     return allMessages
         .filter(m => m.studentId === studentId && m.supervisorId === supervisorId)
