@@ -132,16 +132,16 @@ export default function PresentSimplePage() {
                                             </SelectContent>
                                         </Select>
 
-                                        <Select onValueChange={(color) => handleFormat('foreColor', color)}>
+                                        <Select>
                                             <SelectTrigger className="w-[120px] h-9 ml-2">
                                                  <Palette className="h-4 w-4 mr-2" />
                                                 <SelectValue placeholder="Color" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="black">Black</SelectItem>
-                                                <SelectItem value="red">Red</SelectItem>
-                                                <SelectItem value="blue">Blue</SelectItem>
-                                                <SelectItem value="green">Green</SelectItem>
+                                                <SelectItem value="black" onSelect={() => handleFormat('foreColor', 'black')}>Black</SelectItem>
+                                                <SelectItem value="red" onSelect={() => handleFormat('foreColor', 'red')}>Red</SelectItem>
+                                                <SelectItem value="blue" onSelect={() => handleFormat('foreColor', 'blue')}>Blue</SelectItem>
+                                                <SelectItem value="green" onSelect={() => handleFormat('foreColor', 'green')}>Green</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -171,6 +171,5 @@ export default function PresentSimplePage() {
             </div>
         </div>
     );
-}
 
     
