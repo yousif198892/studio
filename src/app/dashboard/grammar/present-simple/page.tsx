@@ -7,9 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { TestTube2, Bold, Italic, Underline, Palette, AlignLeft, AlignCenter, AlignRight, AlignJustify, CaseSensitive } from 'lucide-react';
+import { TestTube2, Bold, Italic, Underline, Palette, AlignLeft, AlignCenter, AlignRight, AlignJustify, CaseSensitive, Edit, Save } from 'lucide-react';
 import Link from 'next/link';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const TENSE_NAME = "Present Simple";
 const STORAGE_KEY = `grammar_explanation_${TENSE_NAME.replace(/\s/g, '_')}`;
@@ -18,21 +20,25 @@ export default function PresentSimplePage() {
     const searchParams = useSearchParams();
     const userId = searchParams.get('userId');
     const [explanation, setExplanation] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
     const { toast } = useToast();
     const editorRef = useRef<HTMLDivElement>(null);
+    const [content, setContent] = useState("");
 
     useEffect(() => {
         const savedExplanation = localStorage.getItem(STORAGE_KEY);
-        if (savedExplanation) {
-            setExplanation(savedExplanation);
-        }
+        const initialContent = savedExplanation || `<p>Provide a detailed explanation for the <strong>${TENSE_NAME}</strong> tense here. You can use formatting tools to structure your content.</p>`;
+        setExplanation(initialContent);
+        setContent(initialContent);
     }, []);
 
     const handleSave = () => {
         if (editorRef.current) {
-            const content = editorRef.current.innerHTML;
-            localStorage.setItem(STORAGE_KEY, content);
-            setExplanation(content);
+            const newContent = editorRef.current.innerHTML;
+            localStorage.setItem(STORAGE_KEY, newContent);
+            setExplanation(newContent);
+            setContent(newContent);
+            setIsEditing(false);
             toast({
                 title: "Success!",
                 description: "Explanation for Present Simple has been saved."
@@ -44,6 +50,16 @@ export default function PresentSimplePage() {
         document.execCommand(command, false, value);
         editorRef.current?.focus();
     }
+    
+    const handleEditToggle = () => {
+        setIsEditing(!isEditing);
+        // If we are cancelling an edit, revert the content
+        if(isEditing) {
+            if (editorRef.current) {
+                editorRef.current.innerHTML = explanation;
+            }
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -54,25 +70,41 @@ export default function PresentSimplePage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2">
                     <Card>
-                        <CardHeader>
-                            <CardTitle>Manual Explanation</CardTitle>
-                            <CardDescription>
-                                Write a clear explanation of the {TENSE_NAME} tense. This will be shown to students.
-                            </CardDescription>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <div>
+                                <CardTitle>Manual Explanation</CardTitle>
+                                <CardDescription>
+                                    {isEditing ? "Edit the explanation below." : "A clear explanation of the tense for students."}
+                                </CardDescription>
+                            </div>
+                             <div>
+                                {!isEditing ? (
+                                    <Button variant="outline" onClick={handleEditToggle}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" onClick={handleEditToggle}>Cancel</Button>
+                                        <Button onClick={handleSave}><Save className="mr-2 h-4 w-4" /> Save</Button>
+                                    </div>
+                                )}
+                            </div>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            <div>
-                                <Label htmlFor="explanation" className="sr-only">Explanation</Label>
-                                 <div className="border rounded-md">
+                             <div className="border rounded-md">
+                                <ScrollArea className="h-72">
                                     <div
                                         ref={editorRef}
                                         id="explanation"
-                                        contentEditable={true}
-                                        dangerouslySetInnerHTML={{ __html: explanation }}
-                                        onBlur={(e) => setExplanation(e.currentTarget.innerHTML)}
-                                        className="prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full rounded-t-md p-4 text-base ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                                        contentEditable={isEditing}
+                                        dangerouslySetInnerHTML={{ __html: content }}
+                                        className={cn(
+                                            "prose max-w-none prose-sm sm:prose-base min-h-[300px] w-full p-4 text-base ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+                                            isEditing && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                                            !isEditing && "bg-muted/50 select-text cursor-text"
+                                        )}
                                         suppressContentEditableWarning={true}
                                     />
+                                </ScrollArea>
+                                {isEditing && (
                                     <div className="p-2 border-t flex items-center flex-wrap gap-1">
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('bold')}} title="Bold"><Bold className="h-4 w-4"/></Button>
                                         <Button variant="ghost" size="icon" onMouseDown={(e) => {e.preventDefault(); handleFormat('italic')}} title="Italic"><Italic className="h-4 w-4"/></Button>
@@ -113,9 +145,8 @@ export default function PresentSimplePage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                </div>
+                                )}
                             </div>
-                            <Button onClick={handleSave}>Save Explanation</Button>
                         </CardContent>
                     </Card>
                 </div>
@@ -141,3 +172,5 @@ export default function PresentSimplePage() {
         </div>
     );
 }
+
+    
