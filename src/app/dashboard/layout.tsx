@@ -90,6 +90,16 @@ export default function DashboardLayout({
         fetchUserAndCounts();
     }
 
+    // Add a listener to re-fetch counts on storage change
+    const handleStorageChange = () => {
+        fetchUserAndCounts();
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+
   }, [searchParams, pathname]);
 
   if (loading) {
