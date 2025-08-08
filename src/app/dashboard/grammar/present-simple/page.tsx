@@ -45,7 +45,7 @@ export default function PresentSimplePage() {
                     description: "Explanation for Present Simple has been saved."
                 });
             } catch (error) {
-                if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+                if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
                      toast({
                         title: "Error: Content Too Large",
                         description: "The explanation is too large to save. Please reduce its size or complexity.",
@@ -192,3 +192,5 @@ export default function PresentSimplePage() {
 
     
 }
+
+    
