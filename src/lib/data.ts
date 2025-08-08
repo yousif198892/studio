@@ -221,4 +221,11 @@ export const saveSupervisorMessage = (message: SupervisorMessage) => {
     localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
 }
 
+export const deleteSupervisorMessage = (messageId: string) => {
+    if (typeof window === 'undefined') return;
+    let allMessages = getSupervisorMessagesFromStorage();
+    allMessages = allMessages.filter(m => m.id !== messageId);
+    localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
+}
+
     

@@ -7,6 +7,7 @@ import {
   User,
   getSupervisorMessagesForSupervisor,
   saveSupervisorMessage,
+  deleteSupervisorMessage
 } from "@/lib/data";
 import {
   Card,
@@ -28,8 +29,20 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/hooks/use-toast";
 
 export default function SupervisorChatPage() {
   const searchParams = useSearchParams();
@@ -41,6 +54,7 @@ export default function SupervisorChatPage() {
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (supervisorId) {
@@ -61,7 +75,6 @@ export default function SupervisorChatPage() {
       );
       setStudents(studentsWhoMessaged);
 
-      // Select the first student by default if not already selected
       if (!selectedStudent && studentsWhoMessaged.length > 0) {
         setSelectedStudent(studentsWhoMessaged[0]);
         markMessagesAsRead(studentsWhoMessaged[0].id, grouped);
@@ -118,10 +131,10 @@ export default function SupervisorChatPage() {
       id: `sup_msg_${Date.now()}`,
       studentId: selectedStudent.id,
       supervisorId: supervisorId,
-      senderId: supervisorId, // Supervisor is the sender
+      senderId: supervisorId,
       content: newMessage,
       createdAt: new Date(),
-      read: false, // This doesn't apply to the sender
+      read: false,
     };
 
     saveSupervisorMessage(message);
@@ -137,6 +150,23 @@ export default function SupervisorChatPage() {
 
     setNewMessage("");
   };
+  
+  const handleDeleteMessage = (messageId: string) => {
+    if (!selectedStudent) return;
+    deleteSupervisorMessage(messageId);
+    
+    // Update state
+    const updatedMessages = (messagesByStudent[selectedStudent.id] || []).filter(m => m.id !== messageId);
+    setMessagesByStudent(prev => ({
+      ...prev,
+      [selectedStudent.id]: updatedMessages
+    }));
+
+    toast({
+        title: "Message Deleted",
+        description: "The message has been removed.",
+    });
+  }
 
   const supervisor = supervisorId ? getUserByIdFromClient(supervisorId) : null;
   const currentConversation = selectedStudent
@@ -218,7 +248,7 @@ export default function SupervisorChatPage() {
                   <div
                     key={msg.id}
                     className={cn(
-                      "flex items-end gap-2",
+                      "flex items-end gap-2 group",
                       msg.senderId === supervisorId
                         ? "justify-end"
                         : "justify-start"
@@ -232,18 +262,41 @@ export default function SupervisorChatPage() {
                         </AvatarFallback>
                       </Avatar>
                     )}
-                    <div
-                      className={cn(
-                        "rounded-lg px-4 py-2 max-w-sm",
-                        msg.senderId === supervisorId
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted"
+                    <div className="flex items-center gap-2">
+                       {msg.senderId === supervisorId && (
+                         <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                               <Button variant="ghost" size="icon" className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity">
+                                   <Trash2 className="h-4 w-4 text-destructive"/>
+                               </Button>
+                           </AlertDialogTrigger>
+                           <AlertDialogContent>
+                               <AlertDialogHeader>
+                                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                   <AlertDialogDescription>
+                                       This will permanently delete this message. This action cannot be undone.
+                                   </AlertDialogDescription>
+                               </AlertDialogHeader>
+                               <AlertDialogFooter>
+                                   <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                   <AlertDialogAction onClick={() => handleDeleteMessage(msg.id)}>Delete</AlertDialogAction>
+                               </AlertDialogFooter>
+                           </AlertDialogContent>
+                       </AlertDialog>
                       )}
-                    >
-                      <p className="text-sm">{msg.content}</p>
-                      <p className="text-xs opacity-75 mt-1 text-right">
-                        {format(new Date(msg.createdAt), "p")}
-                      </p>
+                      <div
+                        className={cn(
+                          "rounded-lg px-4 py-2 max-w-sm",
+                          msg.senderId === supervisorId
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
+                        )}
+                      >
+                        <p className="text-sm">{msg.content}</p>
+                        <p className="text-xs opacity-75 mt-1 text-right">
+                          {format(new Date(msg.createdAt), "p")}
+                        </p>
+                      </div>
                     </div>
                     {msg.senderId === supervisorId && supervisor && (
                       <Avatar className="h-8 w-8">
@@ -285,5 +338,3 @@ export default function SupervisorChatPage() {
     </div>
   );
 }
-
-    
