@@ -168,6 +168,8 @@ export default function Dashboard() {
     return <div>{t('dashboard.loading')}</div>;
   }
 
+  const isReviewButtonDisabled = !selectedUnit || !selectedLesson;
+
   if (user?.role === "student") {
     return (
       <div className="space-y-6">
@@ -206,11 +208,17 @@ export default function Dashboard() {
                                 ))}
                             </SelectContent>
                         </Select>
-                         <Button asChild className="w-full" disabled={!selectedUnit || !selectedLesson}>
-                            <Link href={`/learn?userId=${user.id}&unit=${encodeURIComponent(selectedUnit || '')}&lesson=${encodeURIComponent(selectedLesson || '')}`}>
+                        {isReviewButtonDisabled ? (
+                            <Button className="w-full" disabled>
                                 {t('dashboard.student.startReview')}
-                            </Link>
-                        </Button>
+                            </Button>
+                        ) : (
+                            <Button asChild className="w-full">
+                                <Link href={`/learn?userId=${user.id}&unit=${encodeURIComponent(selectedUnit || '')}&lesson=${encodeURIComponent(selectedLesson || '')}`}>
+                                    {t('dashboard.student.startReview')}
+                                </Link>
+                            </Button>
+                        )}
                     </div>
                 </CardContent>
             </Card>
