@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { db } from "@/lib/db";
 
 export default function ProfilePage() {
   const { t, language, setLanguage } = useLanguage();
@@ -52,18 +54,21 @@ export default function ProfilePage() {
 
 
   useEffect(() => {
-    const userId = searchParams.get("userId");
-    if (userId) {
-      const foundUser = getUserByIdFromClient(userId);
-      setUser(foundUser || null);
-      if (foundUser) {
-          setName(foundUser.name);
-          if (foundUser.role === 'student' && foundUser.supervisorId) {
-            const foundSupervisor = getUserByIdFromClient(foundUser.supervisorId);
-            setSupervisor(foundSupervisor || null);
+    async function loadUser() {
+        const userId = searchParams.get("userId");
+        if (userId) {
+          const foundUser = await getUserByIdFromClient(userId);
+          setUser(foundUser || null);
+          if (foundUser) {
+              setName(foundUser.name);
+              if (foundUser.role === 'student' && foundUser.supervisorId) {
+                const foundSupervisor = await getUserByIdFromClient(foundUser.supervisorId);
+                setSupervisor(foundSupervisor || null);
+              }
           }
-      }
+        }
     }
+    loadUser();
   }, [searchParams]);
 
   const timezones = [
@@ -78,19 +83,12 @@ export default function ProfilePage() {
     setLanguage(value);
   };
   
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
       if (!user) return;
       
-      const updatedUser = { ...user, name };
+      const updatedUser: User = { ...user, name };
 
-      const allUsers = getAllUsersFromClient();
-      const userIndex = allUsers.findIndex(u => u.id === user.id);
-      
-      if (userIndex > -1) {
-          allUsers[userIndex] = { ...allUsers[userIndex], name };
-      }
-      
-      localStorage.setItem('users', JSON.stringify(allUsers));
+      await db.users.put(updatedUser);
       setUser(updatedUser);
 
       toast({
@@ -143,20 +141,12 @@ export default function ProfilePage() {
   };
 
 
-  const handlePictureUpload = () => {
+  const handlePictureUpload = async () => {
     if (!user || !previewImage) return;
 
-    const allUsers = getAllUsersFromClient();
-    const userIndex = allUsers.findIndex((u: User) => u.id === user.id);
     const updatedUser = { ...user, avatar: previewImage };
-
-    if (userIndex > -1) {
-      allUsers[userIndex] = updatedUser;
-    } else {
-        allUsers.push(updatedUser);
-    }
+    await db.users.put(updatedUser);
     
-    localStorage.setItem('users', JSON.stringify(allUsers));
     setUser(updatedUser);
     setPreviewImage(null);
 
@@ -166,7 +156,7 @@ export default function ProfilePage() {
       });
   }
 
-  const handleHeroPictureUpload = () => {
+  const handleHeroPictureUpload = async () => {
     if (!heroPreviewImage) {
         toast({
             title: "Error",
@@ -177,15 +167,14 @@ export default function ProfilePage() {
     }
     
     try {
-      // Use sessionStorage to avoid localStorage quota issues
-      sessionStorage.setItem('landingHeroImage', heroPreviewImage);
+      await db.keyValueStore.put('landingHeroImage', heroPreviewImage);
       toast({
         title: "Success!",
-        description: "Landing page hero image has been updated for this session."
+        description: "Landing page hero image has been updated."
       });
       setHeroPreviewImage(null);
     } catch (error) {
-      console.error("Failed to save hero image to sessionStorage:", error);
+      console.error("Failed to save hero image to IndexedDB:", error);
       if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
         toast({
             title: "Upload Failed",
@@ -209,18 +198,18 @@ export default function ProfilePage() {
     });
   }
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (!user) return;
     
     try {
-        let users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
-        users = users.filter(u => u.id !== user.id);
-        localStorage.setItem("users", JSON.stringify(users));
+        await db.users.delete(user.id);
         
         if (user.role === 'supervisor') {
-            let allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-            allWords = allWords.filter(w => w.supervisorId !== user.id);
-            localStorage.setItem('userWords', JSON.stringify(allWords));
+            const allWords = await db.words.getAll();
+            const wordsToDelete = allWords.filter(w => w.supervisorId === user.id);
+            for (const word of wordsToDelete) {
+                await db.words.delete(word.id);
+            }
         }
 
         toast({

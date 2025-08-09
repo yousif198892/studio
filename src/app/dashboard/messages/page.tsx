@@ -1,11 +1,11 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
 import {
   Message,
-  User,
-  getMessages,
+  User
 } from "@/lib/data";
 import {
   Card,
@@ -41,38 +41,33 @@ import { useSearchParams } from "next/navigation";
 import {
   getUserByIdFromClient,
 } from "@/lib/client-data";
+import { db } from "@/lib/db";
 
 function AdminInbox() {
   const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
 
+  const fetchMessages = async () => {
+      const allMessages = await db.adminMessages.getAll();
+      setMessages(allMessages.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
+  }
+
   useEffect(() => {
-    const allMessages = getMessages();
-    setMessages(allMessages);
+    fetchMessages();
   }, []);
 
-  const handleDelete = (messageId: string) => {
-    // This logic remains the same for admin messages
-    const updatedMessages = messages.filter((m) => m.id !== messageId);
-    setMessages(updatedMessages);
-
+  const handleDelete = async (messageId: string) => {
     try {
-      const storedMessages: Message[] = JSON.parse(
-        localStorage.getItem("adminMessages") || "[]"
-      );
-      const updatedStoredMessages = storedMessages.filter(
-        (m) => m.id !== messageId
-      );
-      localStorage.setItem(
-        "adminMessages",
-        JSON.stringify(updatedStoredMessages)
-      );
+      await db.adminMessages.delete(messageId);
+      const updatedMessages = messages.filter((m) => m.id !== messageId);
+      setMessages(updatedMessages);
+
       toast({
         title: "Success!",
         description: "Message deleted successfully.",
       });
     } catch (error) {
-      console.error("Failed to delete message from localStorage", error);
+      console.error("Failed to delete message from DB", error);
       toast({
         title: "Error",
         description: "Could not delete the message.",
@@ -177,10 +172,13 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userId) {
-      setUser(getUserByIdFromClient(userId) || null);
+    async function loadUser() {
+      if (userId) {
+        setUser(await getUserByIdFromClient(userId) || null);
+      }
+      setLoading(false);
     }
-    setLoading(false);
+    loadUser();
   }, [userId]);
 
   if (loading) {

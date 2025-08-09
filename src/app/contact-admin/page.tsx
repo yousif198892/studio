@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -17,13 +18,14 @@ import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef } from "react";
 import { Message } from "@/lib/data";
+import { db } from "@/lib/db";
 
 export default function ContactAdminPage() {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
 
-    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         
@@ -40,29 +42,23 @@ export default function ContactAdminPage() {
             createdAt: new Date(),
         };
 
-        // In a real app, this would be a server action.
-        // For this demo, we'll save it to localStorage.
-        setTimeout(() => {
-            try {
-                const existingMessages: Message[] = JSON.parse(localStorage.getItem('adminMessages') || '[]');
-                const updatedMessages = [...existingMessages, newMessage];
-                localStorage.setItem('adminMessages', JSON.stringify(updatedMessages));
-
-                setLoading(false);
-                toast({
-                    title: "Message Sent!",
-                    description: "Thank you for your message. We will get back to you shortly.",
-                });
-                formRef.current?.reset();
-            } catch (error) {
-                setLoading(false);
-                toast({
-                    title: "Error",
-                    description: "Could not send your message. Please try again.",
-                    variant: "destructive"
-                });
-            }
-        }, 1500);
+        try {
+            await db.adminMessages.put(newMessage);
+            
+            setLoading(false);
+            toast({
+                title: "Message Sent!",
+                description: "Thank you for your message. We will get back to you shortly.",
+            });
+            formRef.current?.reset();
+        } catch (error) {
+            setLoading(false);
+            toast({
+                title: "Error",
+                description: "Could not send your message. Please try again.",
+                variant: "destructive"
+            });
+        }
     }
 
   return (

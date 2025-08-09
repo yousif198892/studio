@@ -1,8 +1,9 @@
 
+
 'use client';
 
 import { DBSchema, openDB, IDBPDatabase } from 'idb';
-import { User, Word, Message, SupervisorMessage, PeerMessage } from './data';
+import { User, Word, Message, SupervisorMessage, PeerMessage, mockUsers, mockMessages } from './data';
 import { WordProgress } from './storage';
 
 interface LinguaLeapDB extends DBSchema {
@@ -50,12 +51,16 @@ let dbPromise: Promise<IDBPDatabase<LinguaLeapDB>> | null = null;
 function getDb(): Promise<IDBPDatabase<LinguaLeapDB>> {
   if (!dbPromise) {
     dbPromise = openDB<LinguaLeapDB>('LinguaLeapDB', 1, {
-      upgrade(db, oldVersion) {
+      upgrade(db, oldVersion, newVersion, transaction) {
         if (oldVersion < 1) {
             if (!db.objectStoreNames.contains('users')) {
                 const usersStore = db.createObjectStore('users', { keyPath: 'id' });
                 usersStore.createIndex('by-email', 'email', { unique: true });
                 usersStore.createIndex('by-supervisorId', 'supervisorId');
+                // Seed the database with mock users
+                mockUsers.forEach(user => {
+                    usersStore.add(user);
+                });
             }
             if (!db.objectStoreNames.contains('words')) {
                 const wordsStore = db.createObjectStore('words', { keyPath: 'id' });
@@ -66,7 +71,11 @@ function getDb(): Promise<IDBPDatabase<LinguaLeapDB>> {
                 progressStore.createIndex('by-studentId', 'studentId');
             }
              if (!db.objectStoreNames.contains('adminMessages')) {
-                db.createObjectStore('adminMessages', { keyPath: 'id' });
+                const adminMessagesStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
+                // Seed with mock messages
+                 mockMessages.forEach(message => {
+                    adminMessagesStore.add(message);
+                });
             }
             if (!db.objectStoreNames.contains('supervisorMessages')) {
                  const supervisorMsgStore = db.createObjectStore('supervisorMessages', { keyPath: 'id' });
@@ -129,5 +138,6 @@ export const db = {
   keyValueStore: {
     get: async (key: string) => (await getDb()).get('keyValueStore', key),
     put: async (key: string, value: any) => (await getDb()).put('keyValueStore', { key, value }),
+    delete: async (key: string) => (await getDb()).delete('keyValueStore', key),
   },
 };

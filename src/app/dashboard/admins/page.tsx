@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -37,6 +38,7 @@ import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
+import { db } from "@/lib/db";
 
 
 export default function AdminsPage() {
@@ -45,48 +47,39 @@ export default function AdminsPage() {
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const allUsers = getAllUsersFromClient();
+  const fetchSupervisors = async () => {
+    const allUsers = await getAllUsersFromClient();
     const otherSupervisors = allUsers.filter(
       (u) => u.role === "supervisor" && !u.isMainAdmin
     );
     setSupervisors(otherSupervisors);
+  }
+
+  useEffect(() => {
+    fetchSupervisors();
   }, []);
 
   const handleSupervisorAdded = (newUser: User) => {
     setSupervisors((prev) => [...prev, newUser]);
   };
   
-  const handleToggleSuspension = (userToToggle: User) => {
+  const handleToggleSuspension = async (userToToggle: User) => {
     const updatedUser = {
       ...userToToggle,
       isSuspended: !userToToggle.isSuspended,
     };
     
-    // Update state
-    setSupervisors(supervisors.map(s => s.id === updatedUser.id ? updatedUser : s));
-    
-    // Update localStorage
     try {
-      const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-      const userIndex = storedUsers.findIndex(u => u.id === updatedUser.id);
-      
-      if (userIndex > -1) {
-        storedUsers[userIndex] = updatedUser;
-      } else {
-        // This case handles if the user was somehow not in local storage but was in the mock data
-        const allUsers = getAllUsersFromClient();
-        const updatedAllUsers = allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
-        localStorage.setItem('users', JSON.stringify(updatedAllUsers));
-      }
-      localStorage.setItem('users', JSON.stringify(storedUsers));
+      await db.users.put(updatedUser);
+      // Update state
+      setSupervisors(supervisors.map(s => s.id === updatedUser.id ? updatedUser : s));
 
       toast({
           title: "Success!",
           description: `Supervisor ${userToToggle.name} has been ${updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
       });
     } catch (error) {
-        console.error("Failed to update user in localStorage", error);
+        console.error("Failed to update user in DB", error);
         toast({
             title: "Error",
             description: "Could not update supervisor status.",
@@ -95,25 +88,19 @@ export default function AdminsPage() {
     }
   }
 
-  const handleDelete = (userId: string) => {
-    // In a real app, this would be a server action.
-    const updatedSupervisors = supervisors.filter((s) => s.id !== userId);
-    setSupervisors(updatedSupervisors);
-
+  const handleDelete = async (userId: string) => {
     try {
-      // Remove from 'users' in localStorage if they were created dynamically
-      const storedUsers: User[] = JSON.parse(
-        localStorage.getItem("users") || "[]"
-      );
-      const updatedStoredUsers = storedUsers.filter((u) => u.id !== userId);
-      localStorage.setItem("users", JSON.stringify(updatedStoredUsers));
+      await db.users.delete(userId);
+      // In a real app, this would be a server action.
+      const updatedSupervisors = supervisors.filter((s) => s.id !== userId);
+      setSupervisors(updatedSupervisors);
 
       toast({
         title: "Success!",
         description: "Supervisor deleted successfully.",
       });
     } catch (error) {
-      console.error("Failed to delete supervisor from localStorage", error);
+      console.error("Failed to delete supervisor from DB", error);
       toast({
         title: "Error",
         description: "Could not delete the supervisor.",
