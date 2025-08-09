@@ -28,6 +28,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type LearningStats = {
   timeSpentSeconds: number; // total time
@@ -69,8 +70,8 @@ export default function Dashboard() {
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
   const last7Days = getLast7Days();
 
-  const totalTests = 3; // Present Simple, Past Simple, Present Continuous
-  const testsCompletedToday = stats.reviewedToday.completedTests?.length || 0;
+  const allTests = ["Present Simple", "Past Simple", "Present Continuous", "Comprehensive"];
+  const testsCompletedToday = stats.reviewedToday.completedTests || [];
 
 
   useEffect(() => {
@@ -103,7 +104,7 @@ export default function Dashboard() {
           if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
             parsedStats.reviewedToday.completedTests = [];
           }
-          if (!parsedStats.activityLog) {
+          if (!Array.isArray(parsedStats.activityLog)) {
             parsedStats.activityLog = [];
           }
           
@@ -198,57 +199,81 @@ export default function Dashboard() {
           </Link>
         </div>
 
-        <Card className="lg:col-span-3">
-          <CardHeader>
-            <CardTitle>{t('dashboard.student.progressOverview.title')}</CardTitle>
-            <CardDescription>{t('dashboard.student.progressOverview.description')}</CardDescription>
-          </CardHeader>
-          <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                  <Clock className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{formatTime(stats.reviewedToday.timeSpentSeconds)}</p>
-                  <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.timeSpent')}</p>
+        <div className="grid gap-6 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
+            <CardHeader>
+              <CardTitle>{t('dashboard.student.progressOverview.title')}</CardTitle>
+              <CardDescription>{t('dashboard.student.progressOverview.description')}</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                    <Clock className="h-8 w-8 text-primary mb-2"/>
+                    <p className="text-2xl font-bold">{formatTime(stats.reviewedToday.timeSpentSeconds)}</p>
+                    <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.timeSpent')}</p>
+                </div>
+                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                    <BarChart className="h-8 w-8 text-primary mb-2"/>
+                    <p className="text-2xl font-bold">{stats.totalWordsReviewed}</p>
+                    <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.wordsReviewed')}</p>
+                </div>
+                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                    <CalendarCheck className="h-8 w-8 text-primary mb-2"/>
+                    <p className="text-2xl font-bold">{stats.reviewedToday.count}</p>
+                    <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.reviewedToday')}</p>
+                </div>
+                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                  <Star className="h-8 w-8 text-primary mb-2"/>
+                  <p className="text-2xl font-bold">{wordsMasteredCount}</p>
+                  <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.masteredWords')}</p>
+                </div>
+            </CardContent>
+            <CardContent>
+              <h3 className="text-md font-semibold mb-2 text-center">Your Last 7 Days</h3>
+              <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
+                {last7Days.map(({ date, dayInitial }) => {
+                  const isActive = stats.activityLog.includes(date);
+                  return (
+                    <div key={date} className="flex flex-col items-center gap-2">
+                      <span className="text-sm font-medium text-muted-foreground">{dayInitial}</span>
+                      {isActive ? (
+                        <CheckCircle className="h-6 w-6 text-green-500" />
+                      ) : (
+                        <XCircle className="h-6 w-6 text-muted-foreground/50" />
+                      )}
+                    </div>
+                  );
+                })}
               </div>
-               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                  <BarChart className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{stats.totalWordsReviewed}</p>
-                  <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.wordsReviewed')}</p>
-              </div>
-               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                  <CalendarCheck className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{stats.reviewedToday.count}</p>
-                  <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.reviewedToday')}</p>
-              </div>
-              <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                <Star className="h-8 w-8 text-primary mb-2"/>
-                <p className="text-2xl font-bold">{wordsMasteredCount}</p>
-                <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.masteredWords')}</p>
-              </div>
-               <div className={cn("flex flex-col items-center justify-center p-4 rounded-lg", testsCompletedToday === totalTests ? "bg-green-100 dark:bg-green-900/50" : "bg-secondary")}>
-                  <SpellCheck className={cn("h-8 w-8 mb-2", testsCompletedToday === totalTests ? "text-green-600" : "text-primary")}/>
-                  <p className="text-2xl font-bold">{testsCompletedToday}/{totalTests}</p>
-                  <p className="text-sm text-muted-foreground">Tests Completed</p>
-              </div>
-          </CardContent>
-          <CardContent>
-            <h3 className="text-md font-semibold mb-2 text-center">Your Last 7 Days</h3>
-            <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
-              {last7Days.map(({ date, dayInitial }) => {
-                const isActive = stats.activityLog.includes(date);
-                return (
-                  <div key={date} className="flex flex-col items-center gap-2">
-                    <span className="text-sm font-medium text-muted-foreground">{dayInitial}</span>
-                    {isActive ? (
-                      <CheckCircle className="h-6 w-6 text-green-500" />
-                    ) : (
-                      <XCircle className="h-6 w-6 text-muted-foreground/50" />
-                    )}
+            </CardContent>
+          </Card>
+
+          <Card className="flex flex-col">
+              <CardHeader className="items-center pb-4">
+                  <SpellCheck className="h-10 w-10 text-primary mb-2"/>
+                  <CardTitle>Tests Completed Today</CardTitle>
+              </CardHeader>
+              <CardContent className="flex-1 flex flex-col justify-center">
+                  <div className="space-y-4">
+                      {allTests.map((testName) => (
+                          <div key={testName} className="flex items-center space-x-3">
+                              <Checkbox 
+                                  id={`test-${testName.replace(/\s+/g, '-')}`} 
+                                  checked={testsCompletedToday.includes(testName)} 
+                                  aria-label={`${testName} status`}
+                                  disabled 
+                              />
+                              <label
+                                  htmlFor={`test-${testName.replace(/\s+/g, '-')}`}
+                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                              >
+                                  {testName}
+                              </label>
+                          </div>
+                      ))}
                   </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -310,5 +335,7 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
+
+    
 
     

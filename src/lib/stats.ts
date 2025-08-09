@@ -26,6 +26,8 @@ export const updateLearningStats = ({
   durationSeconds = 0,
   testName,
 }: UpdateStatsParams) => {
+  if (!userId) return;
+  
   const storedStats = localStorage.getItem(`learningStats_${userId}`);
   const today = new Date().toISOString().split('T')[0];
 
@@ -72,3 +74,5 @@ export const updateLearningStats = ({
 
   localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
 };
+
+    
