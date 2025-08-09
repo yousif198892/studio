@@ -180,7 +180,7 @@ export default function ProfilePage() {
         if (error.name === 'QuotaExceededError') {
              toast({
                 title: "Upload Failed",
-                description: "The compressed image is still too large. Please try a smaller image file.",
+                description: "The compressed image is still too large to save. Please try a smaller image file.",
                 variant: "destructive",
             });
         } else {
@@ -408,4 +408,3 @@ export default function ProfilePage() {
   );
 }
 
-    
