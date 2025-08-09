@@ -11,17 +11,21 @@ import { useLanguage } from "@/hooks/use-language";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
+import { getHeroImage } from "@/lib/db";
 
 export function LandingPage() {
   const { t, language, setLanguage } = useLanguage();
   const [heroImage, setHeroImage] = useState("https://placehold.co/500x625.png?text=LinguaLeap");
 
   useEffect(() => {
-    // Try to get the image from localStorage
-    const storedImage = localStorage.getItem('landingHeroImage');
-    if (storedImage) {
-      setHeroImage(storedImage);
+    // This effect runs only on the client side
+    const fetchImage = async () => {
+      const storedImage = await getHeroImage();
+      if (storedImage) {
+        setHeroImage(storedImage);
+      }
     }
+    fetchImage();
   }, []);
 
   const handleLanguageChange = (checked: boolean) => {

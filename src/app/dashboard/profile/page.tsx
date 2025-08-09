@@ -38,6 +38,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { setHeroImage } from "@/lib/db";
+
 
 export default function ProfilePage() {
   const { t, language, setLanguage } = useLanguage();
@@ -174,7 +176,7 @@ export default function ProfilePage() {
       });
   }
 
-  const handleHeroPictureUpload = () => {
+  const handleHeroPictureUpload = async () => {
     if (!heroPreviewImage) {
         toast({
             title: "Error",
@@ -185,26 +187,19 @@ export default function ProfilePage() {
     }
     
     try {
-      localStorage.setItem('landingHeroImage', heroPreviewImage);
+      await setHeroImage(heroPreviewImage);
       toast({
         title: "Success!",
         description: "Landing page hero image has been updated."
       });
       setHeroPreviewImage(null);
     } catch (error) {
-      if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
-        toast({
-            title: "Upload Failed",
-            description: "The compressed image is still too large to save. Please try a smaller image file.",
-            variant: "destructive",
-        });
-      } else {
+        console.error("Failed to save hero image:", error);
         toast({
             title: "An Unknown Error Occurred",
             description: "Could not save the image. Please try again or check the browser console for details.",
             variant: "destructive",
         });
-      }
     }
   };
 
