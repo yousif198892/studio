@@ -1,7 +1,6 @@
 
 "use client";
 
-import { useFormStatus } from "react-dom";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -16,10 +15,12 @@ const initialState: {
   message: string;
   errors?: any;
   success: boolean;
+  formData?: FormData | null;
 } = {
   message: "",
   errors: {},
   success: false,
+  formData: null,
 };
 
 
@@ -29,16 +30,14 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
   const formRef = useRef<HTMLFormElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const [formData, setFormData] = useState<FormData | null>(null);
 
   useEffect(() => {
     async function createSupervisor() {
-        if (state.success && formData) {
-            setIsPending(true);
+        if (state.success && state.formData) {
             try {
-                const name = formData.get("name") as string;
-                const email = formData.get("email") as string;
-                const password = formData.get("password") as string;
+                const name = state.formData.get("name") as string;
+                const email = state.formData.get("email") as string;
+                const password = state.formData.get("password") as string;
 
                 const allUsers = await db.users.getAll();
                 if (allUsers.find(u => u.email === email)) {
@@ -87,22 +86,19 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
                 description: firstError,
                 variant: "destructive",
             });
+            setIsPending(false);
         }
     }
     createSupervisor();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, formData]);
+  }, [state]);
 
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const currentFormData = new FormData(event.currentTarget);
-    setFormData(currentFormData);
-    formAction(currentFormData);
-  }
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+    <form ref={formRef} action={(formData) => {
+      setIsPending(true);
+      formAction(formData);
+    }} className="space-y-4">
       <div className="grid gap-2">
         <Label htmlFor="name">Full Name</Label>
         <Input id="name" name="name" placeholder="Jane Doe" required />

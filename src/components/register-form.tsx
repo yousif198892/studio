@@ -16,7 +16,6 @@ import { Logo } from "./logo";
 import { validateRegistration, redirectToDashboard } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { useActionState, useEffect, useState } from "react";
-import { useFormStatus } from "react-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { db } from "@/lib/db";
@@ -28,13 +27,12 @@ const initialState = {
   success: false,
 };
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
+function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
     const { t } = useLanguage();
 
     return (
-        <Button type="submit" className="w-full mt-2" disabled={pending}>
-            {pending ? (<><Loader2 className="me-2 h-4 w-4 animate-spin" /> {t('register.createAccountButton')}...</>) : t('register.createAccountButton')}
+        <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
+            {isSubmitting ? (<><Loader2 className="me-2 h-4 w-4 animate-spin" /> {t('register.createAccountButton')}...</>) : t('register.createAccountButton')}
         </Button>
     )
 }
@@ -45,19 +43,17 @@ export function RegisterForm() {
   const { t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<FormData | null>(null);
 
    useEffect(() => {
     async function handleRegistration() {
-      if (state.success && formData) {
+      if (state.success && state.formData) {
         setIsSubmitting(true);
         try {
-            const name = formData.get("name") as string;
-            const email = formData.get("email") as string;
-            const password = formData.get("password") as string;
-            const supervisorId = formData.get("supervisorId") as string;
+            const name = state.formData.get("name") as string;
+            const email = state.formData.get("email") as string;
+            const password = state.formData.get("password") as string;
+            const supervisorId = state.formData.get("supervisorId") as string;
             
-            // Final client-side check
             const allUsers = await db.users.getAll();
             if (allUsers.some(u => u.email === email)) {
                 toast({ title: t('toasts.error'), description: t('toasts.userExists'), variant: "destructive" });
@@ -92,20 +88,16 @@ export function RegisterForm() {
         const firstErrorKey = Object.keys(state.errors || {})[0];
         const firstError = firstErrorKey ? (state.errors as any)[firstErrorKey][0] : state.message;
         toast({ title: t('toasts.error'), description: firstError, variant: "destructive" });
+        setIsSubmitting(false);
+      } else {
+        setIsSubmitting(false);
       }
     }
     
     handleRegistration();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state, formData]);
+  }, [state]);
 
-
-  const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      const currentFormData = new FormData(event.currentTarget);
-      setFormData(currentFormData);
-      formAction(currentFormData);
-  }
 
   return (
     <Card className="mx-auto max-w-sm w-full">
@@ -119,7 +111,10 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-            <form onSubmit={handleFormSubmit}>
+            <form action={(formData) => {
+              setIsSubmitting(true);
+              formAction(formData);
+            }}>
               <div className="grid gap-4 mt-4">
                 <div className="grid gap-2">
                   <Label htmlFor="student-name">{t('register.fullNameLabel')}</Label>

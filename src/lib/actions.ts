@@ -4,8 +4,6 @@
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import type { User, Word } from "./data";
-
 
 // --- WORD ACTIONS ---
 
@@ -91,9 +89,9 @@ export async function validateRegistration(prevState: any, formData: FormData) {
         };
     }
 
-    // Since we can't check the DB here, the client will do the final check for
+    // Since we can't check the DB on the server, the client will do the final check for
     // existing email and valid supervisor ID. We just return success if fields are valid.
-    return { success: true, message: "Validation successful." };
+    return { success: true, message: "Validation successful.", formData };
 }
 
 const createSupervisorSchema = z.object({
@@ -120,12 +118,9 @@ export async function validateSupervisorCreation(prevState: any, formData: FormD
   }
 
   // Client will handle checking if the user exists.
-  return { success: true, message: "Validation successful" };
+  return { success: true, message: "Validation successful", formData };
 }
 
-
-// This function is no longer a server action, but a utility function
-// that can be called from the client to perform a redirect.
 export async function redirectToDashboard(userId: string) {
     redirect(`/dashboard?userId=${userId}`);
 }
