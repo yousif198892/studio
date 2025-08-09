@@ -15,6 +15,16 @@ export const translations = {
       grammar: 'Grammar',
       requests: 'Requests',
       admins: 'Admins',
+      about: 'About',
+    },
+    about: {
+        title: "About LinguaLeap",
+        description: "The people and technology behind your learning experience.",
+        greeting: "Hello!",
+        teacherIntro: "I am Yousif, an English teacher passionate about leveraging technology to make language learning more accessible and effective. This application is a product of that passion, designed to be a tool I can use with my own students.",
+        aiIntro: "To bring this vision to life, I collaborated with Gemini, a large-scale AI from Google. Gemini handled the application development, from coding the interface to integrating the smart features that power the quizzes and learning systems.",
+        signature: "With regards,",
+        version: "App Version: {0}"
     },
     profile: {
         title: "My Profile",
@@ -275,6 +285,16 @@ export const translations = {
       grammar: 'قواعد',
       requests: 'طلبات',
       admins: 'مدراء',
+      about: 'حول',
+    },
+    about: {
+        title: "حول LinguaLeap",
+        description: "تعرف على الأشخاص والتكنولوجيا وراء تجربتك التعليمية.",
+        greeting: "مرحباً!",
+        teacherIntro: "أنا يوسف، مدرس لغة إنجليزية شغوف بالاستفادة من التكنولوجيا لجعل تعلم اللغة أكثر سهولة وفعالية. هذا التطبيق هو نتاج هذا الشغف، وهو مصمم ليكون أداة يمكنني استخدامها مع طلابي.",
+        aiIntro: "لتحقيق هذه الرؤية، تعاونت مع Gemini، وهو ذكاء اصطناعي واسع النطاق من Google. تولى Gemini تطوير التطبيق، من برمجة الواجهة إلى دمج الميزات الذكية التي تشغل الاختبارات وأنظمة التعلم.",
+        signature: "مع تحياتي،",
+        version: "إصدار التطبيق: {0}"
     },
     profile: {
         title: "ملفي الشخصي",
@@ -524,7 +544,8 @@ export const translations = {
 
 export type TranslationKey = 
     | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile' | 'sidebar.learn'
-    | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins'
+    | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins' | 'sidebar.about'
+    | 'about.title' | 'about.description' | 'about.greeting' | 'about.teacherIntro' | 'about.aiIntro' | 'about.signature' | 'about.version'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'

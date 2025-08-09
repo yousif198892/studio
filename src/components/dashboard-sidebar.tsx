@@ -19,6 +19,7 @@ import {
   Trophy,
   Target,
   SpellCheck,
+  Info,
 } from "lucide-react";
 
 import {
@@ -154,6 +155,12 @@ export function DashboardSidebar({
       href: `/dashboard/profile?userId=${user.id}`,
       label: t('sidebar.profile'),
       icon: <Settings />,
+      roles: ["student", "supervisor"],
+    },
+    {
+      href: `/dashboard/about?userId=${user.id}`,
+      label: t('sidebar.about'),
+      icon: <Info />,
       roles: ["student", "supervisor"],
     },
   ];
