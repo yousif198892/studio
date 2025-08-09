@@ -57,43 +57,36 @@ export function LoginForm() {
             return;
         }
 
-        try {
-            const { email, password } = validatedFields.data;
-            const allUsers = getAllUsers();
-            const user = allUsers.find((u) => u.email === email);
+        const { email, password } = validatedFields.data;
+        const allUsers = getAllUsers();
+        const user = allUsers.find((u) => u.email === email);
 
-            if (!user || user.password !== password) {
-                 toast({
-                    title: t('toasts.error'),
-                    description: "Invalid email or password.",
-                    variant: "destructive"
-                });
-                setIsPending(false);
-                return;
-            }
-
-            if (user.isSuspended) {
-                 toast({
-                    title: t('toasts.error'),
-                    description: "This account has been suspended.",
-                    variant: "destructive"
-                });
-                setIsPending(false);
-                return;
-            }
-            
-            // Redirect using a server action to comply with Next.js standards
-            await redirectToDashboard(user.id);
-
-        } catch (error) {
+        if (!user || user.password !== password) {
              toast({
                 title: t('toasts.error'),
-                description: "An error occurred during login.",
+                description: "Invalid email or password.",
                 variant: "destructive"
             });
-        } finally {
             setIsPending(false);
+            return;
         }
+
+        if (user.isSuspended) {
+             toast({
+                title: t('toasts.error'),
+                description: "This account has been suspended.",
+                variant: "destructive"
+            });
+            setIsPending(false);
+            return;
+        }
+        
+        // This function will throw a NEXT_REDIRECT error which is handled by Next.js
+        // The `finally` block might not execute if the redirect is successful.
+        await redirectToDashboard(user.id);
+
+        // This part will likely not be reached if redirect is successful
+        setIsPending(false);
     }
 
 
