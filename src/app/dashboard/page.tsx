@@ -252,11 +252,12 @@ export default function Dashboard() {
                     </div>
                 </CardContent>
             </Card>
-            <Card className="bg-secondary/50">
-                <CardContent className="p-4">
-                    <div className="flex justify-center items-center mb-2">
-                        <SpellCheck className="h-8 w-8 text-primary"/>
-                    </div>
+             <Card>
+                <CardHeader>
+                    <CardTitle>Tests Completed Today</CardTitle>
+                    <CardDescription>Check off your grammar knowledge for the day.</CardDescription>
+                </CardHeader>
+                <CardContent>
                     <div className="space-y-2">
                         {allTests.map((testName) => (
                             <div key={testName} className="flex items-center space-x-3">
