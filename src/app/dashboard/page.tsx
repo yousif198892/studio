@@ -147,48 +147,54 @@ export default function Dashboard() {
         <p className="text-muted-foreground">{t('dashboard.student.description')}</p>
         
          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-             <Card>
+            <Link href={`/learn?userId=${user.id}`} className="hover:opacity-90 transition-opacity">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Words to Review
+                        </CardTitle>
+                        <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{wordsToReviewCount}</div>
+                        <p className="text-xs text-muted-foreground underline">
+                            Start Review Session
+                        </p>
+                    </CardContent>
+                </Card>
+            </Link>
+            <Link href={`/dashboard/learning-words?userId=${user.id}`} className="hover:opacity-90 transition-opacity">
+                <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                        Words to Review
+                        Words Reviewed Today
                     </CardTitle>
-                    <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                    <BarChart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{wordsToReviewCount}</div>
+                    <div className="text-2xl font-bold">{stats.reviewedToday.count}</div>
                     <p className="text-xs text-muted-foreground">
-                      <Link href={`/learn?userId=${user.id}`} className="underline hover:text-primary">Start Review Session</Link>
+                        {wordsLearningCount} in learning queue
                     </p>
                 </CardContent>
-            </Card>
-             <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                      Words Reviewed Today
-                  </CardTitle>
-                  <BarChart className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                  <div className="text-2xl font-bold">{stats.reviewedToday.count}</div>
-                   <p className="text-xs text-muted-foreground">
-                      {wordsLearningCount} in learning queue
-                  </p>
-              </CardContent>
-            </Card>
-            <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-sm font-medium">
-                        Mastered Words
-                    </CardTitle>
-                    <Trophy className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                    <div className="text-2xl font-bold">{wordsMasteredCount}</div>
-                    <p className="text-xs text-muted-foreground">
-                        Keep up the great work!
-                    </p>
-                </CardContent>
-            </Card>
+                </Card>
+            </Link>
+            <Link href={`/dashboard/mastered-words?userId=${user.id}`} className="hover:opacity-90 transition-opacity">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium">
+                            Mastered Words
+                        </CardTitle>
+                        <Trophy className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{wordsMasteredCount}</div>
+                        <p className="text-xs text-muted-foreground">
+                            Keep up the great work!
+                        </p>
+                    </CardContent>
+                </Card>
+            </Link>
         </div>
         
         <Card>
@@ -327,3 +333,5 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
+
+    
