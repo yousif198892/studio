@@ -102,7 +102,7 @@ export default function Dashboard() {
           if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
             parsedStats.reviewedToday.timeSpentSeconds = 0;
           }
-          if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
+           if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
             parsedStats.reviewedToday.completedTests = [];
           }
           if (!Array.isArray(parsedStats.activityLog)) {
@@ -304,13 +304,3 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
-
-    
-
-    
-
-    
-
-
-
-    
