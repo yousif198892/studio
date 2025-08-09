@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { format, subDays } from "date-fns";
 import Link from "next/link";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type LearningStats = {
   timeSpentSeconds: number;
@@ -39,6 +40,7 @@ type LearningStats = {
     count: number;
     date: string; // YYYY-MM-DD
     timeSpentSeconds: number;
+    completedTests: string[];
   };
   activityLog: string[]; // ['2024-07-21', '2024-07-22']
 };
@@ -60,6 +62,9 @@ const getLast7Days = () => {
   }
   return days.reverse();
 };
+
+const allTests = ["Present Simple", "Past Simple", "Present Continuous", "Comprehensive"];
+
 
 export default function StudentsPage() {
   const searchParams = useSearchParams();
@@ -83,7 +88,7 @@ export default function StudentsPage() {
             let stats: LearningStats = {
                 timeSpentSeconds: 0,
                 totalWordsReviewed: 0,
-                reviewedToday: { count: 0, date: today, timeSpentSeconds: 0 },
+                reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
                 activityLog: [],
             };
             if (storedStats) {
@@ -93,10 +98,13 @@ export default function StudentsPage() {
                     parsedStats.activityLog = [];
                  }
                  if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
-                    parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
+                    parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
                  }
                   if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
                     parsedStats.reviewedToday.timeSpentSeconds = 0;
+                  }
+                  if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
+                    parsedStats.reviewedToday.completedTests = [];
                   }
                  stats = parsedStats;
             }
@@ -152,7 +160,7 @@ export default function StudentsPage() {
         const today = new Date().toISOString().split('T')[0];
         setStudents(getStudentsBySupervisorIdFromClient(userId).map(s => ({
             ...s,
-            stats: { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0}, activityLog: [] },
+            stats: { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: []}, activityLog: [] },
             wordsLearningCount: 0,
             wordsMasteredCount: 0
         })));
@@ -227,23 +235,45 @@ export default function StudentsPage() {
                                           <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.masteredWords')}</p>
                                       </div>
                                    </div>
-                                    <div>
-                                      <h3 className="text-md font-semibold mb-2 text-center">Last 7 Days Activity</h3>
-                                      <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
-                                        {last7Days.map(({ date, dayInitial }) => {
-                                          const isActive = student.stats.activityLog.includes(date);
-                                          return (
-                                            <div key={date} className="flex flex-col items-center gap-2">
-                                              <span className="text-sm font-medium text-muted-foreground">{dayInitial}</span>
-                                              {isActive ? (
-                                                <CheckCircle className="h-6 w-6 text-green-500" />
-                                              ) : (
-                                                <XCircle className="h-6 w-6 text-muted-foreground/50" />
-                                              )}
+                                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <h3 className="text-md font-semibold mb-2 text-center">Last 7 Days Activity</h3>
+                                            <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
+                                                {last7Days.map(({ date, dayInitial }) => {
+                                                const isActive = student.stats.activityLog.includes(date);
+                                                return (
+                                                    <div key={date} className="flex flex-col items-center gap-2">
+                                                    <span className="text-sm font-medium text-muted-foreground">{dayInitial}</span>
+                                                    {isActive ? (
+                                                        <CheckCircle className="h-6 w-6 text-green-500" />
+                                                    ) : (
+                                                        <XCircle className="h-6 w-6 text-muted-foreground/50" />
+                                                    )}
+                                                    </div>
+                                                );
+                                                })}
                                             </div>
-                                          );
-                                        })}
-                                      </div>
+                                        </div>
+                                        <div>
+                                             <h3 className="text-md font-semibold mb-2 text-center">Tests Completed Today</h3>
+                                             <div className="p-4 rounded-lg bg-secondary space-y-3">
+                                                {allTests.map(testName => (
+                                                <div key={testName} className="flex items-center gap-2">
+                                                    <Checkbox 
+                                                    id={`test-${student.id}-${testName}`}
+                                                    checked={student.stats.reviewedToday.completedTests.includes(testName)}
+                                                    disabled 
+                                                    />
+                                                    <label
+                                                    htmlFor={`test-${student.id}-${testName}`}
+                                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                                    >
+                                                    {testName}
+                                                    </label>
+                                                </div>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
                                     <div className="pt-4 flex justify-end">
                                       <AlertDialog>
