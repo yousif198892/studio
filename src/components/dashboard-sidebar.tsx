@@ -37,6 +37,7 @@ import { Button } from "./ui/button";
 import { type User } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { cn } from "@/lib/utils";
+import { SheetTitle } from "./ui/sheet";
 
 type DashboardSidebarProps = {
   user: User;
@@ -170,60 +171,61 @@ export function DashboardSidebar({
 
   return (
     <Sidebar className="border-r" side="left">
-      <SidebarHeader>
-        <div className="flex items-center gap-2 p-2">
-            <Logo />
-            <span className="font-bold text-lg font-headline">LinguaLeap</span>
-        </div>
-      </SidebarHeader>
-      <SidebarContent className="p-2">
-        <SidebarMenu>
-          {filteredMenuItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <Link href={item.href} className="w-full">
-                <SidebarMenuButton
-                  isActive={pathname === item.href.split('?')[0]}
-                  className="w-full justify-start"
-                >
-                  <div className="flex items-center gap-2">
-                    {item.icon}
-                    <span>{item.label}</span>
-                  </div>
-                   <div className="ml-auto flex items-center gap-2">
-                    {(item.totalCount ?? 0) > 0 && (
-                      <SidebarMenuBadge>{item.totalCount}</SidebarMenuBadge>
-                    )}
-                    {(item.unreadCount ?? 0) > 0 && (
-                      <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
-                          {item.unreadCount}
-                      </SidebarMenuBadge>
-                    )}
-                   </div>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
-      </SidebarContent>
-      <SidebarFooter className="p-2 border-t">
-        <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
-          <Avatar>
-            <AvatarImage src={user?.avatar} alt="User" />
-            <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
-          </Avatar>
-          <div className="flex-1 overflow-hidden">
-            <p className={cn("font-semibold text-sm truncate", user.isMainAdmin && "text-red-500")}>{user?.name}</p>
-            <p className="text-xs text-muted-foreground truncate">
-              {user?.email}
-            </p>
-          </div>
-          <Link href="/login">
-            <Button variant="ghost" size="icon">
-                <LogOut className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </SidebarFooter>
+        <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
+        <SidebarHeader>
+            <div className="flex items-center gap-2 p-2">
+                <Logo />
+                <span className="font-bold text-lg font-headline">LinguaLeap</span>
+            </div>
+        </SidebarHeader>
+        <SidebarContent className="p-2">
+            <SidebarMenu>
+            {filteredMenuItems.map((item) => (
+                <SidebarMenuItem key={item.href}>
+                <Link href={item.href} className="w-full">
+                    <SidebarMenuButton
+                    isActive={pathname === item.href.split('?')[0]}
+                    className="w-full justify-start"
+                    >
+                    <div className="flex items-center gap-2">
+                        {item.icon}
+                        <span>{item.label}</span>
+                    </div>
+                    <div className="ml-auto flex items-center gap-2">
+                        {(item.totalCount ?? 0) > 0 && (
+                        <SidebarMenuBadge>{item.totalCount}</SidebarMenuBadge>
+                        )}
+                        {(item.unreadCount ?? 0) > 0 && (
+                        <SidebarMenuBadge className="bg-destructive text-destructive-foreground">
+                            {item.unreadCount}
+                        </SidebarMenuBadge>
+                        )}
+                    </div>
+                    </SidebarMenuButton>
+                </Link>
+                </SidebarMenuItem>
+            ))}
+            </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter className="p-2 border-t">
+            <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
+            <Avatar>
+                <AvatarImage src={user?.avatar} alt="User" />
+                <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1 overflow-hidden">
+                <p className={cn("font-semibold text-sm truncate", user.isMainAdmin && "text-red-500")}>{user?.name}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+                </p>
+            </div>
+            <Link href="/login">
+                <Button variant="ghost" size="icon">
+                    <LogOut className="h-4 w-4" />
+                </Button>
+            </Link>
+            </div>
+        </SidebarFooter>
     </Sidebar>
   );
 }
