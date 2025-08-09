@@ -88,10 +88,10 @@ export function LandingPage() {
               </div>
               <div className="flex justify-center">
                  <Image
-                    src="https://placehold.co/600x400.png"
-                    alt="Hero"
-                    width={600}
-                    height={400}
+                    src="/hero.png"
+                    alt="An illustration of a smartphone with a language learning interface, an English book, and a globe."
+                    width={500}
+                    height={625}
                     className="rounded-xl shadow-2xl"
                   />
               </div>
