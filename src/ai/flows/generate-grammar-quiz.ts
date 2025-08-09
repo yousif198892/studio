@@ -61,10 +61,25 @@ const tenseExamples: Record<string, string> = {
   'Present Continuous': presentContinuousExamples,
 }
 
+const instructionsForPresentContinuous = `
+1. Create a fill-in-the-blank style question where the auxiliary verb (am, is, are) is PART of the sentence. The blank should represent the main verb in its present participle (-ing) form.
+2. Provide four options: one is the correctly spelled present participle, and the other three are plausible but incorrect common misspellings of that verb. For example, for the verb 'bake', the options could be 'baking' (correct), 'bakeing', 'bakking', 'bakeng'.
+`;
+
+const instructionsForOtherTenses = `
+1. Create a fill-in-the-blank style question.
+2. Provide four options: one is the correct verb form for the tense, and the other three are plausible but incorrect verb forms (e.g., wrong tense, wrong conjugation).
+`;
+
+
 // Define the prompt with specific instructions for the AI
 const prompt = ai.definePrompt({
   name: 'generateGrammarQuizPrompt',
-  input: { schema: GenerateGrammarQuizInputSchema },
+  input: { schema: z.object({
+    tense: z.string(),
+    examples: z.string(),
+    instructions: z.string(),
+  }) },
   output: { schema: GenerateGrammarQuizOutputSchema },
   prompt: `You are an expert English teacher creating a grammar quiz. Your task is to generate 5 multiple-choice questions to test a student's understanding of the specified tense.
 
@@ -76,13 +91,8 @@ Example sentences for the '{{{tense}}}' tense:
 {{{examples}}}
 
 For each question:
-{{#if (eq tense 'Present Continuous')}}
-1. Create a fill-in-the-blank style question where the auxiliary verb (am, is, are) is PART of the sentence. The blank should represent the main verb in its present participle (-ing) form.
-2. Provide four options: one is the correctly spelled present participle, and the other three are plausible but incorrect common misspellings of that verb. For example, for the verb 'bake', the options could be 'baking' (correct), 'bakeing', 'bakking', 'bakeng'.
-{{else}}
-1. Create a fill-in-the-blank style question.
-2. Provide four options: one is the correct verb form for the tense, and the other three are plausible but incorrect verb forms (e.g., wrong tense, wrong conjugation).
-{{/if}}
+{{{instructions}}}
+
 3. Ensure the correct answer is one of the four options.
 4. The output must be a JSON object containing a 'questions' array with exactly 5 question objects.
 `,
@@ -102,7 +112,9 @@ const generateGrammarQuizFlow = ai.defineFlow(
         throw new Error(`Currently, quizzes for '${input.tense}' are not supported.`);
     }
     
-    const { output } = await prompt({ ...input, examples });
+    const instructions = input.tense === 'Present Continuous' ? instructionsForPresentContinuous : instructionsForOtherTenses;
+
+    const { output } = await prompt({ ...input, examples, instructions });
     if (!output) {
       throw new Error('AI failed to generate quiz questions.');
     }
