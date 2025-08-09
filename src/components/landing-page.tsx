@@ -13,12 +13,13 @@ import { useEffect, useState } from "react";
 
 export function LandingPage() {
   const { t, language, setLanguage } = useLanguage();
-  const [heroImage, setHeroImage] = useState("https://placehold.co/500x625.png");
+  const [heroImage, setHeroImage] = useState("https://placehold.co/500x625.png?text=LinguaLeap");
 
   useEffect(() => {
-    const storedImage = localStorage.getItem('landingHeroImage');
-    if (storedImage) {
-      setHeroImage(storedImage);
+    // Try to get the image from sessionStorage first
+    const sessionImage = sessionStorage.getItem('landingHeroImage');
+    if (sessionImage) {
+      setHeroImage(sessionImage);
     }
   }, []);
 

@@ -125,14 +125,13 @@ export default function ProfilePage() {
           const img = document.createElement("img");
           img.onload = () => {
               const canvas = document.createElement('canvas');
-              const MAX_WIDTH = 800; // Define max width for hero image
+              const MAX_WIDTH = 800;
               const scaleSize = MAX_WIDTH / img.width;
               canvas.width = MAX_WIDTH;
               canvas.height = img.height * scaleSize;
               const ctx = canvas.getContext('2d');
               if (ctx) {
                 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                // Use JPEG for better compression for photos, with quality 0.8
                 const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
                 setHeroPreviewImage(dataUrl);
               }
@@ -177,21 +176,17 @@ export default function ProfilePage() {
         return;
     }
     
-    // The previous implementation had a flawed error check.
-    // This is a more direct way to save and handle potential errors,
-    // although with modern browsers and the compression in place,
-    // the quota error is highly unlikely with typical images.
     try {
-      localStorage.setItem('landingHeroImage', heroPreviewImage);
+      // Use sessionStorage to avoid localStorage quota issues
+      sessionStorage.setItem('landingHeroImage', heroPreviewImage);
       toast({
         title: "Success!",
-        description: "Landing page hero image has been updated."
+        description: "Landing page hero image has been updated for this session."
       });
-      setHeroPreviewImage(null); // Clear preview after successful upload
+      setHeroPreviewImage(null);
     } catch (error) {
-      console.error("Failed to save hero image to localStorage:", error);
-      // Check the error name to provide a more specific message
-      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+      console.error("Failed to save hero image to sessionStorage:", error);
+      if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
         toast({
             title: "Upload Failed",
             description: "The compressed image is still too large to save. Please try a smaller image file.",
