@@ -121,7 +121,7 @@ export default function Dashboard() {
         setStats(currentStats);
 
       } else if (foundUser?.role === 'supervisor') {
-          const studentList = getStudentsBySupervisorIdFromClient(userId);
+          const studentList = getStudentsBysupervisorIdFromClient(userId);
           setStudents(studentList);
       }
     }
@@ -151,14 +151,14 @@ export default function Dashboard() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
-                            Words to Review
+                            {t('dashboard.student.reviewTitle')}
                         </CardTitle>
                         <CalendarCheck className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{wordsToReviewCount}</div>
                         <p className="text-xs text-muted-foreground underline">
-                            Start Review Session
+                            {t('dashboard.student.startReview')}
                         </p>
                     </CardContent>
                 </Card>
@@ -167,14 +167,14 @@ export default function Dashboard() {
                 <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                        Words Reviewed Today
+                         {t('dashboard.student.progressOverview.reviewedToday')}
                     </CardTitle>
                     <BarChart className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{stats.reviewedToday.count}</div>
                     <p className="text-xs text-muted-foreground">
-                        {wordsLearningCount} in learning queue
+                        {t('dashboard.student.learningQueue', wordsLearningCount)}
                     </p>
                 </CardContent>
                 </Card>
@@ -183,14 +183,14 @@ export default function Dashboard() {
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">
-                            Mastered Words
+                           {t('dashboard.student.progressOverview.masteredWords')}
                         </CardTitle>
                         <Trophy className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{wordsMasteredCount}</div>
                         <p className="text-xs text-muted-foreground">
-                            Keep up the great work!
+                            {t('dashboard.student.greatWork')}
                         </p>
                     </CardContent>
                 </Card>
@@ -206,12 +206,12 @@ export default function Dashboard() {
                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <Clock className="h-8 w-8 text-primary mb-2"/>
                   <p className="text-2xl font-bold">{formatTime(stats.reviewedToday.timeSpentSeconds)}</p>
-                  <p className="text-sm text-muted-foreground text-center">Time Spent Today</p>
+                  <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.timeSpentToday')}</p>
               </div>
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <BarChart className="h-8 w-8 text-primary mb-2"/>
                   <p className="text-2xl font-bold">{stats.totalWordsReviewed}</p>
-                  <p className="text-sm text-muted-foreground text-center">Total Words Reviewed</p>
+                  <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.totalWordsReviewed')}</p>
               </div>
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <CalendarCheck className="h-8 w-8 text-primary mb-2"/>
@@ -229,7 +229,7 @@ export default function Dashboard() {
         <div className="grid gap-6 lg:grid-cols-5">
              <Card className="lg:col-span-3">
                 <CardHeader>
-                    <CardTitle>Last 7 Days Activity</CardTitle>
+                    <CardTitle>{t('dashboard.student.activity.title')}</CardTitle>
                 </CardHeader>
                  <CardContent>
                     <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
@@ -251,7 +251,7 @@ export default function Dashboard() {
             </Card>
              <Card className="lg:col-span-2">
                 <CardHeader>
-                  <CardTitle>Tests Completed Today</CardTitle>
+                  <CardTitle>{t('dashboard.student.tests.title')}</CardTitle>
                 </CardHeader>
                  <CardContent className="space-y-3">
                     {allTests.map(testName => (
@@ -333,5 +333,7 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
+
+    
 
     

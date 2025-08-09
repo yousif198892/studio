@@ -118,13 +118,24 @@ export const translations = {
             description: "Here's a summary of your learning progress. Keep up the great work!",
             reviewTitle: "Words to Review",
             reviewDescription: "Words that are due for a review session.",
+            startReview: "Start Review Session",
+            learningQueue: "{0} in learning queue",
+            greatWork: "Keep up the great work!",
             progressOverview: {
                 title: "Progress Overview",
                 description: "A snapshot of your learning activity.",
                 timeSpent: "Time Spent",
                 wordsReviewed: "Words Reviewed",
                 reviewedToday: "Reviewed Today",
-                masteredWords: "Mastered Words"
+                masteredWords: "Mastered Words",
+                timeSpentToday: "Time Spent Today",
+                totalWordsReviewed: "Total Words Reviewed",
+            },
+            activity: {
+              title: "Last 7 Days Activity"
+            },
+            tests: {
+              title: "Tests Completed Today"
             }
         },
         supervisor: {
@@ -367,13 +378,24 @@ export const translations = {
             description: "إليك ملخص لتقدمك في التعلم. استمر في العمل الرائع!",
             reviewTitle: "كلمات للمراجعة",
             reviewDescription: "الكلمات التي حان وقت مراجعتها.",
+            startReview: "ابدأ جلسة المراجعة",
+            learningQueue: "{0} في قائمة الانتظار للتعلم",
+            greatWork: "استمر في العمل الرائع!",
             progressOverview: {
                 title: "نظرة عامة على التقدم",
                 description: "لقطة من نشاطك التعليمي.",
                 timeSpent: "الوقت المستغرق",
                 wordsReviewed: "الكلمات المراجعة",
                 reviewedToday: "تمت مراجعته اليوم",
-                masteredWords: "الكلمات المتقنة"
+                masteredWords: "الكلمات المتقنة",
+                timeSpentToday: "الوقت المستغرق اليوم",
+                totalWordsReviewed: "إجمالي الكلمات التي تمت مراجعتها",
+            },
+            activity: {
+              title: "نشاط آخر 7 أيام"
+            },
+            tests: {
+              title: "الاختبارات المكتملة اليوم"
             }
         },
         supervisor: {
@@ -514,8 +536,9 @@ export type TranslationKey =
     | 'landing.features.supervisorTools.title' | 'landing.features.supervisorTools.description'
     | 'landing.features.srs.title' | 'landing.features.srs.description'
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
-    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription'
-    | 'dashboard.student.progressOverview.title' | 'dashboard.student.progressOverview.description' | 'dashboard.student.progressOverview.timeSpent' | 'dashboard.student.progressOverview.wordsReviewed' | 'dashboard.student.progressOverview.reviewedToday' | 'dashboard.student.progressOverview.masteredWords'
+    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.startReview' | 'dashboard.student.learningQueue' | 'dashboard.student.greatWork'
+    | 'dashboard.student.progressOverview.title' | 'dashboard.student.progressOverview.description' | 'dashboard.student.progressOverview.timeSpent' | 'dashboard.student.progressOverview.wordsReviewed' | 'dashboard.student.progressOverview.reviewedToday' | 'dashboard.student.progressOverview.masteredWords' | 'dashboard.student.progressOverview.timeSpentToday' | 'dashboard.student.progressOverview.totalWordsReviewed'
+    | 'dashboard.student.activity.title' | 'dashboard.student.tests.title'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'
     | 'dashboard.loading'
     | 'learn.backToDashboard' | 'learn.sessionFinished.title' | 'learn.sessionFinished.description'
@@ -530,3 +553,5 @@ export type TranslationKey =
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+
+    
