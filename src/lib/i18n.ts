@@ -8,6 +8,13 @@ export const translations = {
       myStudents: "My Students",
       profile: "Profile",
       learn: "Learn",
+      learningWords: 'Learning Words',
+      masteredWords: 'Mastered Words',
+      chat: 'Chat',
+      classmates: 'Classmates',
+      grammar: 'Grammar',
+      requests: 'Requests',
+      admins: 'Admins',
     },
     profile: {
         title: "My Profile",
@@ -249,7 +256,14 @@ export const translations = {
       addWord: "إضافة كلمة",
       myStudents: "طلابي",
       profile: "الملف الشخصي",
-      learn: "تعلّم"
+      learn: "تعلّم",
+      learningWords: 'كلمات أتعلمها',
+      masteredWords: 'كلمات أتقنتها',
+      chat: 'محادثة',
+      classmates: 'زملاء الدراسة',
+      grammar: 'قواعد',
+      requests: 'طلبات',
+      admins: 'مدراء',
     },
     profile: {
         title: "ملفي الشخصي",
@@ -488,6 +502,7 @@ export const translations = {
 
 export type TranslationKey = 
     | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile' | 'sidebar.learn'
+    | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
