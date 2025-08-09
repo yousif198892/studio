@@ -68,19 +68,24 @@ const prompt = ai.definePrompt({
   output: { schema: GenerateGrammarQuizOutputSchema },
   prompt: `You are an expert English teacher creating a grammar quiz. Your task is to generate 5 multiple-choice questions to test a student's understanding of the specified tense.
 
-  Tense to test: {{{tense}}}
+Tense to test: {{{tense}}}
 
-  Base the quiz on the fundamental structure and usage shown in these example sentences, but DO NOT use the exact same sentences in your questions. Create new, different sentences for the quiz.
-  
-  Example sentences for the '{{{tense}}}' tense:
-  {{{examples}}}
+Base the quiz on the fundamental structure and usage shown in these example sentences, but DO NOT use the exact same sentences in your questions. Create new, different sentences for the quiz.
 
-  For each question:
-  1. Create a fill-in-the-blank style question.
-  2. Provide four options: one is the correct verb form for the tense, and the other three are plausible but incorrect verb forms (e.g., wrong tense, wrong conjugation).
-  3. Ensure the correct answer is one of the four options.
-  4. The output must be a JSON object containing a 'questions' array with exactly 5 question objects.
-  `,
+Example sentences for the '{{{tense}}}' tense:
+{{{examples}}}
+
+For each question:
+{{#if (eq tense 'Present Continuous')}}
+1. Create a fill-in-the-blank style question where the auxiliary verb (am, is, are) is PART of the sentence. The blank should represent the main verb in its present participle (-ing) form.
+2. Provide four options: one is the correctly spelled present participle, and the other three are plausible but incorrect common misspellings of that verb. For example, for the verb 'bake', the options could be 'baking' (correct), 'bakeing', 'bakking', 'bakeng'.
+{{else}}
+1. Create a fill-in-the-blank style question.
+2. Provide four options: one is the correct verb form for the tense, and the other three are plausible but incorrect verb forms (e.g., wrong tense, wrong conjugation).
+{{/if}}
+3. Ensure the correct answer is one of the four options.
+4. The output must be a JSON object containing a 'questions' array with exactly 5 question objects.
+`,
 });
 
 
