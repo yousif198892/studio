@@ -37,7 +37,6 @@ import { Button } from "./ui/button";
 import { type User } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { cn } from "@/lib/utils";
-import { SheetTitle } from "./ui/sheet";
 
 type DashboardSidebarProps = {
   user: User;
@@ -171,7 +170,6 @@ export function DashboardSidebar({
 
   return (
     <Sidebar className="border-r" side="left">
-        <SheetTitle className="sr-only">Sidebar Navigation</SheetTitle>
         <SidebarHeader>
             <div className="flex items-center gap-2 p-2">
                 <Logo />
@@ -229,3 +227,5 @@ export function DashboardSidebar({
     </Sidebar>
   );
 }
+
+    
