@@ -11,7 +11,7 @@ import {
 import { getWordsForStudent } from "@/lib/data";
 import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
 import { User } from "@/lib/data";
-import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle } from "lucide-react";
+import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -28,6 +28,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format, subDays } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type LearningStats = {
   timeSpentSeconds: number; // total time
@@ -52,6 +53,8 @@ const getLast7Days = () => {
   }
   return days.reverse();
 };
+
+const allTests = ["Present Simple", "Past Simple", "Present Continuous", "Comprehensive"];
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
@@ -87,36 +90,35 @@ export default function Dashboard() {
         setWordsLearningCount(learning);
 
         const storedStats = localStorage.getItem(`learningStats_${userId}`);
+        const today = new Date().toISOString().split('T')[0];
+        let currentStats: LearningStats;
+
         if (storedStats) {
-          const parsedStats: LearningStats = JSON.parse(storedStats);
-          const today = new Date().toISOString().split('T')[0];
-          
-          if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
-            parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
-          }
-           if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
-            parsedStats.reviewedToday.timeSpentSeconds = 0;
-          }
-           if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
-            parsedStats.reviewedToday.completedTests = [];
-          }
-          if (!Array.isArray(parsedStats.activityLog)) {
-            parsedStats.activityLog = [];
-          }
-          
-          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(parsedStats));
-          setStats(parsedStats);
+          currentStats = JSON.parse(storedStats);
         } else {
-          // Initialize stats if they don't exist
-          const initialStats: LearningStats = {
+           currentStats = {
             timeSpentSeconds: 0,
             totalWordsReviewed: 0,
-            reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0], timeSpentSeconds: 0, completedTests: [] },
+            reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
             activityLog: [],
           };
-          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(initialStats));
-          setStats(initialStats);
         }
+        
+        if (!currentStats.reviewedToday || currentStats.reviewedToday.date !== today) {
+            currentStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
+        }
+        if (typeof currentStats.reviewedToday.timeSpentSeconds !== 'number') {
+            currentStats.reviewedToday.timeSpentSeconds = 0;
+        }
+        if (!Array.isArray(currentStats.reviewedToday.completedTests)) {
+            currentStats.reviewedToday.completedTests = [];
+        }
+        if (!Array.isArray(currentStats.activityLog)) {
+            currentStats.activityLog = [];
+        }
+        
+        localStorage.setItem(`learningStats_${userId}`, JSON.stringify(currentStats));
+        setStats(currentStats);
 
       } else if (foundUser?.role === 'supervisor') {
           const studentList = getStudentsBySupervisorIdFromClient(userId);
@@ -167,7 +169,7 @@ export default function Dashboard() {
                   <BarChart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalWordsReviewed}</div>
+                  <div className="text-2xl font-bold">{stats.reviewedToday.count}</div>
                    <p className="text-xs text-muted-foreground">
                       {wordsLearningCount} in learning queue
                   </p>
@@ -176,14 +178,14 @@ export default function Dashboard() {
             <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
-                        Reviewed Today
+                        Words to Review
                     </CardTitle>
                     <CalendarCheck className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">{stats.reviewedToday.count}</div>
+                    <div className="text-2xl font-bold">{wordsToReviewCount}</div>
                     <p className="text-xs text-muted-foreground">
-                      {wordsToReviewCount} words pending
+                      words pending
                     </p>
                 </CardContent>
             </Card>
@@ -203,8 +205,8 @@ export default function Dashboard() {
             </Card>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3">
-             <Card className="lg:col-span-2">
+        <div className="grid gap-6 lg:grid-cols-5">
+             <Card className="lg:col-span-3">
                 <CardHeader>
                     <CardTitle>Last 7 Days Activity</CardTitle>
                 </CardHeader>
@@ -226,17 +228,19 @@ export default function Dashboard() {
                     </div>
                 </CardContent>
             </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('dashboard.student.reviewTitle')}</CardTitle>
-                <CardDescription>{t('dashboard.student.reviewDescription')}</CardDescription>
-              </CardHeader>
-              <CardContent>
-                 <Link href={`/learn?userId=${user.id}`}>
-                    <Button className="w-full">Start Review Session</Button>
-                </Link>
-              </CardContent>
-            </Card>
+             <div className="lg:col-span-2 space-y-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Words to Review</CardTitle>
+                        <CardDescription>You have {wordsToReviewCount} words ready for review.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button className="w-full" asChild>
+                            <Link href={`/learn?userId=${user.id}`}>Start Review Session</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
       </div>
     );
@@ -299,5 +303,3 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
-
-    
