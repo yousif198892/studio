@@ -14,7 +14,7 @@ const addWordSchema = z.object({
 });
 
 // This action ONLY calls the AI and returns the options.
-// The client is responsible for creating the word and saving it to IndexedDB.
+// The client is responsible for creating the word and saving it to localStorage.
 export async function getAiWordOptions(data: {
     word: string;
     definition: string;
@@ -62,8 +62,6 @@ const registerSchema = z.object({
     supervisorId: z.string().optional(),
   });
 
-// This action only validates the data. 
-// The client will handle the actual user creation in IndexedDB.
 export async function validateRegistration(prevState: any, formData: FormData) {
     const validatedFields = registerSchema.safeParse({
         name: formData.get("name"),
@@ -88,9 +86,7 @@ export async function validateRegistration(prevState: any, formData: FormData) {
             success: false,
         };
     }
-
-    // Since we can't check the DB on the server, the client will do the final check for
-    // existing email and valid supervisor ID. We just return success if fields are valid.
+    
     return { success: true, message: "Validation successful.", formData };
 }
 
@@ -100,8 +96,6 @@ const createSupervisorSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters.'),
 });
 
-// This action only validates the data.
-// Client handles the DB interaction.
 export async function validateSupervisorCreation(prevState: any, formData: FormData) {
   const validatedFields = createSupervisorSchema.safeParse({
     name: formData.get("name"),
@@ -116,8 +110,7 @@ export async function validateSupervisorCreation(prevState: any, formData: FormD
       success: false,
     };
   }
-
-  // Client will handle checking if the user exists.
+  
   return { success: true, message: "Validation successful", formData };
 }
 

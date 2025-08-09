@@ -12,7 +12,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Word } from "@/lib/data";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
-import { db } from "@/lib/db";
 import { z } from "zod";
 
 const toBase64 = (file: File): Promise<string> =>
@@ -71,32 +70,37 @@ export function EditWordForm({ word: initialWord }: { word: Word }) {
         imageDataUri = await toBase64(imageFile);
       }
 
-      const wordFromDb = await db.words.get(initialWord.id);
-      if (!wordFromDb) throw new Error("Word not found in database.");
+      let storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+      const wordIndex = storedWords.findIndex(w => w.id === initialWord.id);
+
+      if (wordIndex === -1) throw new Error("Word not found in database.");
 
       const updatedWord: Word = {
-          ...wordFromDb,
+          ...storedWords[wordIndex],
           word,
           definition,
           unit: unit || "",
           lesson: lesson || "",
-          imageUrl: imageDataUri || wordFromDb.imageUrl,
+          imageUrl: imageDataUri || storedWords[wordIndex].imageUrl,
       };
 
-      await db.words.put(updatedWord);
+      storedWords[wordIndex] = updatedWord;
+      localStorage.setItem('userWords', JSON.stringify(storedWords));
 
       toast({
         title: t('toasts.success'),
         description: t('toasts.updateWordSuccess'),
       });
 
-      // Manually trigger a storage event to notify other components like the words page
-      window.dispatchEvent(new Event('storage'));
       router.push(`/dashboard/words?userId=${userId}`);
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-      toast({ message: `Failed to update word: ${errorMessage}`, success: false });
+      toast({
+            title: t('toasts.error'),
+            description: `Failed to update word: ${errorMessage}`,
+            variant: "destructive",
+        });
     } finally {
       setIsPending(false);
     }

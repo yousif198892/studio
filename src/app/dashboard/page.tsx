@@ -16,8 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getWordsForStudent } from "@/lib/data";
-import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
+import { getWordsForStudent, getUserById, getStudentsBySupervisorId } from "@/lib/data";
 import { User } from "@/lib/data";
 import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck } from "lucide-react";
 import Image from "next/image";
@@ -76,7 +75,7 @@ export default function Dashboard() {
   useEffect(() => {
     const userId = searchParams?.get('userId') as string;
     if (userId) {
-      const foundUser = getUserByIdFromClient(userId);
+      const foundUser = getUserById(userId);
       setUser(foundUser);
       
       if (foundUser?.role === 'student') {
@@ -121,7 +120,7 @@ export default function Dashboard() {
         setStats(currentStats);
 
       } else if (foundUser?.role === 'supervisor') {
-          const studentList = getStudentsBySupervisorIdFromClient(userId);
+          const studentList = getStudentsBySupervisorId(userId);
           setStudents(studentList);
       }
     }

@@ -17,15 +17,14 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef } from "react";
-import { Message } from "@/lib/data";
-import { db } from "@/lib/db";
+import { Message, getMessages } from "@/lib/data";
 
 export default function ContactAdminPage() {
     const { toast } = useToast();
     const [loading, setLoading] = useState(false);
     const formRef = useRef<HTMLFormElement>(null);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
         
@@ -43,7 +42,12 @@ export default function ContactAdminPage() {
         };
 
         try {
-            await db.adminMessages.put(newMessage);
+            const existingMessages = getMessages();
+            const updatedMessages = [...existingMessages, newMessage];
+            
+            // This filters out mock messages before saving to localStorage
+            const messagesToStore = updatedMessages.filter(msg => !msg.id.startsWith("msg"));
+            localStorage.setItem("adminMessages", JSON.stringify(messagesToStore));
             
             setLoading(false);
             toast({

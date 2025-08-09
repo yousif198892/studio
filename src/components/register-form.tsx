@@ -18,24 +18,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useActionState, useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { db } from "@/lib/db";
-import { User } from "@/lib/data";
+import { User, getAllUsers } from "@/lib/data";
 
 const initialState = {
   message: "",
   errors: {},
   success: false,
+  formData: null
 };
-
-function SubmitButton({ isSubmitting }: { isSubmitting: boolean }) {
-    const { t } = useLanguage();
-
-    return (
-        <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
-            {isSubmitting ? (<><Loader2 className="me-2 h-4 w-4 animate-spin" /> {t('register.createAccountButton')}...</>) : t('register.createAccountButton')}
-        </Button>
-    )
-}
 
 export function RegisterForm() {
   const [state, formAction] = useActionState(validateRegistration, initialState);
@@ -54,7 +44,7 @@ export function RegisterForm() {
             const password = state.formData.get("password") as string;
             const supervisorId = state.formData.get("supervisorId") as string;
             
-            const allUsers = await db.users.getAll();
+            const allUsers = getAllUsers();
             if (allUsers.some(u => u.email === email)) {
                 toast({ title: t('toasts.error'), description: t('toasts.userExists'), variant: "destructive" });
                 return;
@@ -75,7 +65,10 @@ export function RegisterForm() {
                 supervisorId: supervisorId,
             };
             
-            await db.users.put(newUser);
+            const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+            storedUsers.push(newUser);
+            localStorage.setItem('users', JSON.stringify(storedUsers));
+            
             toast({ title: t('toasts.success'), description: t('toasts.registerSuccess') });
             await redirectToDashboard(newUser.id);
 
@@ -89,12 +82,14 @@ export function RegisterForm() {
         const firstError = firstErrorKey ? (state.errors as any)[firstErrorKey][0] : state.message;
         toast({ title: t('toasts.error'), description: firstError, variant: "destructive" });
         setIsSubmitting(false);
-      } else {
-        setIsSubmitting(false);
       }
     }
     
-    handleRegistration();
+    if (state.success) {
+      handleRegistration();
+    } else if (state.message) {
+      setIsSubmitting(false);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 

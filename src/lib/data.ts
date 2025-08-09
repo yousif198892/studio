@@ -2,8 +2,6 @@
 
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
-// These functions are intended for SERVER-SIDE USE. For client-side data fetching,
-// use `src/lib/client-data.ts`.
 
 import { getStudentProgressFromStorage, saveAllStudentProgressInStorage, WordProgress } from './storage';
 
@@ -94,16 +92,18 @@ export function getAllUsers(): User[] {
 
   mockUsers.forEach(user => userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar }));
   
-  // In a server context, we can only access the mock data.
-  // The full user list including localStorage users is passed from the client for actions.
+  if (typeof window !== 'undefined') {
+    const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+    storedUsers.forEach(user => userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar }));
+  }
 
   return Array.from(userMap.values());
 }
 
 
 // Helper functions to simulate data fetching
-export const getUserById = (id: string, allUsers: User[]): User | undefined => {
-    return allUsers.find(u => u.id === id);
+export const getUserById = (id: string): User | undefined => {
+    return getAllUsers().find(u => u.id === id);
 }
 
 const getSupervisorWordsFromStorage = (): Word[] => {
@@ -121,12 +121,7 @@ const getSupervisorWordsFromStorage = (): Word[] => {
 export const getWordsForStudent = (studentId: string): Word[] => {
     if (typeof window === 'undefined') return [];
     
-    // This function is client-side only because it needs the student's supervisorId.
-    // We import a client-side user getter.
-    const { getUserByIdFromClient } = require('./client-data');
-
-
-    const student = getUserByIdFromClient(studentId);
+    const student = getUserById(studentId);
     if (!student?.supervisorId) return [];
 
     const supervisorWords = getWordsBySupervisor(student.supervisorId);
@@ -225,9 +220,8 @@ const getPeerMessagesFromStorage = (): PeerMessage[] => {
 
 export const getConversationsForStudent = (userId: string): { supervisor: Record<string, SupervisorMessage[]>, peer: Record<string, PeerMessage[]> } => {
     if (typeof window === 'undefined') return { supervisor: {}, peer: {} };
-
-    const { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } = require('./client-data');
-    const currentUser = getUserByIdFromClient(userId);
+    
+    const currentUser = getUserById(userId);
     
     const supervisorConversations: Record<string, SupervisorMessage[]> = {};
     const peerConversations: Record<string, PeerMessage[]> = {};
@@ -254,7 +248,7 @@ export const getConversationsForStudent = (userId: string): { supervisor: Record
 
     // For a supervisor, get all chats with their students
     if (currentUser?.role === 'supervisor') {
-        const students = getStudentsBySupervisorIdFromClient(userId);
+        const students = getStudentsBySupervisorId(userId);
         const supervisorMessages = getSupervisorMessagesFromStorage();
         for (const student of students) {
             supervisorConversations[student.id] = supervisorMessages
@@ -304,4 +298,8 @@ export const getUnreadPeerMessageCount = (studentId: string): number => {
     const allMessages = getPeerMessagesFromStorage();
     return allMessages.filter(m => m.receiverId === studentId && !m.read).length;
 };
-    
+
+export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
+    const allUsers = getAllUsers();
+    return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
+}

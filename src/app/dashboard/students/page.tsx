@@ -8,8 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
-import { User, Word, getWordsForStudent } from "@/lib/data";
+import { User, Word, getWordsForStudent, getStudentsBySupervisorId, getUserById } from "@/lib/data";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
@@ -78,9 +77,9 @@ export default function StudentsPage() {
   
   useEffect(() => {
     if (userId) {
-        const currentUser = getUserByIdFromClient(userId);
+        const currentUser = getUserById(userId);
         setUser(currentUser || null);
-        const studentList = getStudentsBySupervisorIdFromClient(userId);
+        const studentList = getStudentsBySupervisorId(userId);
         const today = new Date().toISOString().split('T')[0];
 
         const studentsWithStats = studentList.map(student => {
@@ -158,7 +157,7 @@ export default function StudentsPage() {
       const userId = searchParams?.get('userId') as string;
       if (userId) {
         const today = new Date().toISOString().split('T')[0];
-        setStudents(getStudentsBySupervisorIdFromClient(userId).map(s => ({
+        setStudents(getStudentsBySupervisorId(userId).map(s => ({
             ...s,
             stats: { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: []}, activityLog: [] },
             wordsLearningCount: 0,

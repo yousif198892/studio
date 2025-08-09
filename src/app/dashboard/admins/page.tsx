@@ -32,13 +32,11 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { User } from "@/lib/data";
-import { getAllUsersFromClient } from "@/lib/client-data";
+import { User, getAllUsers } from "@/lib/data";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
-import { db } from "@/lib/db";
 
 
 export default function AdminsPage() {
@@ -47,8 +45,8 @@ export default function AdminsPage() {
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const { toast } = useToast();
 
-  const fetchSupervisors = async () => {
-    const allUsers = await getAllUsersFromClient();
+  const fetchSupervisors = () => {
+    const allUsers = getAllUsers();
     const otherSupervisors = allUsers.filter(
       (u) => u.role === "supervisor" && !u.isMainAdmin
     );
@@ -63,50 +61,52 @@ export default function AdminsPage() {
     setSupervisors((prev) => [...prev, newUser]);
   };
   
-  const handleToggleSuspension = async (userToToggle: User) => {
+  const handleToggleSuspension = (userToToggle: User) => {
+    const allUsers = getAllUsers();
+    const userIndex = allUsers.findIndex(u => u.id === userToToggle.id);
+    
+    if (userIndex === -1) {
+        toast({ title: "Error", description: "Could not find user to update.", variant: "destructive" });
+        return;
+    }
+
     const updatedUser = {
       ...userToToggle,
       isSuspended: !userToToggle.isSuspended,
     };
     
-    try {
-      await db.users.put(updatedUser);
-      // Update state
-      setSupervisors(supervisors.map(s => s.id === updatedUser.id ? updatedUser : s));
-
-      toast({
-          title: "Success!",
-          description: `Supervisor ${userToToggle.name} has been ${updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
-      });
-    } catch (error) {
-        console.error("Failed to update user in DB", error);
-        toast({
-            title: "Error",
-            description: "Could not update supervisor status.",
-            variant: "destructive",
-        });
+    // In a real app, this would be a server action.
+    // For now, we update the user in our "database" (localStorage).
+    const storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+    const storedUserIndex = storedUsers.findIndex(u => u.id === userToToggle.id);
+    
+    if (storedUserIndex > -1) {
+        storedUsers[storedUserIndex] = updatedUser;
+        localStorage.setItem("users", JSON.stringify(storedUsers));
     }
+
+    // Update state
+    setSupervisors(supervisors.map(s => s.id === updatedUser.id ? updatedUser : s));
+
+    toast({
+        title: "Success!",
+        description: `Supervisor ${userToToggle.name} has been ${updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
+    });
   }
 
-  const handleDelete = async (userId: string) => {
-    try {
-      await db.users.delete(userId);
-      // In a real app, this would be a server action.
-      const updatedSupervisors = supervisors.filter((s) => s.id !== userId);
-      setSupervisors(updatedSupervisors);
+  const handleDelete = (userId: string) => {
+    // In a real app, this would be a server action.
+    let storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
+    storedUsers = storedUsers.filter((u) => u.id !== userId);
+    localStorage.setItem("users", JSON.stringify(storedUsers));
+    
+    const updatedSupervisors = supervisors.filter((s) => s.id !== userId);
+    setSupervisors(updatedSupervisors);
 
-      toast({
-        title: "Success!",
-        description: "Supervisor deleted successfully.",
-      });
-    } catch (error) {
-      console.error("Failed to delete supervisor from DB", error);
-      toast({
-        title: "Error",
-        description: "Could not delete the supervisor.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Success!",
+      description: "Supervisor deleted successfully.",
+    });
   };
 
   return (

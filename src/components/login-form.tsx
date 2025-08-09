@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -18,9 +19,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
-import { db } from "@/lib/db";
 import { useRouter } from "next/navigation";
 import { redirectToDashboard } from "@/lib/actions";
+import { getAllUsers } from "@/lib/data";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -58,7 +59,7 @@ export function LoginForm() {
 
         try {
             const { email, password } = validatedFields.data;
-            const allUsers = await db.users.getAll();
+            const allUsers = getAllUsers();
             const user = allUsers.find((u) => u.email === email);
 
             if (!user || user.password !== password) {

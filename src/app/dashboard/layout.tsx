@@ -6,10 +6,8 @@ import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { User, getMessages, Word, getWordsBySupervisor, getWordsForStudent } from "@/lib/data";
+import { User, getMessages, Word, getWordsBySupervisor, getWordsForStudent, getConversationsForStudent, getStudentsBySupervisorId, getAllUsers } from "@/lib/data";
 import { useEffect, useState, useCallback } from "react";
-import { getAllUsersFromClient, getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
-import { db } from "@/lib/db";
 
 export default function DashboardLayout({
   children,
@@ -32,7 +30,7 @@ export default function DashboardLayout({
   const [masteredWordsCount, setMasteredWordsCount] = useState(0);
   const [chatConversationsCount, setChatConversationsCount] = useState(0);
 
-  const fetchUserAndCounts = useCallback(async () => {
+  const fetchUserAndCounts = useCallback(() => {
     const userId = searchParams?.get('userId') as string;
     
     if (!userId) {
@@ -40,43 +38,42 @@ export default function DashboardLayout({
       return;
     }
     
-    const foundUser = await getUserByIdFromClient(userId);
+    const allUsers = getAllUsers();
+    const foundUser = allUsers.find(u => u.id === userId);
     
     if (foundUser) {
       setUser(foundUser);
-      // const allConversations = getConversationsForStudent(userId);
+      const allConversations = getConversationsForStudent(userId);
       
       // Calculate counts based on role
       if (foundUser.role === 'supervisor') {
-          const allUsers = await getAllUsersFromClient();
           if (foundUser.isMainAdmin) {
-              const adminMessages = await db.adminMessages.getAll();
-              setRequestsCount(adminMessages.length);
+              setRequestsCount(getMessages().length);
               const otherAdmins = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin).length;
               setAdminsCount(otherAdmins);
           }
-          // const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
-          // setUnreadChatCount(supervisorUnread);
+          const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
+          setUnreadChatCount(supervisorUnread);
 
-          const words = await getWordsBySupervisor(userId);
+          const words = getWordsBySupervisor(userId);
           setWordsCount(words.length);
           
-          const students = await getStudentsBySupervisorIdFromClient(userId);
+          const students = getStudentsBySupervisorId(userId);
           setStudentsCount(students.length);
           setChatConversationsCount(students.length);
 
       } else if (foundUser.role === 'student' && foundUser.supervisorId) {
-          //  const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
-          //  const peerUnread = Object.values(allConversations.peer).flat().filter(m => m.senderId !== userId && !m.read).length;
-          //  setUnreadChatCount(supervisorUnread + peerUnread);
+           const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
+           const peerUnread = Object.values(allConversations.peer).flat().filter(m => m.senderId !== userId && !m.read).length;
+           setUnreadChatCount(supervisorUnread + peerUnread);
            
-           const studentWords = await getWordsForStudent(foundUser.id);
+           const studentWords = getWordsForStudent(foundUser.id);
            const learning = studentWords.filter(w => w.strength >= 0).length;
            const mastered = studentWords.filter(w => w.strength === -1).length;
            setLearningWordsCount(learning);
            setMasteredWordsCount(mastered);
 
-           const classmates = (await getStudentsBySupervisorIdFromClient(foundUser.supervisorId)).filter(s => s.id !== foundUser.id);
+           const classmates = getStudentsBySupervisorId(foundUser.supervisorId).filter(s => s.id !== foundUser.id);
            setClassmatesCount(classmates.length);
            setChatConversationsCount(classmates.length + 1); // classmates + supervisor
       }

@@ -11,11 +11,9 @@ import {
   deleteConversation,
   savePeerMessage,
   PeerMessage,
+  getStudentsBySupervisorId,
+  getUserById,
 } from "@/lib/data";
-import {
-  getStudentsBySupervisorIdFromClient,
-  getUserByIdFromClient,
-} from "@/lib/client-data";
 import {
   Card,
   CardContent,
@@ -69,11 +67,11 @@ export default function ChatPage() {
   const loadConversations = useCallback(() => {
     if (!userId) return;
 
-    const user = getUserByIdFromClient(userId);
+    const user = getUserById(userId);
     setCurrentUser(user);
 
     if (user?.role === 'supervisor') {
-      const students = getStudentsBySupervisorIdFromClient(userId);
+      const students = getStudentsBySupervisorId(userId);
       const convos = getConversationsForStudent(userId); // Get all messages
       const partners: ConversationPartner[] = students.map(student => {
         const studentConvo = convos.supervisor[student.id] || [];
@@ -98,7 +96,7 @@ export default function ChatPage() {
         
         // Supervisor conversation
         if (user.supervisorId) {
-            const supervisor = getUserByIdFromClient(user.supervisorId);
+            const supervisor = getUserById(user.supervisorId);
             if (supervisor) {
                 const supervisorConvo = convos.supervisor[supervisor.id] || [];
                 const lastMessage = supervisorConvo.length > 0 ? supervisorConvo[supervisorConvo.length - 1] : null;
@@ -114,7 +112,7 @@ export default function ChatPage() {
 
         // Peer conversations
         for (const peerId in convos.peer) {
-            const peer = getUserByIdFromClient(peerId);
+            const peer = getUserById(peerId);
             if (peer) {
                 const peerConvo = convos.peer[peerId];
                 const lastMessage = peerConvo.length > 0 ? peerConvo[peerConvo.length - 1] : null;

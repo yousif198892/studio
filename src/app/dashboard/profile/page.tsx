@@ -25,8 +25,7 @@ import { Upload } from "@/components/ui/upload";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User, Word } from "@/lib/data";
-import { getUserByIdFromClient, getAllUsersFromClient } from "@/lib/client-data";
+import { User, Word, getAllUsers, getUserById } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -39,7 +38,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { db } from "@/lib/db";
 
 export default function ProfilePage() {
   const { t, language, setLanguage } = useLanguage();
@@ -54,21 +52,18 @@ export default function ProfilePage() {
 
 
   useEffect(() => {
-    async function loadUser() {
-        const userId = searchParams.get("userId");
-        if (userId) {
-          const foundUser = await getUserByIdFromClient(userId);
-          setUser(foundUser || null);
-          if (foundUser) {
-              setName(foundUser.name);
-              if (foundUser.role === 'student' && foundUser.supervisorId) {
-                const foundSupervisor = await getUserByIdFromClient(foundUser.supervisorId);
-                setSupervisor(foundSupervisor || null);
-              }
+    const userId = searchParams.get("userId");
+    if (userId) {
+      const foundUser = getUserById(userId);
+      setUser(foundUser || null);
+      if (foundUser) {
+          setName(foundUser.name);
+          if (foundUser.role === 'student' && foundUser.supervisorId) {
+            const foundSupervisor = getUserById(foundUser.supervisorId);
+            setSupervisor(foundSupervisor || null);
           }
-        }
+      }
     }
-    loadUser();
   }, [searchParams]);
 
   const timezones = [
@@ -83,12 +78,24 @@ export default function ProfilePage() {
     setLanguage(value);
   };
   
-  const handleSaveChanges = async () => {
+  const handleSaveChanges = () => {
       if (!user) return;
+      
+      const allUsers = getAllUsers();
+      const userIndex = allUsers.findIndex(u => u.id === user.id);
       
       const updatedUser: User = { ...user, name };
 
-      await db.users.put(updatedUser);
+      if(userIndex > -1) {
+          const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+          const storedUserIndex = storedUsers.findIndex(u => u.id === user.id);
+
+          if (storedUserIndex > -1) {
+              storedUsers[storedUserIndex] = updatedUser;
+              localStorage.setItem('users', JSON.stringify(storedUsers));
+          }
+      }
+      
       setUser(updatedUser);
 
       toast({
@@ -141,11 +148,22 @@ export default function ProfilePage() {
   };
 
 
-  const handlePictureUpload = async () => {
+  const handlePictureUpload = () => {
     if (!user || !previewImage) return;
-
+    
+    const allUsers = getAllUsers();
+    const userIndex = allUsers.findIndex(u => u.id === user.id);
+    
     const updatedUser = { ...user, avatar: previewImage };
-    await db.users.put(updatedUser);
+
+    if(userIndex > -1) {
+        const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+        const storedUserIndex = storedUsers.findIndex(u => u.id === user.id);
+        if (storedUserIndex > -1) {
+            storedUsers[storedUserIndex] = updatedUser;
+            localStorage.setItem('users', JSON.stringify(storedUsers));
+        }
+    }
     
     setUser(updatedUser);
     setPreviewImage(null);
@@ -156,7 +174,7 @@ export default function ProfilePage() {
       });
   }
 
-  const handleHeroPictureUpload = async () => {
+  const handleHeroPictureUpload = () => {
     if (!heroPreviewImage) {
         toast({
             title: "Error",
@@ -167,14 +185,13 @@ export default function ProfilePage() {
     }
     
     try {
-      await db.keyValueStore.put('landingHeroImage', heroPreviewImage);
+      localStorage.setItem('landingHeroImage', heroPreviewImage);
       toast({
         title: "Success!",
         description: "Landing page hero image has been updated."
       });
       setHeroPreviewImage(null);
     } catch (error) {
-      console.error("Failed to save hero image to IndexedDB:", error);
       if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED')) {
         toast({
             title: "Upload Failed",
@@ -198,18 +215,18 @@ export default function ProfilePage() {
     });
   }
 
-  const handleDeleteAccount = async () => {
+  const handleDeleteAccount = () => {
     if (!user) return;
     
     try {
-        await db.users.delete(user.id);
+        let storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
+        storedUsers = storedUsers.filter(u => u.id !== user.id);
+        localStorage.setItem('users', JSON.stringify(storedUsers));
         
         if (user.role === 'supervisor') {
-            const allWords = await db.words.getAll();
-            const wordsToDelete = allWords.filter(w => w.supervisorId === user.id);
-            for (const word of wordsToDelete) {
-                await db.words.delete(word.id);
-            }
+            let storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
+            storedWords = storedWords.filter(w => w.supervisorId !== user.id);
+            localStorage.setItem('userWords', JSON.stringify(storedWords));
         }
 
         toast({

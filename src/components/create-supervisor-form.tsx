@@ -7,9 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { User } from "@/lib/data";
+import { User, getAllUsers } from "@/lib/data";
 import { validateSupervisorCreation } from "@/lib/actions";
-import { db } from "@/lib/db";
 
 const initialState: {
   message: string;
@@ -39,7 +38,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
                 const email = state.formData.get("email") as string;
                 const password = state.formData.get("password") as string;
 
-                const allUsers = await db.users.getAll();
+                const allUsers = getAllUsers();
                 if (allUsers.find(u => u.email === email)) {
                     toast({
                         title: "Error",
@@ -60,7 +59,9 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
                     isMainAdmin: false,
                 };
                 
-                await db.users.put(newUser);
+                const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
+                storedUsers.push(newUser);
+                localStorage.setItem("users", JSON.stringify(storedUsers));
                 
                 toast({
                     title: "Success!",
@@ -89,8 +90,13 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
             setIsPending(false);
         }
     }
-    createSupervisor();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
+    if (state.success) {
+      createSupervisor();
+    } else if (state.message) {
+      setIsPending(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
 

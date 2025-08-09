@@ -10,9 +10,8 @@ import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word } from "@/lib/data";
+import { Word, getWordsBySupervisor } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
-import { db } from "@/lib/db";
 
 const toBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -55,9 +54,7 @@ export function AddWordForm() {
     }
 
     try {
-        const wordsFromDb = await db.words.getAll();
-        const supervisorWords = wordsFromDb.filter(w => w.supervisorId === userId);
-
+        const supervisorWords = getWordsBySupervisor(userId);
         if (supervisorWords.some(w => w.word.toLowerCase() === wordInput.toLowerCase())) {
             toast({
                 title: t('toasts.error'),
@@ -93,8 +90,11 @@ export function AddWordForm() {
                 strength: 0,
             };
 
-            // Save to IndexedDB
-            await db.words.put(newWord);
+            // Save to localStorage
+            const existingWords = getWordsBySupervisor(userId);
+            const allWords = [...existingWords, newWord];
+            const otherSupervisorWords = JSON.parse(localStorage.getItem('userWords') || '[]').filter((w: Word) => w.supervisorId !== userId);
+            localStorage.setItem('userWords', JSON.stringify([...otherSupervisorWords, ...allWords]));
             
             toast({
                 title: t('toasts.success'),
@@ -102,8 +102,6 @@ export function AddWordForm() {
             });
             
             formRef.current?.reset();
-            // Manually trigger a storage event to notify other components like the words page
-            window.dispatchEvent(new Event('storage'));
             router.push(`/dashboard/words?userId=${userId}`);
 
         } else {

@@ -3,8 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { User, getConversationsForStudent, Word, getWordsForStudent } from "@/lib/data";
-import { getStudentsBySupervisorIdFromClient, getUserByIdFromClient } from "@/lib/client-data";
+import { User, getConversationsForStudent, Word, getWordsForStudent, getUserById, getStudentsBySupervisorId } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -26,9 +25,9 @@ export default function ClassmatesPage() {
     useEffect(() => {
         const fetchData = () => {
             if (userId) {
-                const currentUser = getUserByIdFromClient(userId);
+                const currentUser = getUserById(userId);
                 if (currentUser && currentUser.supervisorId) {
-                    const allStudents = getStudentsBySupervisorIdFromClient(currentUser.supervisorId);
+                    const allStudents = getStudentsBySupervisorId(currentUser.supervisorId);
                     
                     const foundClassmates = allStudents
                         .filter(student => student.id !== userId)

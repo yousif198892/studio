@@ -5,7 +5,9 @@
 import { useEffect, useState } from "react";
 import {
   Message,
-  User
+  User,
+  getMessages,
+  getUserById,
 } from "@/lib/data";
 import {
   Card,
@@ -38,42 +40,28 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useSearchParams } from "next/navigation";
-import {
-  getUserByIdFromClient,
-} from "@/lib/client-data";
-import { db } from "@/lib/db";
 
 function AdminInbox() {
   const [messages, setMessages] = useState<Message[]>([]);
   const { toast } = useToast();
 
-  const fetchMessages = async () => {
-      const allMessages = await db.adminMessages.getAll();
-      setMessages(allMessages.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-  }
-
   useEffect(() => {
-    fetchMessages();
+    setMessages(getMessages());
   }, []);
 
-  const handleDelete = async (messageId: string) => {
-    try {
-      await db.adminMessages.delete(messageId);
-      const updatedMessages = messages.filter((m) => m.id !== messageId);
-      setMessages(updatedMessages);
+  const handleDelete = (messageId: string) => {
+    // In a real app, this would be a server action.
+    let storedMessages: Message[] = JSON.parse(localStorage.getItem("adminMessages") || "[]");
+    storedMessages = storedMessages.filter((m) => m.id !== messageId);
+    localStorage.setItem("adminMessages", JSON.stringify(storedMessages));
+    
+    const updatedMessages = messages.filter((m) => m.id !== messageId);
+    setMessages(updatedMessages);
 
-      toast({
-        title: "Success!",
-        description: "Message deleted successfully.",
-      });
-    } catch (error) {
-      console.error("Failed to delete message from DB", error);
-      toast({
-        title: "Error",
-        description: "Could not delete the message.",
-        variant: "destructive",
-      });
-    }
+    toast({
+      title: "Success!",
+      description: "Message deleted successfully.",
+    });
   };
 
   return (
@@ -172,13 +160,10 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadUser() {
-      if (userId) {
-        setUser(await getUserByIdFromClient(userId) || null);
-      }
-      setLoading(false);
+    if (userId) {
+      setUser(getUserById(userId) || null);
     }
-    loadUser();
+    setLoading(false);
   }, [userId]);
 
   if (loading) {
