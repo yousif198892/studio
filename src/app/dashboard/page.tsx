@@ -11,7 +11,7 @@ import {
 import { getWordsForStudent } from "@/lib/data";
 import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
 import { User } from "@/lib/data";
-import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star, GraduationCap, Trophy, CheckCircle, XCircle, SpellCheck } from "lucide-react";
+import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -27,8 +27,6 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format, subDays } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 
 type LearningStats = {
@@ -38,7 +36,7 @@ type LearningStats = {
     count: number;
     date: string; // YYYY-MM-DD
     timeSpentSeconds: number; // time spent today
-    completedTests: string[]; // ['Present Simple', 'Past Simple']
+    completedTests: string[];
   };
   activityLog: string[]; // ['2024-07-21', '2024-07-22']
 };
@@ -71,9 +69,6 @@ export default function Dashboard() {
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
   const last7Days = getLast7Days();
 
-  const allTests = ["Present Simple", "Past Simple", "Present Continuous", "Comprehensive Test"];
-  const testsCompletedToday = stats.reviewedToday.completedTests || [];
-
 
   useEffect(() => {
     const userId = searchParams?.get('userId') as string;
@@ -99,7 +94,7 @@ export default function Dashboard() {
           if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
             parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
           }
-          if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
+           if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
             parsedStats.reviewedToday.timeSpentSeconds = 0;
           }
            if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
@@ -160,7 +155,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="text-2xl font-bold">{formatTime(stats.reviewedToday.timeSpentSeconds)}</div>
                 <p className="text-xs text-muted-foreground">
-                  +{(stats.timeSpentSeconds / 60).toFixed(1)}m total
+                  Today's learning time
                 </p>
               </CardContent>
             </Card>
@@ -304,3 +299,5 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
+
+    
