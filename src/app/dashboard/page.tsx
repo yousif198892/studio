@@ -29,11 +29,12 @@ import Link from "next/link";
 import { format, subDays } from "date-fns";
 
 type LearningStats = {
-  timeSpentSeconds: number;
+  timeSpentSeconds: number; // total time
   totalWordsReviewed: number;
   reviewedToday: {
     count: number;
     date: string; // YYYY-MM-DD
+    timeSpentSeconds: number; // time spent today
   };
   activityLog: string[]; // ['2024-07-21', '2024-07-22']
 };
@@ -58,7 +59,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState<LearningStats>({
     timeSpentSeconds: 0,
     totalWordsReviewed: 0,
-    reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+    reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0], timeSpentSeconds: 0 },
     activityLog: [],
   });
   const [wordsToReviewCount, setWordsToReviewCount] = useState(0);
@@ -86,22 +87,30 @@ export default function Dashboard() {
         if (storedStats) {
           const parsedStats: LearningStats = JSON.parse(storedStats);
           const today = new Date().toISOString().split('T')[0];
+          
+          // Ensure reviewedToday object and its properties exist
+          if (!parsedStats.reviewedToday) {
+            parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
+          }
+          
           // Ensure reviewedToday is reset if the date has changed
           if (parsedStats.reviewedToday.date !== today) {
-            parsedStats.reviewedToday = { count: 0, date: today };
-            localStorage.setItem(`learningStats_${userId}`, JSON.stringify(parsedStats));
+            parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
           }
+
           // Ensure activityLog exists
           if (!parsedStats.activityLog) {
             parsedStats.activityLog = [];
           }
+          
+          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(parsedStats));
           setStats(parsedStats);
         } else {
           // Initialize stats if they don't exist
           const initialStats: LearningStats = {
             timeSpentSeconds: 0,
             totalWordsReviewed: 0,
-            reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+            reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0], timeSpentSeconds: 0 },
             activityLog: [],
           };
           localStorage.setItem(`learningStats_${userId}`, JSON.stringify(initialStats));
@@ -193,7 +202,7 @@ export default function Dashboard() {
           <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <Clock className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{formatTime(stats.timeSpentSeconds)}</p>
+                  <p className="text-2xl font-bold">{formatTime(stats.reviewedToday.timeSpentSeconds)}</p>
                   <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.timeSpent')}</p>
               </div>
                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">

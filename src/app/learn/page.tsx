@@ -13,11 +13,12 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 type LearningStats = {
-  timeSpentSeconds: number;
+  timeSpentSeconds: number; // This is the total lifetime value
   totalWordsReviewed: number;
   reviewedToday: {
     count: number;
     date: string;
+    timeSpentSeconds: number;
   };
   activityLog: string[];
 };
@@ -44,6 +45,38 @@ export default function LearnPage() {
     }
   }, [userId]);
 
+  const updateStats = useCallback((userId: string, reviewedCount: number, durationSeconds: number) => {
+    const storedStats = localStorage.getItem(`learningStats_${userId}`);
+    const today = new Date().toISOString().split('T')[0];
+    
+    const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
+      timeSpentSeconds: 0,
+      totalWordsReviewed: 0,
+      reviewedToday: { count: 0, date: today, timeSpentSeconds: 0 },
+      activityLog: [],
+    };
+    
+    // Reset daily stats if the date has changed
+    if (stats.reviewedToday.date !== today) {
+        stats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
+    }
+
+    stats.totalWordsReviewed += reviewedCount;
+    stats.timeSpentSeconds += durationSeconds;
+    stats.reviewedToday.count += reviewedCount;
+    stats.reviewedToday.timeSpentSeconds += durationSeconds;
+
+    // Log activity
+    if (!stats.activityLog) {
+      stats.activityLog = []; // Ensure activityLog exists for old data
+    }
+    if (!stats.activityLog.includes(today)) {
+      stats.activityLog.push(today);
+    }
+
+    localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+  }, []);
+
   useEffect(() => {
     startTimeRef.current = Date.now();
     loadNextWord();
@@ -53,15 +86,10 @@ export default function LearnPage() {
           const endTime = Date.now();
           const durationSeconds = Math.round((endTime - startTimeRef.current) / 1000);
           
-          const storedStats = localStorage.getItem(`learningStats_${userId}`);
-          const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
-            timeSpentSeconds: 0,
-            totalWordsReviewed: 0,
-            reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
-            activityLog: [],
-          };
-          stats.timeSpentSeconds += durationSeconds;
-          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+          if (durationSeconds > 0) {
+            updateStats(userId, 0, durationSeconds);
+          }
+          
           startTimeRef.current = null; // Prevent double counting on fast reloads
         }
     }
@@ -73,7 +101,7 @@ export default function LearnPage() {
         cleanup();
         window.removeEventListener('beforeunload', cleanup);
     };
-  }, [userId, loadNextWord]);
+  }, [userId, loadNextWord, updateStats]);
 
 
   const handleCorrect = (option: ScheduleOption) => {
@@ -104,7 +132,7 @@ export default function LearnPage() {
     }
     
     updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
-    updateStats(userId, 1);
+    updateStats(userId, 1, 0); // Only update review count, not time
     loadNextWord();
   };
 
@@ -116,36 +144,8 @@ export default function LearnPage() {
     nextReview.setDate(nextReview.getDate() + 1); // Schedule for tomorrow
     
     updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
-    updateStats(userId, 1);
+    updateStats(userId, 1, 0); // Only update review count, not time
     loadNextWord();
-  };
-
-  const updateStats = (userId: string, count: number) => {
-    const storedStats = localStorage.getItem(`learningStats_${userId}`);
-    const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
-      timeSpentSeconds: 0,
-      totalWordsReviewed: 0,
-      reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
-      activityLog: [],
-    };
-    
-    const today = new Date().toISOString().split('T')[0];
-    if (stats.reviewedToday.date !== today) {
-        stats.reviewedToday = { count: 0, date: today };
-    }
-
-    stats.totalWordsReviewed += count;
-    stats.reviewedToday.count += count;
-
-    // Log activity
-    if (!stats.activityLog) {
-      stats.activityLog = []; // Ensure activityLog exists for old data
-    }
-    if (!stats.activityLog.includes(today)) {
-      stats.activityLog.push(today);
-    }
-
-    localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
   };
 
   if (!userId) {

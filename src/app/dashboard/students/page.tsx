@@ -38,6 +38,7 @@ type LearningStats = {
   reviewedToday: {
     count: number;
     date: string; // YYYY-MM-DD
+    timeSpentSeconds: number;
   };
   activityLog: string[]; // ['2024-07-21', '2024-07-22']
 };
@@ -75,19 +76,27 @@ export default function StudentsPage() {
         const currentUser = getUserByIdFromClient(userId);
         setUser(currentUser || null);
         const studentList = getStudentsBySupervisorIdFromClient(userId);
+        const today = new Date().toISOString().split('T')[0];
 
         const studentsWithStats = studentList.map(student => {
             const storedStats = localStorage.getItem(`learningStats_${student.id}`);
             let stats: LearningStats = {
                 timeSpentSeconds: 0,
                 totalWordsReviewed: 0,
-                reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0] },
+                reviewedToday: { count: 0, date: today, timeSpentSeconds: 0 },
                 activityLog: [],
             };
             if (storedStats) {
                  const parsedStats: LearningStats = JSON.parse(storedStats);
+                 
                  if (!parsedStats.activityLog) {
                     parsedStats.activityLog = [];
+                 }
+                 if (!parsedStats.reviewedToday) {
+                    parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
+                 }
+                 if (parsedStats.reviewedToday.date !== today) {
+                    parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
                  }
                  stats = parsedStats;
             }
@@ -140,9 +149,10 @@ export default function StudentsPage() {
       // If there was an error, refetch the original list to revert the UI change
       const userId = searchParams?.get('userId') as string;
       if (userId) {
+        const today = new Date().toISOString().split('T')[0];
         setStudents(getStudentsBySupervisorIdFromClient(userId).map(s => ({
             ...s,
-            stats: { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: ''}, activityLog: [] },
+            stats: { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0}, activityLog: [] },
             wordsLearningCount: 0,
             wordsMasteredCount: 0
         })));
@@ -198,7 +208,7 @@ export default function StudentsPage() {
                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                       <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                                           <Clock className="h-8 w-8 text-primary mb-2"/>
-                                          <p className="text-2xl font-bold">{formatTime(student.stats.timeSpentSeconds)}</p>
+                                          <p className="text-2xl font-bold">{formatTime(student.stats.reviewedToday.timeSpentSeconds)}</p>
                                           <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.timeSpent')}</p>
                                       </div>
                                       <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
