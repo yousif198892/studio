@@ -15,29 +15,20 @@ import { Label } from "@/components/ui/label";
 import { Logo } from "./logo";
 import { register } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useTransition } from "react";
 import { useFormStatus } from "react-dom";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { getAllUsersFromClient } from "@/lib/client-data";
+import { db } from "@/lib/db";
 
 const initialState = {
   message: "",
   errors: {},
 };
 
-function StudentSubmitButton() {
-    const { pending } = useFormStatus();
-    const { t } = useLanguage();
-    return (
-        <Button type="submit" className="w-full mt-2" disabled={pending}>
-            {pending ? (<><Loader2 className="me-2 h-4 w-4 animate-spin" /> {t('register.createAccountButton')}...</>) : t('register.createAccountButton')}
-        </Button>
-    )
-}
-
 export function RegisterForm() {
-  const [studentState, studentFormAction] = useActionState(register, initialState);
+  const [studentState, studentFormAction] = useActionState(register.bind(null, []), initialState);
+  const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const { t } = useLanguage();
   const [showPassword, setShowPassword] = useState(false);
@@ -54,10 +45,13 @@ export function RegisterForm() {
     }
   }, [studentState, toast, t]);
 
-  const handleFormAction = (formData: FormData) => {
-    const allUsers = getAllUsersFromClient();
-    formData.append('allUsersClient', JSON.stringify(allUsers));
-    studentFormAction(formData);
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    startTransition(async () => {
+        const allUsers = await db.users.getAll();
+        studentFormAction.bind(null, allUsers)(formData);
+    });
 }
 
 
@@ -73,7 +67,7 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-            <form action={handleFormAction}>
+            <form action={(formData) => startTransition(() => studentFormAction(formData))} onSubmit={handleSubmit}>
               <input type="hidden" name="role" value="student" />
               <div className="grid gap-4 mt-4">
                 <div className="grid gap-2">
@@ -112,7 +106,9 @@ export function RegisterForm() {
                   <Input id="supervisor-id" name="supervisorId" placeholder={t('register.supervisorIdPlaceholder')} />
                   {studentState.errors?.supervisorId && <p className="text-sm text-destructive">{studentState.errors.supervisorId[0]}</p>}
                 </div>
-                <StudentSubmitButton />
+                 <Button type="submit" className="w-full mt-2" disabled={isPending}>
+                    {isPending ? (<><Loader2 className="me-2 h-4 w-4 animate-spin" /> {t('register.createAccountButton')}...</>) : t('register.createAccountButton')}
+                </Button>
               </div>
             </form>
         <div className="mt-4 text-center text-sm">

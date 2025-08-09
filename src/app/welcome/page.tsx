@@ -10,33 +10,15 @@ export default function WelcomePage() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const userParam = searchParams.get("user");
-    if (userParam) {
-      try {
-        const newUser: User = JSON.parse(decodeURIComponent(userParam));
-        
-        const userMap = new Map<string, User>();
-        
-        // Load users already in localStorage
-        const storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
-        storedUsers.forEach(u => userMap.set(u.id, u));
-        
-        // Add or update the new user
-        userMap.set(newUser.id, newUser);
-
-        // Save the complete, merged list back to localStorage.
-        const updatedUsers = Array.from(userMap.values());
-        localStorage.setItem("users", JSON.stringify(updatedUsers));
-
-        // Redirect to the dashboard.
-        router.replace(`/dashboard?userId=${newUser.id}`);
-
-      } catch (error) {
-        console.error("Failed to process new user, redirecting to login.", error);
-        router.replace("/login");
-      }
+    // This page is no longer needed with the new server action flow
+    // that directly saves to IndexedDB. We just redirect to login.
+    // A better implementation would redirect to dashboard, but the
+    // userId is not available here anymore.
+    const userId = searchParams.get('userId');
+    if (userId) {
+       router.replace(`/dashboard?userId=${userId}`);
     } else {
-      router.replace("/login");
+       router.replace("/login");
     }
   }, [router, searchParams]);
 

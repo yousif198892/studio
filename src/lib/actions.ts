@@ -7,6 +7,7 @@ import { z } from "zod";
 import { Word, User } from "./data";
 import { redirect } from "next/navigation";
 import { translations } from "./i18n";
+import { db } from "./db";
 
 const t = (lang: 'en' | 'ar', key: keyof (typeof translations.en.toasts)) => {
     return translations[lang].toasts[key];
@@ -123,7 +124,7 @@ const registerSchema = z.object({
   });
 
 
-export async function register(prevState: any, formData: FormData) {
+export async function register(allUsers: User[], prevState: any, formData: FormData) {
     const validatedFields = registerSchema.safeParse({
         name: formData.get("name"),
         email: formData.get("email"),
@@ -141,11 +142,6 @@ export async function register(prevState: any, formData: FormData) {
     
     const { name, email, password, supervisorId } = validatedFields.data;
 
-    // This is not secure, but necessary for this demo app's architecture.
-    // In a real app, you would query a database.
-    const allUsersClientJson = formData.get('allUsersClient') as string;
-    const allUsers: User[] = allUsersClientJson ? JSON.parse(allUsersClientJson) : [];
-    
     if (allUsers.some(u => u.email === email)) {
       return {
         errors: { email: ["User with this email already exists."] },
@@ -178,8 +174,8 @@ export async function register(prevState: any, formData: FormData) {
         supervisorId: supervisorId,
     };
     
-    const userParam = encodeURIComponent(JSON.stringify(newUser));
-    redirect(`/welcome?user=${userParam}`);
+    await db.users.put(newUser);
+    redirect(`/dashboard?userId=${newUser.id}`);
 }
 
 
@@ -188,7 +184,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
-export async function login(prevState: any, formData: FormData) {
+export async function login(allUsers: User[], prevState: any, formData: FormData) {
   const validatedFields = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -200,11 +196,6 @@ export async function login(prevState: any, formData: FormData) {
       message: "Validation failed.",
     };
   }
-
-  // This is not secure, but necessary for this demo app's architecture.
-  // In a real app, you would query a database.
-  const allUsersClientJson = formData.get('allUsersClient') as string;
-  const allUsers: User[] = allUsersClientJson ? JSON.parse(allUsersClientJson) : [];
 
   const { email, password } = validatedFields.data;
   
@@ -233,7 +224,7 @@ const createSupervisorSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters.'),
 });
 
-export async function createSupervisor(prevState: any, formData: FormData) {
+export async function createSupervisor(allUsers: User[], prevState: any, formData: FormData) {
   const validatedFields = createSupervisorSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -247,9 +238,6 @@ export async function createSupervisor(prevState: any, formData: FormData) {
       success: false,
     };
   }
-  
-  const allUsersClientJson = formData.get('allUsersClient') as string;
-  const allUsers: User[] = allUsersClientJson ? JSON.parse(allUsersClientJson) : [];
 
   if (allUsers.find(u => u.email === validatedFields.data.email)) {
     return {
@@ -272,6 +260,7 @@ export async function createSupervisor(prevState: any, formData: FormData) {
       isMainAdmin: false,
   };
   
+  await db.users.put(newUser);
   return { success: true, message: "Supervisor created!", newUser };
 }
 

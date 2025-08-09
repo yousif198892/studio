@@ -14,43 +14,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
 import { useFormStatus } from "react-dom";
-import { useActionState, useEffect, useState, useRef } from "react";
+import { useActionState, useEffect, useState, useRef, useTransition } from "react";
 import { login } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { getAllUsersFromClient } from "@/lib/client-data";
+import { db } from "@/lib/db";
 
 const initialState = {
   message: "",
   errors: {},
 };
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  const { t } = useLanguage();
-
-  return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? (
-        <>
-          <Loader2 className="me-2 h-4 w-4 animate-spin" />
-          {t('login.loginButton')}...
-        </>
-      ) : (
-        t('login.loginButton')
-      )}
-    </Button>
-  );
-}
-
-
 export function LoginForm() {
-    const [state, formAction] = useActionState(login, initialState);
+    const [state, formAction] = useActionState(login.bind(null, []), initialState);
+    const [isPending, startTransition] = useTransition();
     const { toast } = useToast();
     const { t } = useLanguage();
     const [showPassword, setShowPassword] = useState(false);
-    const allUsersClientRef = useRef<HTMLInputElement>(null);
+    const formRef = useRef<HTMLFormElement>(null);
+
 
     useEffect(() => {
         if (state?.message && Object.keys(state.errors || {}).length > 0) {
@@ -68,12 +51,14 @@ export function LoginForm() {
         }
     }, [state, toast, t]);
 
-    const handleFormAction = (formData: FormData) => {
-        const allUsers = getAllUsersFromClient();
-        formData.append('allUsersClient', JSON.stringify(allUsers));
-        formAction(formData);
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        startTransition(async () => {
+            const allUsers = await db.users.getAll();
+            login.bind(null, allUsers)(state, formData);
+        });
     }
-
 
   return (
     <Card className="mx-auto max-w-sm w-full">
@@ -87,7 +72,7 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={handleFormAction} className="grid gap-4">
+        <form ref={formRef} onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">{t('login.emailLabel')}</Label>
             <Input
@@ -126,7 +111,16 @@ export function LoginForm() {
                 <p className="text-sm text-destructive">{state.errors.password[0]}</p>
             )}
           </div>
-          <SubmitButton />
+           <Button type="submit" disabled={isPending} className="w-full">
+              {isPending ? (
+                <>
+                  <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                  {t('login.loginButton')}...
+                </>
+              ) : (
+                t('login.loginButton')
+              )}
+            </Button>
         </form>
         <div className="mt-4 text-center text-sm">
           {t('login.noAccount')}{" "}
