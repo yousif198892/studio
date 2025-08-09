@@ -168,30 +168,44 @@ export default function ProfilePage() {
   }
 
   const handleHeroPictureUpload = () => {
-    if (!heroPreviewImage) return;
+    if (!heroPreviewImage) {
+        toast({
+            title: "Error",
+            description: "No image selected to upload.",
+            variant: "destructive",
+        });
+        return;
+    }
+    
+    // The previous implementation had a flawed error check.
+    // This is a more direct way to save and handle potential errors,
+    // although with modern browsers and the compression in place,
+    // the quota error is highly unlikely with typical images.
     try {
       localStorage.setItem('landingHeroImage', heroPreviewImage);
       toast({
         title: "Success!",
         description: "Landing page hero image has been updated."
       });
-      setHeroPreviewImage(null);
-    } catch (error: any) {
-        if (error.name === 'QuotaExceededError') {
-             toast({
-                title: "Upload Failed",
-                description: "The compressed image is still too large to save. Please try a smaller image file.",
-                variant: "destructive",
-            });
-        } else {
-             toast({
-                title: "Error",
-                description: "Could not save the image. Please try again.",
-                variant: "destructive",
-            });
-        }
+      setHeroPreviewImage(null); // Clear preview after successful upload
+    } catch (error) {
+      console.error("Failed to save hero image to localStorage:", error);
+      // Check the error name to provide a more specific message
+      if (error instanceof DOMException && error.name === 'QuotaExceededError') {
+        toast({
+            title: "Upload Failed",
+            description: "The compressed image is still too large to save. Please try a smaller image file.",
+            variant: "destructive",
+        });
+      } else {
+        toast({
+            title: "An Unknown Error Occurred",
+            description: "Could not save the image. Please try again or check the browser console for details.",
+            variant: "destructive",
+        });
+      }
     }
-  }
+  };
 
   const handleResetPassword = () => {
     toast({
@@ -407,4 +421,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
