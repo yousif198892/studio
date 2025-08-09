@@ -29,6 +29,7 @@ import Link from "next/link";
 import { format, subDays } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
 
 type LearningStats = {
   timeSpentSeconds: number; // total time
@@ -207,11 +208,10 @@ export default function Dashboard() {
             </Card>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-            <Card className="lg:col-span-2">
+        <div className="grid gap-6 lg:grid-cols-3">
+             <Card className="lg:col-span-2">
                 <CardHeader>
-                    <CardTitle>Activity</CardTitle>
-                    <CardDescription>Your learning consistency over the last 7 days.</CardDescription>
+                    <CardTitle>Last 7 Days Activity</CardTitle>
                 </CardHeader>
                  <CardContent>
                     <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
@@ -231,7 +231,7 @@ export default function Dashboard() {
                     </div>
                 </CardContent>
             </Card>
-            <Card className="lg:col-span-2">
+            <Card>
               <CardHeader>
                 <CardTitle>{t('dashboard.student.reviewTitle')}</CardTitle>
                 <CardDescription>{t('dashboard.student.reviewDescription')}</CardDescription>
@@ -311,3 +311,6 @@ export default function Dashboard() {
 
     
 
+
+
+    
