@@ -158,17 +158,24 @@ export const getWordsForStudent = (studentId: string): Word[] => {
     return mergedWords;
 };
 
-export const getWordForReview = (studentId: string, unit?: string | null): Word | null => {
+export const getWordForReview = (studentId: string, unit?: string | null, lesson?: string | null): Word | null => {
   if (typeof window === 'undefined') return null;
 
   let allWords = getWordsForStudent(studentId);
 
+  let filteredWords = allWords;
+
   // If a unit is specified, filter for that unit
   if (unit) {
-      allWords = allWords.filter(word => word.unit === unit);
+      filteredWords = filteredWords.filter(word => word.unit === unit);
+  }
+  
+  // If a lesson is specified, filter for that lesson
+  if (lesson) {
+      filteredWords = filteredWords.filter(word => word.lesson === lesson);
   }
 
-  const dueWords = allWords.filter(word => {
+  const dueWords = filteredWords.filter(word => {
     return new Date(word.nextReview) <= new Date() && word.strength >= 0;
   });
 

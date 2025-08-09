@@ -29,11 +29,13 @@ import { format, subDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 
 type LearningStats = {
   timeSpentSeconds: number; // total time
@@ -75,7 +77,11 @@ export default function Dashboard() {
   const [wordsToReviewCount, setWordsToReviewCount] = useState(0);
   const [wordsLearningCount, setWordsLearningCount] = useState(0);
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
-  const [availableUnits, setAvailableUnits] = useState<string[]>([]);
+  
+  const [allStudentWords, setAllStudentWords] = useState<Word[]>([]);
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
+  
   const last7Days = getLast7Days();
 
 
@@ -87,6 +93,8 @@ export default function Dashboard() {
       
       if (foundUser?.role === 'student') {
         const words = getWordsForStudent(userId);
+        setAllStudentWords(words);
+
         const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
         const mastered = words.filter(w => w.strength === -1).length;
         const learning = words.length - mastered;
@@ -95,9 +103,6 @@ export default function Dashboard() {
         setWordsMasteredCount(mastered);
         setWordsLearningCount(learning);
         
-        const units = Array.from(new Set(words.map(w => w.unit).filter(Boolean)));
-        setAvailableUnits(units);
-
         const storedStats = localStorage.getItem(`learningStats_${userId}`);
         const today = new Date().toISOString().split('T')[0];
         let currentStats: LearningStats;
@@ -136,6 +141,20 @@ export default function Dashboard() {
     }
   }, [searchParams, t]);
 
+  const availableUnits = useMemo(() => {
+    return Array.from(new Set(allStudentWords.map(w => w.unit).filter(Boolean)));
+  }, [allStudentWords]);
+  
+  const lessonsForSelectedUnit = useMemo(() => {
+    if (!selectedUnit) return [];
+    return Array.from(new Set(allStudentWords.filter(w => w.unit === selectedUnit).map(w => w.lesson).filter(Boolean)));
+  }, [allStudentWords, selectedUnit]);
+  
+  const handleUnitChange = (unit: string) => {
+    setSelectedUnit(unit);
+    setSelectedLesson(null);
+  }
+
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
@@ -165,29 +184,33 @@ export default function Dashboard() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">{wordsToReviewCount}</div>
-                    <div className="flex items-center gap-2 mt-2">
-                        <Button asChild className="flex-1">
-                            <Link href={`/learn?userId=${user.id}`}>
+                    <p className="text-xs text-muted-foreground pb-2">{t('dashboard.student.reviewDescription')}</p>
+                     <div className="space-y-2">
+                        <Select onValueChange={handleUnitChange} disabled={availableUnits.length === 0}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a Unit" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {availableUnits.map(unit => (
+                                    <SelectItem key={unit} value={unit}>{unit}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select onValueChange={(value) => setSelectedLesson(value)} disabled={!selectedUnit}>
+                             <SelectTrigger>
+                                <SelectValue placeholder="Select a Lesson" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {lessonsForSelectedUnit.map(lesson => (
+                                    <SelectItem key={lesson} value={lesson}>{lesson}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                         <Button asChild className="w-full" disabled={!selectedUnit || !selectedLesson}>
+                            <Link href={`/learn?userId=${user.id}&unit=${encodeURIComponent(selectedUnit || '')}&lesson=${encodeURIComponent(selectedLesson || '')}`}>
                                 {t('dashboard.student.startReview')}
                             </Link>
                         </Button>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="icon" disabled={availableUnits.length === 0}>
-                                    <ChevronDown className="h-4 w-4"/>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem disabled>Review by Unit</DropdownMenuItem>
-                                {availableUnits.map(unit => (
-                                    <DropdownMenuItem key={unit} asChild>
-                                        <Link href={`/learn?userId=${user.id}&unit=${encodeURIComponent(unit)}`}>
-                                            {unit}
-                                        </Link>
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
                     </div>
                 </CardContent>
             </Card>
