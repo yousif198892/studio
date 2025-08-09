@@ -88,15 +88,15 @@ export default function Dashboard() {
           const parsedStats: LearningStats = JSON.parse(storedStats);
           const today = new Date().toISOString().split('T')[0];
           
-          // Ensure reviewedToday object and its properties exist
-          if (!parsedStats.reviewedToday) {
+          // Ensure reviewedToday object and its properties exist and reset if date is old
+          if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
             parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
           }
-          
-          // Ensure reviewedToday is reset if the date has changed
-          if (parsedStats.reviewedToday.date !== today) {
-            parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
+           // Ensure timeSpentSeconds is a number
+          if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
+            parsedStats.reviewedToday.timeSpentSeconds = 0;
           }
+
 
           // Ensure activityLog exists
           if (!parsedStats.activityLog) {

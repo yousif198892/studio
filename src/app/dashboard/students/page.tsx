@@ -92,12 +92,12 @@ export default function StudentsPage() {
                  if (!parsedStats.activityLog) {
                     parsedStats.activityLog = [];
                  }
-                 if (!parsedStats.reviewedToday) {
+                 if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
                     parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
                  }
-                 if (parsedStats.reviewedToday.date !== today) {
-                    parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
-                 }
+                  if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
+                    parsedStats.reviewedToday.timeSpentSeconds = 0;
+                  }
                  stats = parsedStats;
             }
 
