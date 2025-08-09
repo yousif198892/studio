@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Upload } from "@/components/ui/upload";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -47,6 +48,7 @@ export default function ProfilePage() {
   const [supervisor, setSupervisor] = useState<User | null>(null);
   const [name, setName] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [heroPreviewImage, setHeroPreviewImage] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -81,7 +83,6 @@ export default function ProfilePage() {
       
       const updatedUser = { ...user, name };
 
-      // Get all users from client storage helper
       const allUsers = getAllUsersFromClient();
       const userIndex = allUsers.findIndex(u => u.id === user.id);
       
@@ -99,7 +100,6 @@ export default function ProfilePage() {
   }
   
   const handleSavePreferences = () => {
-       // In a real app, this would call a server action to update the user data.
       toast({
         title: t('toasts.success'),
         description: "Preferences saved!",
@@ -117,6 +117,18 @@ export default function ProfilePage() {
     }
   };
 
+  const handleHeroPictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setHeroPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+
   const handlePictureUpload = () => {
     if (!user || !previewImage) return;
 
@@ -127,7 +139,6 @@ export default function ProfilePage() {
     if (userIndex > -1) {
       allUsers[userIndex] = updatedUser;
     } else {
-        // This case should theoretically not be hit with getAllUsersFromClient, but as a safeguard:
         allUsers.push(updatedUser);
     }
     
@@ -141,6 +152,16 @@ export default function ProfilePage() {
       });
   }
 
+  const handleHeroPictureUpload = () => {
+    if (!heroPreviewImage) return;
+    localStorage.setItem('landingHeroImage', heroPreviewImage);
+    toast({
+      title: "Success!",
+      description: "Landing page hero image has been updated."
+    });
+    setHeroPreviewImage(null);
+  }
+
   const handleResetPassword = () => {
     toast({
         title: "Password Reset",
@@ -152,12 +173,10 @@ export default function ProfilePage() {
     if (!user) return;
     
     try {
-        // Remove from 'users' in localStorage
         let users: User[] = JSON.parse(localStorage.getItem("users") || "[]");
         users = users.filter(u => u.id !== user.id);
         localStorage.setItem("users", JSON.stringify(users));
         
-        // If supervisor, delete their words.
         if (user.role === 'supervisor') {
             let allWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
             allWords = allWords.filter(w => w.supervisorId !== user.id);
@@ -204,6 +223,29 @@ export default function ProfilePage() {
                     <Button onClick={handlePictureUpload} disabled={!previewImage} className="w-full">Upload Picture</Button>
                 </CardFooter>
             </Card>
+
+            {user.isMainAdmin && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Landing Page</CardTitle>
+                  <CardDescription>Update the main hero image.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex flex-col items-center gap-4">
+                  {heroPreviewImage ? (
+                    <img src={heroPreviewImage} alt="Hero preview" className="rounded-md object-cover w-full h-auto" />
+                  ) : (
+                    <div className="w-full h-32 bg-muted rounded-md flex items-center justify-center">
+                      <Upload className="w-10 h-10 text-muted-foreground" />
+                    </div>
+                  )}
+                  <Input id="hero-picture" type="file" accept="image/*" onChange={handleHeroPictureChange} className="max-w-xs" />
+                </CardContent>
+                <CardFooter>
+                    <Button onClick={handleHeroPictureUpload} disabled={!heroPreviewImage} className="w-full">Upload Hero Image</Button>
+                </CardFooter>
+              </Card>
+            )}
+
         </div>
         <div className="lg:col-span-2 space-y-6">
             <Card>

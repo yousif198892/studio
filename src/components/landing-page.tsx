@@ -9,9 +9,18 @@ import { Logo } from "@/components/logo";
 import { useLanguage } from "@/hooks/use-language";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { useEffect, useState } from "react";
 
 export function LandingPage() {
   const { t, language, setLanguage } = useLanguage();
+  const [heroImage, setHeroImage] = useState("https://placehold.co/500x625.png");
+
+  useEffect(() => {
+    const storedImage = localStorage.getItem('landingHeroImage');
+    if (storedImage) {
+      setHeroImage(storedImage);
+    }
+  }, []);
 
   const handleLanguageChange = (checked: boolean) => {
     setLanguage(checked ? 'ar' : 'en');
@@ -88,12 +97,13 @@ export function LandingPage() {
               </div>
               <div className="flex justify-center">
                  <Image
-                    src="https://placehold.co/500x625.png"
+                    src={heroImage}
                     alt="An illustration of a smartphone with a language learning interface, an English book, and a globe."
                     width={500}
                     height={625}
                     className="rounded-xl shadow-2xl"
                     data-ai-hint="language learning app"
+                    key={heroImage}
                   />
               </div>
             </div>
