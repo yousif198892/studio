@@ -1,30 +1,12 @@
-
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/hooks/use-language";
-import Image from "next/image";
 import appInfo from "../../../../package.json";
 import { Logo } from "@/components/logo";
-import { useEffect, useState } from "react";
-import { getAsset } from "@/lib/db";
-import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AboutPage() {
     const { t } = useLanguage();
-    const [signatureImage, setSignatureImage] = useState<string | null>(null);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchSignature = async () => {
-            const image = await getAsset('signatureImage');
-            if (image) {
-                setSignatureImage(image);
-            }
-            setLoading(false);
-        }
-        fetchSignature();
-    }, []);
 
     return (
         <div className="space-y-6">
@@ -51,19 +33,7 @@ export default function AboutPage() {
                     </p>
                     <div className="pt-4 border-t">
                         <p className="text-muted-foreground">{t('about.signature')}</p>
-                        {loading ? (
-                            <Skeleton className="h-[50px] w-[200px] mt-2" />
-                        ) : signatureImage ? (
-                             <Image 
-                                src={signatureImage}
-                                alt="Yousif's signature"
-                                width={200}
-                                height={50}
-                                className="mt-2 invert-0 dark:invert"
-                             />
-                        ) : (
-                            <p className="text-sm text-muted-foreground">Signature not found.</p>
-                        )}
+                        <p className="font-headline text-xl">Yousif</p>
                     </div>
                 </CardContent>
                 <CardContent>
