@@ -148,41 +148,50 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.welcome', user.name)}</h1>
         <p className="text-muted-foreground">{t('dashboard.student.description')}</p>
         
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-           <Link href={`/learn?userId=${user.id}`}>
-            <Card className="hover:bg-muted/50 transition-colors">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  {t('dashboard.student.reviewTitle')}
+                  {t('dashboard.student.progressOverview.timeSpent')}
                 </CardTitle>
-                <Target className="h-4 w-4 text-muted-foreground" />
+                <Clock className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{wordsToReviewCount}</div>
+                <div className="text-2xl font-bold">{formatTime(stats.reviewedToday.timeSpentSeconds)}</div>
                 <p className="text-xs text-muted-foreground">
-                  {t('dashboard.student.reviewDescription')}
+                  +{(stats.timeSpentSeconds / 60).toFixed(1)}m total
                 </p>
               </CardContent>
             </Card>
-          </Link>
-          <Link href={`/dashboard/learning-words?userId=${user.id}`}>
-            <Card className="hover:bg-muted/50 transition-colors">
+            <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">
-                      Words in Learning
+                      Words Reviewed
                   </CardTitle>
-                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                  <BarChart className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                  <div className="text-2xl font-bold">{wordsLearningCount}</div>
-                  <p className="text-xs text-muted-foreground">
-                      Total words in your learning queue.
+                  <div className="text-2xl font-bold">{stats.totalWordsReviewed}</div>
+                   <p className="text-xs text-muted-foreground">
+                      {wordsLearningCount} in learning queue
                   </p>
               </CardContent>
             </Card>
-          </Link>
-          <Link href={`/dashboard/mastered-words?userId=${user.id}`}>
-            <Card className="hover:bg-muted/50 transition-colors">
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        Reviewed Today
+                    </CardTitle>
+                    <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{stats.reviewedToday.count}</div>
+                    <p className="text-xs text-muted-foreground">
+                      {wordsToReviewCount} words pending
+                    </p>
+                </CardContent>
+            </Card>
+            <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
                         Mastered Words
@@ -192,44 +201,14 @@ export default function Dashboard() {
                 <CardContent>
                     <div className="text-2xl font-bold">{wordsMasteredCount}</div>
                     <p className="text-xs text-muted-foreground">
-                        Words you have successfully mastered.
+                        Keep up the great work!
                     </p>
                 </CardContent>
             </Card>
-          </Link>
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle>{t('dashboard.student.progressOverview.title')}</CardTitle>
-              <CardDescription>{t('dashboard.student.progressOverview.description')}</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                    <Clock className="h-8 w-8 text-primary mb-2"/>
-                    <p className="text-2xl font-bold">{formatTime(stats.reviewedToday.timeSpentSeconds)}</p>
-                    <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.timeSpent')}</p>
-                </div>
-                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                    <BarChart className="h-8 w-8 text-primary mb-2"/>
-                    <p className="text-2xl font-bold">{stats.totalWordsReviewed}</p>
-                    <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.wordsReviewed')}</p>
-                </div>
-                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                    <CalendarCheck className="h-8 w-8 text-primary mb-2"/>
-                    <p className="text-2xl font-bold">{stats.reviewedToday.count}</p>
-                    <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.reviewedToday')}</p>
-                </div>
-                <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                  <Star className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{wordsMasteredCount}</p>
-                  <p className="text-sm text-muted-foreground text-center">{t('dashboard.student.progressOverview.masteredWords')}</p>
-                </div>
-            </CardContent>
-          </Card>
-           <div className="grid grid-cols-1 gap-6">
-            <Card>
+            <Card className="lg:col-span-2">
                 <CardHeader>
                     <CardTitle>Activity</CardTitle>
                     <CardDescription>Your learning consistency over the last 7 days.</CardDescription>
@@ -252,33 +231,17 @@ export default function Dashboard() {
                     </div>
                 </CardContent>
             </Card>
-             <Card>
-                <CardHeader>
-                    <CardTitle>Tests Completed Today</CardTitle>
-                    <CardDescription>Check off your grammar knowledge for the day.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        {allTests.map((testName) => (
-                            <div key={testName} className="flex items-center space-x-3">
-                                <Checkbox 
-                                    id={`test-${testName.replace(/\s+/g, '-')}`} 
-                                    checked={testsCompletedToday.includes(testName)} 
-                                    aria-label={`${testName} status`}
-                                    disabled 
-                                />
-                                <label
-                                    htmlFor={`test-${testName.replace(/\s+/g, '-')}`}
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                    {testName}
-                                </label>
-                            </div>
-                        ))}
-                    </div>
-                </CardContent>
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>{t('dashboard.student.reviewTitle')}</CardTitle>
+                <CardDescription>{t('dashboard.student.reviewDescription')}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                 <Link href={`/learn?userId=${user.id}`}>
+                    <Button className="w-full">Start Review Session</Button>
+                </Link>
+              </CardContent>
             </Card>
-           </div>
         </div>
       </div>
     );
@@ -347,3 +310,4 @@ export default function Dashboard() {
     
 
     
+
