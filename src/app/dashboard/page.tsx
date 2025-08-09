@@ -11,7 +11,7 @@ import {
 import { getWordsForStudent } from "@/lib/data";
 import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
 import { User } from "@/lib/data";
-import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star, GraduationCap, Trophy, CheckCircle, XCircle } from "lucide-react";
+import { KeyRound, Target, Clock, BarChart, CalendarCheck, Star, GraduationCap, Trophy, CheckCircle, XCircle, SpellCheck } from "lucide-react";
 import {
     Table,
     TableBody,
@@ -27,6 +27,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { format, subDays } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type LearningStats = {
   timeSpentSeconds: number; // total time
@@ -35,6 +36,7 @@ type LearningStats = {
     count: number;
     date: string; // YYYY-MM-DD
     timeSpentSeconds: number; // time spent today
+    completedTests: string[]; // ['Present Simple', 'Past Simple']
   };
   activityLog: string[]; // ['2024-07-21', '2024-07-22']
 };
@@ -59,13 +61,17 @@ export default function Dashboard() {
   const [stats, setStats] = useState<LearningStats>({
     timeSpentSeconds: 0,
     totalWordsReviewed: 0,
-    reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0], timeSpentSeconds: 0 },
+    reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0], timeSpentSeconds: 0, completedTests: [] },
     activityLog: [],
   });
   const [wordsToReviewCount, setWordsToReviewCount] = useState(0);
   const [wordsLearningCount, setWordsLearningCount] = useState(0);
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
   const last7Days = getLast7Days();
+
+  const totalTests = 3; // Present Simple, Past Simple, Present Continuous
+  const testsCompletedToday = stats.reviewedToday.completedTests?.length || 0;
+
 
   useEffect(() => {
     const userId = searchParams?.get('userId') as string;
@@ -88,17 +94,15 @@ export default function Dashboard() {
           const parsedStats: LearningStats = JSON.parse(storedStats);
           const today = new Date().toISOString().split('T')[0];
           
-          // Ensure reviewedToday object and its properties exist and reset if date is old
           if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
-            parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
+            parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
           }
-           // Ensure timeSpentSeconds is a number
           if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
             parsedStats.reviewedToday.timeSpentSeconds = 0;
           }
-
-
-          // Ensure activityLog exists
+          if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
+            parsedStats.reviewedToday.completedTests = [];
+          }
           if (!parsedStats.activityLog) {
             parsedStats.activityLog = [];
           }
@@ -110,7 +114,7 @@ export default function Dashboard() {
           const initialStats: LearningStats = {
             timeSpentSeconds: 0,
             totalWordsReviewed: 0,
-            reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0], timeSpentSeconds: 0 },
+            reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0], timeSpentSeconds: 0, completedTests: [] },
             activityLog: [],
           };
           localStorage.setItem(`learningStats_${userId}`, JSON.stringify(initialStats));
@@ -215,10 +219,10 @@ export default function Dashboard() {
                   <p className="text-2xl font-bold">{stats.reviewedToday.count}</p>
                   <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.reviewedToday')}</p>
               </div>
-               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
-                  <Star className="h-8 w-8 text-primary mb-2"/>
-                  <p className="text-2xl font-bold">{wordsMasteredCount}</p>
-                  <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.masteredWords')}</p>
+               <div className={cn("flex flex-col items-center justify-center p-4 rounded-lg", testsCompletedToday === totalTests ? "bg-green-100 dark:bg-green-900/50" : "bg-secondary")}>
+                  <SpellCheck className={cn("h-8 w-8 mb-2", testsCompletedToday === totalTests ? "text-green-600" : "text-primary")}/>
+                  <p className="text-2xl font-bold">{testsCompletedToday}/{totalTests}</p>
+                  <p className="text-sm text-muted-foreground">Tests Completed</p>
               </div>
           </CardContent>
           <CardContent>

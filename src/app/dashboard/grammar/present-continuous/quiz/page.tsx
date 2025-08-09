@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { generateGrammarQuiz } from '@/ai/flows/generate-grammar-quiz';
 import type { GrammarQuizQuestion } from '@/ai/schemas/grammar-quiz';
@@ -12,6 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { updateLearningStats } from '@/lib/stats';
+
+const TENSE_NAME = "Present Continuous";
 
 export default function PresentContinuousQuizPage() {
     const searchParams = useSearchParams();
@@ -21,6 +24,33 @@ export default function PresentContinuousQuizPage() {
     const [error, setError] = useState<string | null>(null);
     const [answers, setAnswers] = useState<Record<number, string>>({});
     const [submitted, setSubmitted] = useState(false);
+    const startTimeRef = useRef<number | null>(null);
+
+    const handleUpdateStats = useCallback((durationSeconds: number, testName?: string) => {
+        if (userId) {
+            updateLearningStats({ userId, durationSeconds, testName });
+        }
+    }, [userId]);
+
+    useEffect(() => {
+        startTimeRef.current = Date.now();
+        const cleanup = () => {
+            if (startTimeRef.current) {
+                const endTime = Date.now();
+                const durationSeconds = Math.round((endTime - startTimeRef.current) / 1000);
+                if (durationSeconds > 0) {
+                    handleUpdateStats(durationSeconds);
+                }
+                startTimeRef.current = null;
+            }
+        };
+
+        window.addEventListener('beforeunload', cleanup);
+        return () => {
+            cleanup();
+            window.removeEventListener('beforeunload', cleanup);
+        };
+    }, [handleUpdateStats]);
 
     const fetchQuiz = async () => {
         setLoading(true);
@@ -28,7 +58,7 @@ export default function PresentContinuousQuizPage() {
         setSubmitted(false);
         setAnswers({});
         try {
-            const result = await generateGrammarQuiz({ tense: "Present Continuous" });
+            const result = await generateGrammarQuiz({ tense: TENSE_NAME });
             if (result && result.questions) {
                 setQuiz(result.questions);
             } else {
@@ -51,6 +81,7 @@ export default function PresentContinuousQuizPage() {
 
     const handleSubmit = () => {
         setSubmitted(true);
+        handleUpdateStats(0, TENSE_NAME);
     };
 
     const getScore = () => {

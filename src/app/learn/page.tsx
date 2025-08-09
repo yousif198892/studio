@@ -11,17 +11,8 @@ import { ClientOnly } from "@/components/client-only";
 import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { updateLearningStats } from "@/lib/stats";
 
-type LearningStats = {
-  timeSpentSeconds: number; // This is the total lifetime value
-  totalWordsReviewed: number;
-  reviewedToday: {
-    count: number;
-    date: string;
-    timeSpentSeconds: number;
-  };
-  activityLog: string[];
-};
 
 export type ScheduleOption = 'tomorrow' | 'twoDays' | 'week' | 'twoWeeks' | 'month' | 'mastered';
 
@@ -45,37 +36,11 @@ export default function LearnPage() {
     }
   }, [userId]);
 
-  const updateStats = useCallback((userId: string, reviewedCount: number, durationSeconds: number) => {
-    const storedStats = localStorage.getItem(`learningStats_${userId}`);
-    const today = new Date().toISOString().split('T')[0];
-    
-    const stats: LearningStats = storedStats ? JSON.parse(storedStats) : {
-      timeSpentSeconds: 0,
-      totalWordsReviewed: 0,
-      reviewedToday: { count: 0, date: today, timeSpentSeconds: 0 },
-      activityLog: [],
-    };
-    
-    // Reset daily stats if the date has changed
-    if (stats.reviewedToday.date !== today) {
-        stats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0 };
+  const handleUpdateStats = useCallback((reviewedCount: number, durationSeconds: number) => {
+    if (userId) {
+      updateLearningStats({ userId, reviewedCount, durationSeconds });
     }
-
-    stats.totalWordsReviewed += reviewedCount;
-    stats.timeSpentSeconds += durationSeconds;
-    stats.reviewedToday.count += reviewedCount;
-    stats.reviewedToday.timeSpentSeconds += durationSeconds;
-
-    // Log activity
-    if (!stats.activityLog) {
-      stats.activityLog = []; // Ensure activityLog exists for old data
-    }
-    if (!stats.activityLog.includes(today)) {
-      stats.activityLog.push(today);
-    }
-
-    localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     startTimeRef.current = Date.now();
@@ -87,21 +52,20 @@ export default function LearnPage() {
           const durationSeconds = Math.round((endTime - startTimeRef.current) / 1000);
           
           if (durationSeconds > 0) {
-            updateStats(userId, 0, durationSeconds);
+            handleUpdateStats(0, durationSeconds);
           }
           
-          startTimeRef.current = null; // Prevent double counting on fast reloads
+          startTimeRef.current = null;
         }
     }
 
-    // This handles the case where the user navigates away before the component unmounts
     window.addEventListener('beforeunload', cleanup);
 
     return () => {
         cleanup();
         window.removeEventListener('beforeunload', cleanup);
     };
-  }, [userId, loadNextWord, updateStats]);
+  }, [userId, loadNextWord, handleUpdateStats]);
 
 
   const handleCorrect = (option: ScheduleOption) => {
@@ -132,7 +96,7 @@ export default function LearnPage() {
     }
     
     updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
-    updateStats(userId, 1, 0); // Only update review count, not time
+    handleUpdateStats(1, 0); // Only update review count, not time
     loadNextWord();
   };
 
@@ -144,12 +108,11 @@ export default function LearnPage() {
     nextReview.setDate(nextReview.getDate() + 1); // Schedule for tomorrow
     
     updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
-    updateStats(userId, 1, 0); // Only update review count, not time
+    handleUpdateStats(1, 0); // Only update review count, not time
     loadNextWord();
   };
 
   if (!userId) {
-    // In a real app, you might redirect to login if no userId is found
     return (
       <div className="flex items-center justify-center min-h-screen">
         User not found. Please log in again.
