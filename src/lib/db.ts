@@ -117,6 +117,7 @@ export const db = {
     get: async (key: [string, string]) => (await getDb()).get('wordProgress', key),
     getAllByStudent: async (studentId: string) => (await getDb()).getAllFromIndex('wordProgress', 'by-studentId', studentId),
     put: async (progress: WordProgress) => (await getDb()).put('wordProgress', progress),
+    delete: async (key: [string, string]) => (await getDb()).delete('wordProgress', key),
   },
   adminMessages: {
     getAll: async () => (await getDb()).getAll('adminMessages'),
@@ -133,7 +134,7 @@ export const db = {
   },
   learningStats: {
       get: async (userId: string) => (await getDb()).get('learningStats', `stats_${userId}`),
-      put: async (userId: string, stats: any) => (await getDb()).put('learningStats', { key: `stats_${userId}`, ...stats }),
+      put: async (userId: string, stats: any) => (await getDb()).put('learningStats', { key: `stats_${userId}`, value: stats }),
   },
   keyValueStore: {
     get: async (key: string) => (await getDb()).get('keyValueStore', key),
