@@ -12,14 +12,6 @@ import { getWordsForStudent } from "@/lib/data";
 import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
 import { User } from "@/lib/data";
 import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck } from "lucide-react";
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from "@/components/ui/table"
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/use-language";
@@ -121,11 +113,11 @@ export default function Dashboard() {
         setStats(currentStats);
 
       } else if (foundUser?.role === 'supervisor') {
-          const studentList = getStudentsBysupervisorIdFromClient(userId);
+          const studentList = getStudentsBySupervisorIdFromClient(userId);
           setStudents(studentList);
       }
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -333,7 +325,3 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
-
-    
-
-    
