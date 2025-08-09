@@ -121,8 +121,23 @@ export default function ProfilePage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setHeroPreviewImage(reader.result as string);
+      reader.onload = (event) => {
+          const img = document.createElement("img");
+          img.onload = () => {
+              const canvas = document.createElement('canvas');
+              const MAX_WIDTH = 800; // Define max width for hero image
+              const scaleSize = MAX_WIDTH / img.width;
+              canvas.width = MAX_WIDTH;
+              canvas.height = img.height * scaleSize;
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                // Use JPEG for better compression for photos, with quality 0.8
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+                setHeroPreviewImage(dataUrl);
+              }
+          };
+          img.src = event.target?.result as string;
       };
       reader.readAsDataURL(file);
     }
@@ -154,12 +169,28 @@ export default function ProfilePage() {
 
   const handleHeroPictureUpload = () => {
     if (!heroPreviewImage) return;
-    localStorage.setItem('landingHeroImage', heroPreviewImage);
-    toast({
-      title: "Success!",
-      description: "Landing page hero image has been updated."
-    });
-    setHeroPreviewImage(null);
+    try {
+      localStorage.setItem('landingHeroImage', heroPreviewImage);
+      toast({
+        title: "Success!",
+        description: "Landing page hero image has been updated."
+      });
+      setHeroPreviewImage(null);
+    } catch (error: any) {
+        if (error.name === 'QuotaExceededError') {
+             toast({
+                title: "Upload Failed",
+                description: "The compressed image is still too large. Please try a smaller image file.",
+                variant: "destructive",
+            });
+        } else {
+             toast({
+                title: "Error",
+                description: "Could not save the image. Please try again.",
+                variant: "destructive",
+            });
+        }
+    }
   }
 
   const handleResetPassword = () => {
@@ -376,3 +407,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
