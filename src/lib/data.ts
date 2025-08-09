@@ -1,5 +1,4 @@
 
-
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
@@ -159,10 +158,16 @@ export const getWordsForStudent = (studentId: string): Word[] => {
     return mergedWords;
 };
 
-export const getWordForReview = (studentId: string): Word | null => {
+export const getWordForReview = (studentId: string, unit?: string | null): Word | null => {
   if (typeof window === 'undefined') return null;
 
-  const allWords = getWordsForStudent(studentId);
+  let allWords = getWordsForStudent(studentId);
+
+  // If a unit is specified, filter for that unit
+  if (unit) {
+      allWords = allWords.filter(word => word.unit === unit);
+  }
+
   const dueWords = allWords.filter(word => {
     return new Date(word.nextReview) <= new Date() && word.strength >= 0;
   });

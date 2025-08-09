@@ -25,16 +25,17 @@ export default function LearnPage() {
   const startTimeRef = useRef<number | null>(null);
 
   const userId = searchParams.get("userId");
+  const unitFilter = searchParams.get("unit");
 
   const loadNextWord = useCallback(() => {
     if (userId) {
-      const nextWord = getWordForReview(userId);
+      const nextWord = getWordForReview(userId, unitFilter);
       setWord(nextWord);
       if (!nextWord) {
         setSessionFinished(true);
       }
     }
-  }, [userId]);
+  }, [userId, unitFilter]);
 
   const handleUpdateStats = useCallback((reviewedCount: number, durationSeconds: number) => {
     if (userId) {

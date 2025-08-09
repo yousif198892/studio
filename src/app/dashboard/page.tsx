@@ -16,18 +16,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getWordsForStudent, getUserById, getStudentsBySupervisorId } from "@/lib/data";
+import { getWordsForStudent, getUserById, getStudentsBySupervisorId, Word } from "@/lib/data";
 import { User } from "@/lib/data";
-import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck } from "lucide-react";
+import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck, ChevronDown } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { format, subDays } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type LearningStats = {
   timeSpentSeconds: number; // total time
@@ -69,6 +75,7 @@ export default function Dashboard() {
   const [wordsToReviewCount, setWordsToReviewCount] = useState(0);
   const [wordsLearningCount, setWordsLearningCount] = useState(0);
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
+  const [availableUnits, setAvailableUnits] = useState<string[]>([]);
   const last7Days = getLast7Days();
 
 
@@ -87,6 +94,9 @@ export default function Dashboard() {
         setWordsToReviewCount(toReview);
         setWordsMasteredCount(mastered);
         setWordsLearningCount(learning);
+        
+        const units = Array.from(new Set(words.map(w => w.unit).filter(Boolean)));
+        setAvailableUnits(units);
 
         const storedStats = localStorage.getItem(`learningStats_${userId}`);
         const today = new Date().toISOString().split('T')[0];
@@ -146,22 +156,41 @@ export default function Dashboard() {
         <p className="text-muted-foreground">{t('dashboard.student.description')}</p>
         
          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Link href={`/learn?userId=${user.id}`} className="hover:opacity-90 transition-opacity">
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-sm font-medium">
-                            {t('dashboard.student.reviewTitle')}
-                        </CardTitle>
-                        <CalendarCheck className="h-4 w-4 text-muted-foreground" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-2xl font-bold">{wordsToReviewCount}</div>
-                        <p className="text-xs text-muted-foreground underline">
-                            {t('dashboard.student.startReview')}
-                        </p>
-                    </CardContent>
-                </Card>
-            </Link>
+             <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                        {t('dashboard.student.reviewTitle')}
+                    </CardTitle>
+                    <CalendarCheck className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold">{wordsToReviewCount}</div>
+                    <div className="flex items-center gap-2 mt-2">
+                        <Button asChild className="flex-1">
+                            <Link href={`/learn?userId=${user.id}`}>
+                                {t('dashboard.student.startReview')}
+                            </Link>
+                        </Button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="icon" disabled={availableUnits.length === 0}>
+                                    <ChevronDown className="h-4 w-4"/>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuItem disabled>Review by Unit</DropdownMenuItem>
+                                {availableUnits.map(unit => (
+                                    <DropdownMenuItem key={unit} asChild>
+                                        <Link href={`/learn?userId=${user.id}&unit=${encodeURIComponent(unit)}`}>
+                                            {unit}
+                                        </Link>
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                </CardContent>
+            </Card>
             <Link href={`/dashboard/learning-words?userId=${user.id}`} className="hover:opacity-90 transition-opacity">
                 <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -332,5 +361,3 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
-
-    
