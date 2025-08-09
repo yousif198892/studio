@@ -125,7 +125,7 @@ export function DashboardSidebar({
         href: `/dashboard/grammar?userId=${user.id}`,
         label: 'Grammar',
         icon: <SpellCheck />,
-        roles: ["supervisor"],
+        roles: ["student", "supervisor"],
     },
     {
         href: `/dashboard/students?userId=${user.id}`,
