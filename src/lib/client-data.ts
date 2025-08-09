@@ -1,11 +1,13 @@
+
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 // These functions are intended for CLIENT-SIDE USE ONLY.
 
 import { mockUsers, type User } from './data';
+import { db } from './db';
 
 
-export function getAllUsersFromClient(): User[] {
+export async function getAllUsersFromClient(): Promise<User[]> {
   const userMap = new Map<string, User>();
   const defaultAvatar = 'https://placehold.co/100x100.png';
 
@@ -14,17 +16,15 @@ export function getAllUsersFromClient(): User[] {
     userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar })
   );
 
-  // Safely read from localStorage only on the client
+  // Safely read from IndexedDB only on the client
   if (typeof window !== 'undefined') {
     try {
-      const storedUsers: User[] = JSON.parse(
-        localStorage.getItem('users') || '[]'
-      );
+      const storedUsers = await db.users.getAll();
       storedUsers.forEach((user) =>
         userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar })
       );
     } catch (e) {
-      console.error('Failed to parse users from localStorage', e);
+      console.error('Failed to parse users from IndexedDB', e);
     }
   }
 
@@ -33,12 +33,12 @@ export function getAllUsersFromClient(): User[] {
 
 
 // Helper functions to simulate data fetching on the client
-export const getUserByIdFromClient = (id: string): User | undefined => {
-    const allUsers = getAllUsersFromClient();
+export const getUserByIdFromClient = async (id: string): Promise<User | undefined> => {
+    const allUsers = await getAllUsersFromClient();
     return allUsers.find(u => u.id === id);
 }
 
-export const getStudentsBySupervisorIdFromClient = (supervisorId: string): User[] => {
-    const allUsers = getAllUsersFromClient();
+export const getStudentsBySupervisorIdFromClient = async (supervisorId: string): Promise<User[]> => {
+    const allUsers = await getAllUsersFromClient();
     return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
