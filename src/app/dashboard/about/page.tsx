@@ -6,10 +6,25 @@ import { useLanguage } from "@/hooks/use-language";
 import Image from "next/image";
 import appInfo from "../../../../package.json";
 import { Logo } from "@/components/logo";
+import { useEffect, useState } from "react";
+import { getAsset } from "@/lib/db";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AboutPage() {
     const { t } = useLanguage();
-    const signatureImage = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQcAAABACAYAAADe9TsfAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAv5SURBVHhe7Z1tcttoGIZtTybv9zM/yWfyT/JgOwoiEAEiBAFpW7WqW9X3zGz2h2lq6hF/0m+yJ//85S9/+Z//+Z8Z+r//+79h/M//+Z/D+Pd///cM/z//8z8z/L/++usM/13x8PDw8PDw8PCkHqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG8GqG-AASUVORK5CYII=";
+    const [signatureImage, setSignatureImage] = useState<string | null>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchSignature = async () => {
+            const image = await getAsset('signatureImage');
+            if (image) {
+                setSignatureImage(image);
+            }
+            setLoading(false);
+        }
+        fetchSignature();
+    }, []);
 
     return (
         <div className="space-y-6">
@@ -36,13 +51,19 @@ export default function AboutPage() {
                     </p>
                     <div className="pt-4 border-t">
                         <p className="text-muted-foreground">{t('about.signature')}</p>
-                         <Image 
-                            src={signatureImage}
-                            alt="Yousif's signature"
-                            width={200}
-                            height={50}
-                            className="mt-2 invert-0 dark:invert"
-                         />
+                        {loading ? (
+                            <Skeleton className="h-[50px] w-[200px] mt-2" />
+                        ) : signatureImage ? (
+                             <Image 
+                                src={signatureImage}
+                                alt="Yousif's signature"
+                                width={200}
+                                height={50}
+                                className="mt-2 invert-0 dark:invert"
+                             />
+                        ) : (
+                            <p className="text-sm text-muted-foreground">Signature not found.</p>
+                        )}
                     </div>
                 </CardContent>
                 <CardContent>
