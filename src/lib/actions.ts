@@ -124,7 +124,7 @@ const registerSchema = z.object({
   });
 
 
-export async function register(allUsers: User[], prevState: any, formData: FormData) {
+export async function register(prevState: any, formData: FormData) {
     const validatedFields = registerSchema.safeParse({
         name: formData.get("name"),
         email: formData.get("email"),
@@ -141,6 +141,8 @@ export async function register(allUsers: User[], prevState: any, formData: FormD
     }
     
     const { name, email, password, supervisorId } = validatedFields.data;
+
+    const allUsers = await db.users.getAll();
 
     if (allUsers.some(u => u.email === email)) {
       return {
@@ -184,7 +186,7 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required."),
 });
 
-export async function login(allUsers: User[], prevState: any, formData: FormData) {
+export async function login(prevState: any, formData: FormData) {
   const validatedFields = loginSchema.safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
@@ -198,7 +200,7 @@ export async function login(allUsers: User[], prevState: any, formData: FormData
   }
 
   const { email, password } = validatedFields.data;
-  
+  const allUsers = await db.users.getAll();
   const user = allUsers.find((u) => u.email === email);
 
   if (!user || user.password !== password) {
@@ -224,7 +226,7 @@ const createSupervisorSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters.'),
 });
 
-export async function createSupervisor(allUsers: User[], prevState: any, formData: FormData) {
+export async function createSupervisor(prevState: any, formData: FormData) {
   const validatedFields = createSupervisorSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -238,6 +240,8 @@ export async function createSupervisor(allUsers: User[], prevState: any, formDat
       success: false,
     };
   }
+  
+  const allUsers = await db.users.getAll();
 
   if (allUsers.find(u => u.email === validatedFields.data.email)) {
     return {

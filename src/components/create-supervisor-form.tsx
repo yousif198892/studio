@@ -5,12 +5,11 @@ import { useFormStatus } from "react-dom";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useActionState, useState, useTransition } from "react";
+import { useEffect, useRef, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { User } from "@/lib/data";
 import { createSupervisor } from "@/lib/actions";
-import { db } from "@/lib/db";
 
 const initialState: {
   message: string;
@@ -23,10 +22,24 @@ const initialState: {
   success: false,
 };
 
+function SubmitButton() {
+    const { pending } = useFormStatus();
+    return (
+         <Button type="submit" disabled={pending} className="w-full">
+          {pending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Create Supervisor"
+          )}
+        </Button>
+    )
+}
 
 export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded: (user: User) => void }) {
-  const [state, formAction] = useActionState(createSupervisor.bind(null, []), initialState);
-  const [isPending, startTransition] = useTransition();
+  const [state, formAction] = useActionState(createSupervisor, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -53,19 +66,10 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
       });
     }
   }, [state, toast, onSupervisorAdded]);
-  
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    startTransition(async () => {
-        const allUsers = await db.users.getAll();
-        createSupervisor.bind(null, allUsers)(state, formData);
-    });
-  }
 
 
   return (
-    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
+    <form ref={formRef} action={formAction} className="space-y-4">
       <div className="grid gap-2">
         <Label htmlFor="name">Full Name</Label>
         <Input id="name" name="name" placeholder="Jane Doe" required />
@@ -97,16 +101,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
           <p className="text-sm text-destructive">{state.errors.password[0]}</p>
         )}
       </div>
-       <Button type="submit" disabled={isPending} className="w-full">
-          {isPending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
-            </>
-          ) : (
-            "Create Supervisor"
-          )}
-        </Button>
+       <SubmitButton />
     </form>
   );
 }
