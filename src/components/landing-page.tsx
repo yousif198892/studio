@@ -93,7 +93,7 @@ export function LandingPage() {
                     width={500}
                     height={625}
                     className="rounded-xl shadow-2xl"
-                    data-ai-hint="language learning"
+                    data-ai-hint="language learning app"
                   />
               </div>
             </div>
