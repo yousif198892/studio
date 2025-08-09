@@ -1,26 +1,23 @@
 
 'use server';
 
-import { revalidatePath } from "next/cache";
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
-import { Word, User } from "./data";
 import { redirect } from "next/navigation";
-import { translations } from "./i18n";
-import { db } from "./db";
+import type { User, Word } from "./data";
 
-const t = (lang: 'en' | 'ar', key: keyof (typeof translations.en.toasts)) => {
-    return translations[lang].toasts[key];
-}
 
-// This is no longer a form action, but a simple callable server function.
+// --- WORD ACTIONS ---
+
 const addWordSchema = z.object({
   word: z.string().min(1, "Word is required."),
   definition: z.string().min(1, "Definition is required."),
   imageDataUri: z.string().min(1, "Image data is required."),
 });
 
-export async function addWord(data: {
+// This action ONLY calls the AI and returns the options.
+// The client is responsible for creating the word and saving it to IndexedDB.
+export async function getAiWordOptions(data: {
     word: string;
     definition: string;
     imageDataUri: string;
@@ -34,6 +31,7 @@ export async function addWord(data: {
             errors: errorMap,
             message: firstError,
             success: false,
+            options: null,
         };
     }
   
@@ -48,88 +46,31 @@ export async function addWord(data: {
             throw new Error("AI did not return the expected number of options.");
         }
         
-        // Return only the incorrect options. The correct option is the word itself.
-        return { success: true, options: aiResponse.options };
+        return { success: true, options: aiResponse.options, message: "" };
 
     } catch (error) {
-        console.error("Error during word creation:", error);
+        console.error("Error during word option generation:", error);
         const errorMessage = "Failed to add word. The AI could not process the request. Please try a different word or image.";
-        return { message: errorMessage, errors: {}, success: false };
+        return { message: errorMessage, success: false, options: null };
     }
 }
 
-
-const updateWordSchema = z.object({
-  word: z.string().min(1, "Word is required."),
-  definition: z.string().min(1, "Definition is required."),
-  userId: z.string().min(1, "User ID is required."),
-  wordId: z.string().min(1, "Word ID is required."),
-  unit: z.string().optional(),
-  lesson: z.string().optional(),
-});
-
-export async function updateWord(prevState: any, formData: FormData) {
-  const validatedFields = updateWordSchema.safeParse({
-    word: formData.get("word"),
-    definition: formData.get("definition"),
-    userId: formData.get("userId"),
-    wordId: formData.get("wordId"),
-    unit: formData.get("unit"),
-    lesson: formData.get("lesson"),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
-      success: false,
-    };
-  }
-   const { word, definition, wordId, unit, lesson } = validatedFields.data;
-  const imageFile = formData.get("image") as File | null;
-
-  try {
-    let dataUri: string | undefined = undefined;
-    if (imageFile && imageFile.size > 0) {
-      const buffer = await imageFile.arrayBuffer();
-      const base64 = Buffer.from(buffer).toString("base64");
-      dataUri = `data:${imageFile.type};base64,${base64}`;
-    }
-
-    return { 
-      success: true, 
-      message: "Word updated successfully!",
-      updatedWord: {
-        id: wordId,
-        word,
-        definition,
-        unit,
-        lesson,
-        imageUrl: dataUri,
-      }
-    };
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
-    return { message: `Failed to update word: ${errorMessage}`, success: false };
-  }
-}
-
+// --- AUTH ACTIONS ---
 
 const registerSchema = z.object({
     name: z.string().min(1, 'Name is required.'),
     email: z.string().email('Invalid email address.'),
     password: z.string().min(6, 'Password must be at least 6 characters.'),
-    role: z.enum(['student']),
     supervisorId: z.string().optional(),
   });
 
-
-export async function register(prevState: any, formData: FormData) {
+// This action only validates the data. 
+// The client will handle the actual user creation in IndexedDB.
+export async function validateRegistration(prevState: any, formData: FormData) {
     const validatedFields = registerSchema.safeParse({
         name: formData.get("name"),
         email: formData.get("email"),
         password: formData.get("password"),
-        role: "student",
         supervisorId: formData.get("supervisorId"),
     });
 
@@ -137,87 +78,22 @@ export async function register(prevState: any, formData: FormData) {
         return {
             errors: validatedFields.error.flatten().fieldErrors,
             message: "Validation failed.",
+            success: false,
         };
     }
     
-    const { name, email, password, supervisorId } = validatedFields.data;
-
-    const allUsers = await db.users.getAll();
-
-    if (allUsers.some(u => u.email === email)) {
-      return {
-        errors: { email: ["User with this email already exists."] },
-        message: "User with this email already exists.",
-      };
-    }
-
+    const supervisorId = formData.get("supervisorId") as string;
     if (!supervisorId || supervisorId.trim() === '') {
         return {
             errors: { supervisorId: ["Supervisor ID is required."] },
             message: "Supervisor ID is required.",
+            success: false,
         };
     }
 
-    const supervisorExists = allUsers.some(u => u.id === supervisorId && u.role === 'supervisor');
-    if (!supervisorExists) {
-         return {
-            errors: { supervisorId: ["Invalid Supervisor ID."] },
-            message: "Invalid Supervisor ID.",
-        };
-    }
-    
-    const newUser: User = {
-        id: `user${Date.now()}`,
-        name,
-        email,
-        password,
-        role: 'student',
-        avatar: "https://placehold.co/100x100.png",
-        supervisorId: supervisorId,
-    };
-    
-    await db.users.put(newUser);
-    redirect(`/dashboard?userId=${newUser.id}`);
-}
-
-
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address."),
-  password: z.string().min(1, "Password is required."),
-});
-
-export async function login(prevState: any, formData: FormData) {
-  const validatedFields = loginSchema.safeParse({
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
-    };
-  }
-
-  const { email, password } = validatedFields.data;
-  const allUsers = await db.users.getAll();
-  const user = allUsers.find((u) => u.email === email);
-
-  if (!user || user.password !== password) {
-    return {
-      errors: {},
-      message: "Invalid email or password.",
-    };
-  }
-
-  if (user.isSuspended) {
-    return {
-      errors: {},
-      message: "This account has been suspended.",
-    };
-  }
-  
-  redirect(`/dashboard?userId=${user.id}`);
+    // Since we can't check the DB here, the client will do the final check for
+    // existing email and valid supervisor ID. We just return success if fields are valid.
+    return { success: true, message: "Validation successful." };
 }
 
 const createSupervisorSchema = z.object({
@@ -226,7 +102,9 @@ const createSupervisorSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters.'),
 });
 
-export async function createSupervisor(prevState: any, formData: FormData) {
+// This action only validates the data.
+// Client handles the DB interaction.
+export async function validateSupervisorCreation(prevState: any, formData: FormData) {
   const validatedFields = createSupervisorSchema.safeParse({
     name: formData.get("name"),
     email: formData.get("email"),
@@ -240,70 +118,14 @@ export async function createSupervisor(prevState: any, formData: FormData) {
       success: false,
     };
   }
-  
-  const allUsers = await db.users.getAll();
 
-  if (allUsers.find(u => u.email === validatedFields.data.email)) {
-    return {
-      errors: { email: ["Supervisor with this email already exists."] },
-      message: "Supervisor with this email already exists.",
-      success: false,
-    };
-  }
-
-  const { name, email, password } = validatedFields.data;
-  
-  const newUser: User = {
-      id: `sup${Date.now()}`,
-      name,
-      email,
-      password,
-      role: 'supervisor',
-      avatar: "https://placehold.co/100x100.png",
-      isSuspended: false,
-      isMainAdmin: false,
-  };
-  
-  await db.users.put(newUser);
-  return { success: true, message: "Supervisor created!", newUser };
+  // Client will handle checking if the user exists.
+  return { success: true, message: "Validation successful" };
 }
 
 
-const toggleSuspensionSchema = z.object({
-    userToToggle: z.string().min(1, "User object is required."),
-});
-
-export async function toggleSupervisorSuspension(prevState: any, formData: FormData) {
-    const validatedFields = toggleSuspensionSchema.safeParse({
-        userToToggle: formData.get("userToToggle"),
-    });
-
-    if (!validatedFields.success) {
-        return {
-            message: "Invalid request: user object not provided.",
-            success: false,
-        };
-    }
-    
-    let userToToggle: User;
-    try {
-        userToToggle = JSON.parse(validatedFields.data.userToToggle);
-    } catch (e) {
-        return { message: "Invalid user data format.", success: false };
-    }
-
-    if (!userToToggle || !userToToggle.id) {
-        return { message: "User not found or invalid user data.", success: false };
-    }
-
-    const updatedUser = {
-        ...userToToggle,
-        isSuspended: !userToToggle.isSuspended,
-    };
-
-    return { 
-        success: true, 
-        message: `Supervisor ${updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`,
-        updatedUser: updatedUser,
-    };
+// This function is no longer a server action, but a utility function
+// that can be called from the client to perform a redirect.
+export async function redirectToDashboard(userId: string) {
+    redirect(`/dashboard?userId=${userId}`);
 }

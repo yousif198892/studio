@@ -1,7 +1,7 @@
 
 "use client";
 
-import { addWord } from "@/lib/actions";
+import { getAiWordOptions } from "@/lib/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,8 +10,9 @@ import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word, getWordsBySupervisor } from "@/lib/data";
+import { Word } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
+import { db } from "@/lib/db";
 
 const toBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
@@ -53,21 +54,24 @@ export function AddWordForm() {
         return;
     }
 
-    if (getWordsBySupervisor(userId).some(w => w.word.toLowerCase() === wordInput.toLowerCase())) {
-        toast({
-            title: t('toasts.error'),
-            description: "This word already exists in your collection.",
-            variant: "destructive",
-        });
-        setIsPending(false);
-        return;
-    }
-    
     try {
+        const wordsFromDb = await db.words.getAll();
+        const supervisorWords = wordsFromDb.filter(w => w.supervisorId === userId);
+
+        if (supervisorWords.some(w => w.word.toLowerCase() === wordInput.toLowerCase())) {
+            toast({
+                title: t('toasts.error'),
+                description: "This word already exists in your collection.",
+                variant: "destructive",
+            });
+            setIsPending(false);
+            return;
+        }
+
         const imageDataUri = await toBase64(imageInput);
 
-        // --- Server action call ---
-        const result = await addWord({
+        // --- Server action call for AI part only ---
+        const result = await getAiWordOptions({
             word: wordInput,
             definition: definitionInput,
             imageDataUri: imageDataUri
@@ -89,10 +93,8 @@ export function AddWordForm() {
                 strength: 0,
             };
 
-            // Save to localStorage
-            const wordsFromStorage: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-            const updatedWords = [...wordsFromStorage, newWord];
-            localStorage.setItem('userWords', JSON.stringify(updatedWords));
+            // Save to IndexedDB
+            await db.words.put(newWord);
             
             toast({
                 title: t('toasts.success'),
@@ -100,6 +102,8 @@ export function AddWordForm() {
             });
             
             formRef.current?.reset();
+            // Manually trigger a storage event to notify other components like the words page
+            window.dispatchEvent(new Event('storage'));
             router.push(`/dashboard/words?userId=${userId}`);
 
         } else {

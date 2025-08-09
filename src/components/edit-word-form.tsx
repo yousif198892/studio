@@ -1,117 +1,125 @@
 
 "use client";
 
-import { useFormStatus } from "react-dom";
-import { updateWord } from "@/lib/actions";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useEffect, useActionState } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Word } from "@/lib/data";
 import Image from "next/image";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useLanguage } from "@/hooks/use-language";
+import { db } from "@/lib/db";
+import { z } from "zod";
 
-const initialState: {
-    message: string,
-    errors?: any,
-    success: boolean,
-    updatedWord?: Partial<Word> & { id: string }
-} = {
-  message: "",
-  errors: {},
-  success: false,
-};
+const toBase64 = (file: File): Promise<string> =>
+  new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = (error) => reject(error);
+  });
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  const { t } = useLanguage();
-
-  return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? (
-        <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          {t('editWord.form.savingButton')}
-        </>
-      ) : (
-        t('editWord.form.saveButton')
-      )}
-    </Button>
-  );
-}
+const updateWordSchema = z.object({
+  word: z.string().min(1, "Word is required."),
+  definition: z.string().min(1, "Definition is required."),
+  unit: z.string().optional(),
+  lesson: z.string().optional(),
+});
 
 export function EditWordForm({ word: initialWord }: { word: Word }) {
-  const [state, formAction] = useActionState(updateWord, initialState);
   const { toast } = useToast();
   const { t } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [isPending, setIsPending] = useState(false);
   
   const userId = searchParams.get("userId");
 
-  useEffect(() => {
-    if (state.success && state.updatedWord) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsPending(true);
+
+    const formData = new FormData(event.currentTarget);
+    const validatedFields = updateWordSchema.safeParse({
+        word: formData.get("word"),
+        definition: formData.get("definition"),
+        unit: formData.get("unit"),
+        lesson: formData.get("lesson"),
+    });
+
+    if (!validatedFields.success) {
+      const firstError = Object.values(validatedFields.error.flatten().fieldErrors)[0]?.[0];
+      toast({
+        title: t('toasts.error'),
+        description: firstError || "Validation failed.",
+        variant: "destructive",
+      });
+      setIsPending(false);
+      return;
+    }
+
+    const { word, definition, unit, lesson } = validatedFields.data;
+    const imageFile = formData.get("image") as File | null;
+
+    try {
+      let imageDataUri: string | undefined = undefined;
+      if (imageFile && imageFile.size > 0) {
+        imageDataUri = await toBase64(imageFile);
+      }
+
+      const wordFromDb = await db.words.get(initialWord.id);
+      if (!wordFromDb) throw new Error("Word not found in database.");
+
+      const updatedWord: Word = {
+          ...wordFromDb,
+          word,
+          definition,
+          unit: unit || "",
+          lesson: lesson || "",
+          imageUrl: imageDataUri || wordFromDb.imageUrl,
+      };
+
+      await db.words.put(updatedWord);
+
       toast({
         title: t('toasts.success'),
         description: t('toasts.updateWordSuccess'),
       });
 
-      // Update localStorage
-      try {
-        const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-        const updatedWords = storedWords.map(w => {
-            if (w.id === state.updatedWord?.id) {
-                // Merge existing word with updated fields
-                return { ...w, ...state.updatedWord };
-            }
-            return w;
-        });
-        localStorage.setItem('userWords', JSON.stringify(updatedWords));
-      } catch (e) {
-          console.error("Failed to update word in localStorage", e);
-      }
-
+      // Manually trigger a storage event to notify other components like the words page
+      window.dispatchEvent(new Event('storage'));
       router.push(`/dashboard/words?userId=${userId}`);
-    } else if (state.message && !state.success) {
-      toast({
-        title: t('toasts.error'),
-        description: state.message,
-        variant: "destructive",
-      });
+
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      toast({ message: `Failed to update word: ${errorMessage}`, success: false });
+    } finally {
+      setIsPending(false);
     }
-  }, [state, toast, router, userId, t]);
+  };
+
 
   return (
-    <form action={formAction} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <input type="hidden" name="wordId" value={initialWord.id} />
       <input type="hidden" name="userId" value={userId || ''} />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="grid gap-2">
             <Label htmlFor="unit">{t('addWord.form.unitLabel')}</Label>
             <Input id="unit" name="unit" defaultValue={initialWord.unit} placeholder={t('addWord.form.unitPlaceholder')} />
-            {state?.errors?.unit && (
-            <p className="text-sm text-destructive">{state.errors.unit[0]}</p>
-            )}
         </div>
         <div className="grid gap-2">
             <Label htmlFor="lesson">{t('addWord.form.lessonLabel')}</Label>
             <Input id="lesson" name="lesson" defaultValue={initialWord.lesson} placeholder={t('addWord.form.lessonPlaceholder')} />
-            {state?.errors?.lesson && (
-            <p className="text-sm text-destructive">{state.errors.lesson[0]}</p>
-            )}
         </div>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="word">{t('addWord.form.wordLabel')}</Label>
         <Input id="word" name="word" defaultValue={initialWord.word} placeholder={t('addWord.form.wordPlaceholder')} required />
-        {state?.errors?.word && (
-          <p className="text-sm text-destructive">{state.errors.word[0]}</p>
-        )}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="definition">{t('addWord.form.definitionLabel')}</Label>
@@ -122,9 +130,6 @@ export function EditWordForm({ word: initialWord }: { word: Word }) {
           placeholder={t('addWord.form.definitionPlaceholder')}
           required
         />
-        {state?.errors?.definition && (
-          <p className="text-sm text-destructive">{state.errors.definition[0]}</p>
-        )}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="image">{t('addWord.form.imageLabel')}</Label>
@@ -132,11 +137,17 @@ export function EditWordForm({ word: initialWord }: { word: Word }) {
         <Image src={initialWord.imageUrl} alt="Current image" width={100} height={100} className="rounded-md" />
         <Input id="image" name="image" type="file" accept="image/*" />
         <p className="text-xs text-muted-foreground">{t('editWord.form.imageHelper')}</p>
-         {state?.errors?.image && (
-          <p className="text-sm text-destructive">{state.errors.image[0]}</p>
-        )}
       </div>
-      <SubmitButton />
+      <Button type="submit" disabled={isPending} className="w-full">
+        {isPending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {t('editWord.form.savingButton')}
+          </>
+        ) : (
+          t('editWord.form.saveButton')
+        )}
+      </Button>
     </form>
   );
 }

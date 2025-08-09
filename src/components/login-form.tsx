@@ -13,51 +13,88 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import { useFormStatus } from "react-dom";
-import { useActionState, useEffect, useState } from "react";
-import { login } from "@/lib/actions";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
+import { z } from "zod";
+import { db } from "@/lib/db";
+import { useRouter } from "next/navigation";
+import { redirectToDashboard } from "@/lib/actions";
 
-const initialState = {
-  message: "",
-  errors: {},
-};
+const loginSchema = z.object({
+  email: z.string().email("Invalid email address."),
+  password: z.string().min(1, "Password is required."),
+});
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  const { t } = useLanguage();
-
-  return (
-    <Button type="submit" disabled={pending} className="w-full">
-      {pending ? (
-        <>
-          <Loader2 className="me-2 h-4 w-4 animate-spin" />
-          {t('login.loginButton')}...
-        </>
-      ) : (
-        t('login.loginButton')
-      )}
-    </Button>
-  );
-}
 
 export function LoginForm() {
-    const [state, formAction] = useActionState(login, initialState);
     const { toast } = useToast();
     const { t } = useLanguage();
+    const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
+    const [isPending, setIsPending] = useState(false);
 
-    useEffect(() => {
-        if (state?.message) {
-          toast({
-            title: t('toasts.error'),
-            description: state.message,
-            variant: "destructive",
-          });
+    const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setIsPending(true);
+
+        const formData = new FormData(event.currentTarget);
+        const validatedFields = loginSchema.safeParse({
+            email: formData.get("email"),
+            password: formData.get("password"),
+        });
+
+        if (!validatedFields.success) {
+            const firstError = Object.values(validatedFields.error.flatten().fieldErrors)[0]?.[0];
+            toast({
+                title: t('toasts.error'),
+                description: firstError || "Validation failed.",
+                variant: "destructive"
+            });
+            setIsPending(false);
+            return;
         }
-    }, [state, toast, t]);
+
+        try {
+            const { email, password } = validatedFields.data;
+            const allUsers = await db.users.getAll();
+            const user = allUsers.find((u) => u.email === email);
+
+            if (!user || user.password !== password) {
+                 toast({
+                    title: t('toasts.error'),
+                    description: "Invalid email or password.",
+                    variant: "destructive"
+                });
+                setIsPending(false);
+                return;
+            }
+
+            if (user.isSuspended) {
+                 toast({
+                    title: t('toasts.error'),
+                    description: "This account has been suspended.",
+                    variant: "destructive"
+                });
+                setIsPending(false);
+                return;
+            }
+            
+            // Redirect using a server action to comply with Next.js standards
+            await redirectToDashboard(user.id);
+
+        } catch (error) {
+             toast({
+                title: t('toasts.error'),
+                description: "An error occurred during login.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsPending(false);
+        }
+    }
+
 
   return (
     <Card className="mx-auto max-w-sm w-full">
@@ -71,7 +108,7 @@ export function LoginForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form action={formAction} className="grid gap-4">
+        <form onSubmit={handleSubmit} className="grid gap-4">
           <div className="grid gap-2">
             <Label htmlFor="email">{t('login.emailLabel')}</Label>
             <Input
@@ -81,9 +118,6 @@ export function LoginForm() {
               placeholder="m@example.com"
               required
             />
-            {state.errors?.email && (
-              <p className="text-sm text-destructive">{state.errors.email[0]}</p>
-            )}
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
@@ -106,11 +140,17 @@ export function LoginForm() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            {state.errors?.password && (
-                <p className="text-sm text-destructive">{state.errors.password[0]}</p>
-            )}
           </div>
-          <SubmitButton />
+           <Button type="submit" disabled={isPending} className="w-full">
+            {isPending ? (
+                <>
+                <Loader2 className="me-2 h-4 w-4 animate-spin" />
+                {t('login.loginButton')}...
+                </>
+            ) : (
+                t('login.loginButton')
+            )}
+            </Button>
         </form>
         <div className="mt-4 text-center text-sm">
           {t('login.noAccount')}{" "}

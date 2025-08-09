@@ -9,67 +9,100 @@ import { useEffect, useRef, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { User } from "@/lib/data";
-import { createSupervisor } from "@/lib/actions";
+import { validateSupervisorCreation } from "@/lib/actions";
+import { db } from "@/lib/db";
 
 const initialState: {
   message: string;
   errors?: any;
   success: boolean;
-  newUser?: User;
 } = {
   message: "",
   errors: {},
   success: false,
 };
 
-function SubmitButton() {
-    const { pending } = useFormStatus();
-    return (
-         <Button type="submit" disabled={pending} className="w-full">
-          {pending ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating...
-            </>
-          ) : (
-            "Create Supervisor"
-          )}
-        </Button>
-    )
-}
 
 export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded: (user: User) => void }) {
-  const [state, formAction] = useActionState(createSupervisor, initialState);
+  const [state, formAction] = useActionState(validateSupervisorCreation, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [showPassword, setShowPassword] = useState(false);
-
+  const [isPending, setIsPending] = useState(false);
+  const [formData, setFormData] = useState<FormData | null>(null);
 
   useEffect(() => {
-    if (state.success && state.newUser) {
-      toast({
-        title: "Success!",
-        description: "Supervisor account created.",
-      });
+    async function createSupervisor() {
+        if (state.success && formData) {
+            setIsPending(true);
+            try {
+                const name = formData.get("name") as string;
+                const email = formData.get("email") as string;
+                const password = formData.get("password") as string;
 
-      onSupervisorAdded(state.newUser);
-      formRef.current?.reset();
-      // Reset the state manually after processing
-      state.success = false;
-      
-    } else if (state.message && !state.success && state.errors) {
-       const firstError = Object.values(state.errors)[0]?.[0] || state.message;
-       toast({
-        title: "Error",
-        description: firstError,
-        variant: "destructive",
-      });
+                const allUsers = await db.users.getAll();
+                if (allUsers.find(u => u.email === email)) {
+                    toast({
+                        title: "Error",
+                        description: "Supervisor with this email already exists.",
+                        variant: "destructive",
+                    });
+                    return;
+                }
+                
+                const newUser: User = {
+                    id: `sup${Date.now()}`,
+                    name,
+                    email,
+                    password,
+                    role: 'supervisor',
+                    avatar: "https://placehold.co/100x100.png",
+                    isSuspended: false,
+                    isMainAdmin: false,
+                };
+                
+                await db.users.put(newUser);
+                
+                toast({
+                    title: "Success!",
+                    description: "Supervisor account created.",
+                });
+
+                onSupervisorAdded(newUser);
+                formRef.current?.reset();
+
+            } catch (e) {
+                 toast({
+                    title: "Error",
+                    description: "Could not create supervisor account.",
+                    variant: "destructive",
+                });
+            } finally {
+                setIsPending(false);
+            }
+        } else if (state.message && !state.success && state.errors) {
+            const firstError = Object.values(state.errors)[0]?.[0] || state.message;
+            toast({
+                title: "Error",
+                description: firstError,
+                variant: "destructive",
+            });
+        }
     }
-  }, [state, toast, onSupervisorAdded]);
+    createSupervisor();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state, formData]);
 
+
+  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const currentFormData = new FormData(event.currentTarget);
+    setFormData(currentFormData);
+    formAction(currentFormData);
+  }
 
   return (
-    <form ref={formRef} action={formAction} className="space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-2">
         <Label htmlFor="name">Full Name</Label>
         <Input id="name" name="name" placeholder="Jane Doe" required />
@@ -101,7 +134,16 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
           <p className="text-sm text-destructive">{state.errors.password[0]}</p>
         )}
       </div>
-       <SubmitButton />
+       <Button type="submit" disabled={isPending} className="w-full">
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
+          ) : (
+            "Create Supervisor"
+          )}
+        </Button>
     </form>
   );
 }
