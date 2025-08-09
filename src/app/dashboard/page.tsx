@@ -8,6 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { getWordsForStudent } from "@/lib/data";
 import { getUserByIdFromClient, getStudentsBySupervisorIdFromClient } from "@/lib/client-data";
 import { User } from "@/lib/data";
@@ -325,3 +333,5 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
+
+    
