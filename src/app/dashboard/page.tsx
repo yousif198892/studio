@@ -203,7 +203,7 @@ export default function Dashboard() {
             <CardTitle>{t('dashboard.student.progressOverview.title')}</CardTitle>
             <CardDescription>{t('dashboard.student.progressOverview.description')}</CardDescription>
           </CardHeader>
-          <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <CardContent className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
               <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                   <Clock className="h-8 w-8 text-primary mb-2"/>
                   <p className="text-2xl font-bold">{formatTime(stats.reviewedToday.timeSpentSeconds)}</p>
@@ -218,6 +218,11 @@ export default function Dashboard() {
                   <CalendarCheck className="h-8 w-8 text-primary mb-2"/>
                   <p className="text-2xl font-bold">{stats.reviewedToday.count}</p>
                   <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.reviewedToday')}</p>
+              </div>
+              <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                <Star className="h-8 w-8 text-primary mb-2"/>
+                <p className="text-2xl font-bold">{wordsMasteredCount}</p>
+                <p className="text-sm text-muted-foreground">{t('dashboard.student.progressOverview.masteredWords')}</p>
               </div>
                <div className={cn("flex flex-col items-center justify-center p-4 rounded-lg", testsCompletedToday === totalTests ? "bg-green-100 dark:bg-green-900/50" : "bg-secondary")}>
                   <SpellCheck className={cn("h-8 w-8 mb-2", testsCompletedToday === totalTests ? "text-green-600" : "text-primary")}/>
@@ -305,3 +310,5 @@ export default function Dashboard() {
 
   return <div>{t('dashboard.loading')}</div>
 }
+
+    
