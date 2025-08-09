@@ -23,24 +23,40 @@ export default function GrammarPage() {
                 Manage and create grammar lessons for your students.
             </p>
 
-            <Card>
-                <CardHeader>
-                    <CardTitle>Tenses</CardTitle>
-                    <CardDescription>Select a tense to view or edit its explanation and test.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        {tenses.map((tense) => (
-                            <Link href={tense.href} key={tense.name}>
-                                <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                                    <span className="font-medium">{tense.name}</span>
-                                    <ChevronRight className="h-5 w-5 text-muted-foreground"/>
-                                </div>
-                            </Link>
-                        ))}
-                    </div>
-                </CardContent>
-            </Card>
+            <div className="grid md:grid-cols-2 gap-6">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Individual Tenses</CardTitle>
+                        <CardDescription>Select a tense to preview its specific test.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-2">
+                            {tenses.map((tense) => (
+                                <Link href={tense.href} key={tense.name}>
+                                    <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                                        <span className="font-medium">{tense.name}</span>
+                                        <ChevronRight className="h-5 w-5 text-muted-foreground"/>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Comprehensive Test</CardTitle>
+                        <CardDescription>A mixed quiz covering all available tenses.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Link href={`/dashboard/grammar/comprehensive-quiz?userId=${userId}`}>
+                            <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                                <span className="font-medium">Start Comprehensive Test</span>
+                                <ChevronRight className="h-5 w-5 text-muted-foreground"/>
+                            </div>
+                        </Link>
+                    </CardContent>
+                </Card>
+            </div>
         </div>
     );
 }
