@@ -39,16 +39,18 @@ const getDb = () => {
   }
   if (!dbPromise) {
     const dbName = 'lingua-leap-db';
-    const dbVersion = 2; // Keep version the same or increment if needed
+    const dbVersion = 3; // Incremented version to force upgrade
 
     dbPromise = openDB<LinguaLeapDB>(dbName, dbVersion, {
       upgrade(db, oldVersion, newVersion, tx) {
-        console.log(`Upgrading database from version ${oldVersion} to ${newVersion}.`);
+        console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
         
         // Users store
         if (!db.objectStoreNames.contains('users')) {
+          console.log("Creating 'users' object store...");
           const userStore = db.createObjectStore('users', { keyPath: 'id' });
           userStore.createIndex('by-email', 'email', { unique: true });
+          // Seed data using the transaction from the upgrade event
           mockUsers.forEach(user => {
             console.log(`Seeding user: ${user.name}`);
             tx.objectStore('users').add(user);
@@ -57,13 +59,16 @@ const getDb = () => {
         
         // Words store
         if (!db.objectStoreNames.contains('words')) {
+           console.log("Creating 'words' object store...");
           const wordStore = db.createObjectStore('words', { keyPath: 'id' });
           wordStore.createIndex('by-supervisorId', 'supervisorId');
         }
 
         // AdminMessages store
         if (!db.objectStoreNames.contains('adminMessages')) {
+           console.log("Creating 'adminMessages' object store...");
            const messageStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
+           // Seed data using the transaction from the upgrade event
            mockMessages.forEach(message => {
              console.log(`Seeding message from: ${message.name}`);
              tx.objectStore('adminMessages').add(message);
@@ -72,25 +77,26 @@ const getDb = () => {
         
         // wordProgress store
         if (!db.objectStoreNames.contains('wordProgress')) {
+           console.log("Creating 'wordProgress' object store...");
           const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
           progressStore.createIndex('by-studentId', 'studentId');
         }
         
         // landingPage store
         if (!db.objectStoreNames.contains('landingPage')) {
+          console.log("Creating 'landingPage' object store...");
           db.createObjectStore('landingPage', { keyPath: 'id' });
         }
+        console.log("Database upgrade complete.");
       },
        blocked() {
-        console.error('Database is blocked. Please close other tabs with this app open.');
-        // Optionally, inform the user to close other tabs.
+        alert('Database is blocked. Please close other tabs with this app open.');
       },
       blocking() {
-        console.warn('Database is blocked by an old version. Please refresh the page.');
-        // This is a good place to prompt the user to reload the page.
+        alert('Database is blocked by an old version. Please refresh the page.');
       },
       terminated() {
-        console.error('Database connection terminated unexpectedly.');
+        alert('Database connection terminated unexpectedly. Please reload the page.');
       }
     });
   }
@@ -136,8 +142,7 @@ export async function deleteUserDB(id: string): Promise<void> {
 export async function getWordsBySupervisorDB(supervisorId: string): Promise<Word[]> {
     const db = getDb();
     if (!db) return [];
-    const words = await (await db).getAllFromIndex('words', 'by-supervisorId', supervisorId);
-    return words.map(w => ({ ...w, nextReview: new Date(w.nextReview) }));
+    return (await db).getAllFromIndex('words', 'by-supervisorId', supervisorId);
 }
 
 export async function addWordDB(word: Word): Promise<void> {
@@ -148,9 +153,7 @@ export async function addWordDB(word: Word): Promise<void> {
 export async function getWordByIdDB(id: string): Promise<Word | undefined> {
     const db = getDb();
     if (!db) return undefined;
-    const word = await (await db).get('words', id);
-    if(word) return { ...word, nextReview: new Date(word.nextReview) };
-    return undefined;
+    return (await db).get('words', id);
 }
 
 
@@ -169,8 +172,7 @@ export async function deleteWordDB(id: string): Promise<void> {
 export async function getStudentProgressDB(studentId: string): Promise<WordProgress[]> {
     const db = getDb();
     if (!db) return [];
-    const progress = await (await db).getAllFromIndex('wordProgress', 'by-studentId', studentId);
-    return progress.map(p => ({ ...p, nextReview: new Date(p.nextReview) }));
+    return (await db).getAllFromIndex('wordProgress', 'by-studentId', studentId);
 }
 
 export async function saveStudentProgressDB(progress: WordProgress[]): Promise<void> {
