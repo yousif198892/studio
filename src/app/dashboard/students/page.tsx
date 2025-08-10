@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { User, Word, getWordsForStudent, getStudentsBySupervisorId, getUserById } from "@/lib/data";
+import { User, Word, getWordsForStudent, getStudentsBySupervisorId, getUserById, updateUserDB } from "@/lib/data";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
@@ -76,76 +76,78 @@ export default function StudentsPage() {
   const userId = searchParams?.get('userId') as string;
   
   useEffect(() => {
-    if (userId) {
-        const currentUser = getUserById(userId);
-        setUser(currentUser || null);
-        const studentList = getStudentsBySupervisorId(userId);
-        const today = new Date().toISOString().split('T')[0];
+    const fetchData = async () => {
+        if (userId) {
+            const currentUser = await getUserById(userId);
+            setUser(currentUser || null);
+            const studentList = await getStudentsBySupervisorId(userId);
+            const today = new Date().toISOString().split('T')[0];
 
-        const studentsWithStats = studentList.map(student => {
-            const storedStats = localStorage.getItem(`learningStats_${student.id}`);
-            let stats: LearningStats = {
-                timeSpentSeconds: 0,
-                totalWordsReviewed: 0,
-                reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
-                activityLog: [],
-            };
-            if (storedStats) {
-                 const parsedStats: LearningStats = JSON.parse(storedStats);
-                 
-                 if (!parsedStats.activityLog) {
-                    parsedStats.activityLog = [];
-                 }
-                 if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
-                    parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
-                 }
-                  if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
-                    parsedStats.reviewedToday.timeSpentSeconds = 0;
-                  }
-                  if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
-                    parsedStats.reviewedToday.completedTests = [];
-                  }
-                 stats = parsedStats;
-            }
+            const studentsWithStatsPromises = studentList.map(async (student) => {
+                const storedStats = localStorage.getItem(`learningStats_${student.id}`);
+                let stats: LearningStats = {
+                    timeSpentSeconds: 0,
+                    totalWordsReviewed: 0,
+                    reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
+                    activityLog: [],
+                };
+                if (storedStats) {
+                    const parsedStats: LearningStats = JSON.parse(storedStats);
+                    
+                    if (!parsedStats.activityLog) {
+                        parsedStats.activityLog = [];
+                    }
+                    if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
+                        parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
+                    }
+                    if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
+                        parsedStats.reviewedToday.timeSpentSeconds = 0;
+                    }
+                    if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
+                        parsedStats.reviewedToday.completedTests = [];
+                    }
+                    stats = parsedStats;
+                }
 
-            const words = getWordsForStudent(student.id);
-            const mastered = words.filter(w => w.strength === -1).length;
-            const learning = words.length - mastered;
+                const words = await getWordsForStudent(student.id);
+                const mastered = words.filter(w => w.strength === -1).length;
+                const learning = words.length - mastered;
 
-            return {
-                ...student,
-                stats,
-                wordsLearningCount: learning,
-                wordsMasteredCount: mastered,
-            }
-        });
-
-        setStudents(studentsWithStats);
-    }
+                return {
+                    ...student,
+                    stats,
+                    wordsLearningCount: learning,
+                    wordsMasteredCount: mastered,
+                };
+            });
+            const studentsWithStats = await Promise.all(studentsWithStatsPromises);
+            setStudents(studentsWithStats);
+        }
+    };
+    fetchData();
   }, [userId])
 
-  const handleDelete = (studentId: string) => {
+  const handleDelete = async (studentId: string) => {
     try {
-      // Remove from component state first for immediate UI feedback
+      // Optimistically update the UI
       setStudents(prev => prev.filter(s => s.id !== studentId));
       
-      let allUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
-      const studentIndex = allUsers.findIndex(u => u.id === studentId);
+      const studentToUpdate = await getUserById(studentId);
 
-      if (studentIndex > -1) {
-        // Instead of deleting the user, just detach them from the supervisor
-        allUsers[studentIndex].supervisorId = undefined;
-        localStorage.setItem("users", JSON.stringify(allUsers));
+      if (studentToUpdate) {
+        studentToUpdate.supervisorId = undefined;
+        await updateUserDB(studentToUpdate);
+         // Optional: Also clear the student's specific learning progress from the supervisor's words
+        localStorage.removeItem(`wordProgress_${studentId}`);
+        localStorage.removeItem(`learningStats_${studentId}`);
+
+        toast({
+            title: "Success!",
+            description: "Student has been removed from your list.",
+        });
+      } else {
+        throw new Error("Student not found.");
       }
-
-      // Optional: Also clear the student's specific learning progress from the supervisor's words
-      localStorage.removeItem(`wordProgress_${studentId}`);
-      localStorage.removeItem(`learningStats_${studentId}`);
-
-      toast({
-        title: "Success!",
-        description: "Student has been removed from your list.",
-      });
 
     } catch (error) {
       toast({
@@ -156,13 +158,15 @@ export default function StudentsPage() {
       // If there was an error, refetch the original list to revert the UI change
       const userId = searchParams?.get('userId') as string;
       if (userId) {
+        const studentList = await getStudentsBySupervisorId(userId);
         const today = new Date().toISOString().split('T')[0];
-        setStudents(getStudentsBySupervisorId(userId).map(s => ({
+        const studentsWithStatsPromises = studentList.map(async (s) => ({
             ...s,
-            stats: { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: []}, activityLog: [] },
-            wordsLearningCount: 0,
-            wordsMasteredCount: 0
-        })));
+            stats: JSON.parse(localStorage.getItem(`learningStats_${s.id}`) || 'null') || { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: []}, activityLog: [] },
+            wordsLearningCount: (await getWordsForStudent(s.id)).filter(w => w.strength >=0).length,
+            wordsMasteredCount: (await getWordsForStudent(s.id)).filter(w => w.strength === -1).length
+        }));
+        setStudents(await Promise.all(studentsWithStatsPromises));
       }
     }
   }
