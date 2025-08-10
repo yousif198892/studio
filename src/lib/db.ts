@@ -35,19 +35,18 @@ let dbPromise: Promise<IDBPDatabase<LinguaLeapDB>> | null = null;
 
 const getDb = () => {
   if (typeof window === 'undefined') {
-    // This is a server-side render, so we can't use IndexedDB.
-    // Return a dummy object or handle appropriately.
     return null;
   }
   if (!dbPromise) {
     dbPromise = openDB<LinguaLeapDB>('lingua-leap-db', 2, {
       upgrade(db, oldVersion, newVersion, tx) {
         console.log(`Upgrading database from version ${oldVersion} to ${newVersion}`);
+        
+        // --- Schema Creation ---
         if (oldVersion < 1) {
             if (!db.objectStoreNames.contains('users')) {
                 const userStore = db.createObjectStore('users', { keyPath: 'id' });
                 userStore.createIndex('by-email', 'email', { unique: true });
-                mockUsers.forEach(user => tx.objectStore('users').add(user));
             }
              if (!db.objectStoreNames.contains('words')) {
                 const wordStore = db.createObjectStore('words', { keyPath: 'id' });
@@ -55,7 +54,6 @@ const getDb = () => {
             }
             if (!db.objectStoreNames.contains('adminMessages')) {
                 db.createObjectStore('adminMessages', { keyPath: 'id' });
-                mockMessages.forEach(message => tx.objectStore('adminMessages').add(message));
             }
             if (!db.objectStoreNames.contains('wordProgress')) {
                 const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
@@ -67,6 +65,35 @@ const getDb = () => {
                 db.createObjectStore('landingPage', { keyPath: 'id' });
              }
         }
+
+        // --- Data Seeding (within the same upgrade transaction) ---
+        // This runs after schema changes and ensures data is present on first load.
+        // It's safe to run even if stores exist, as `add` will not overwrite.
+        const seedData = async () => {
+          const userStore = tx.objectStore('users');
+          const messageStore = tx.objectStore('adminMessages');
+          
+          const userPromises = mockUsers.map(user => {
+            // Check if user exists before adding to prevent errors on subsequent loads
+            return userStore.get(user.id).then(existing => {
+              if (!existing) {
+                return userStore.add(user);
+              }
+            });
+          });
+
+          const messagePromises = mockMessages.map(message => {
+            return messageStore.get(message.id).then(existing => {
+              if (!existing) {
+                return messageStore.add(message);
+              }
+            });
+          });
+
+          await Promise.all([...userPromises, ...messagePromises]);
+        };
+
+        seedData();
       },
     });
   }
