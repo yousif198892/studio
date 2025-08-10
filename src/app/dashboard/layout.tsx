@@ -15,6 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
+  const userId = searchParams?.get('userId');
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -31,8 +32,6 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const fetchUserAndCounts = async () => {
-      const userId = searchParams?.get('userId');
-      
       if (!userId) {
         redirect("/login");
         return;
@@ -99,7 +98,7 @@ export default function DashboardLayout({
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     };
-  }, [searchParams]);
+  }, [userId]);
 
   if (loading) {
     return (
