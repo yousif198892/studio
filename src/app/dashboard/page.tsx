@@ -36,6 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { SpellingPracticeCard } from "@/components/spelling-practice-card";
 
 
 type LearningStats = {
@@ -335,6 +336,8 @@ export default function Dashboard() {
                  </CardContent>
              </Card>
          </div>
+
+         <SpellingPracticeCard allWords={allStudentWords} userId={user.id} />
        </div>
      );
    }
@@ -411,4 +414,6 @@ export default function Dashboard() {
  }
  
     
+    
+
     

@@ -16,6 +16,7 @@ export const translations = {
       requests: 'Requests',
       admins: 'Admins',
       about: 'About',
+      spelling: 'Spelling',
     },
     about: {
         title: "About LinguaLeap",
@@ -286,6 +287,7 @@ export const translations = {
       requests: 'طلبات',
       admins: 'مدراء',
       about: 'حول',
+      spelling: 'الإملاء',
     },
     about: {
         title: "حول LinguaLeap",
@@ -544,7 +546,7 @@ export const translations = {
 
 export type TranslationKey = 
     | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile' | 'sidebar.learn'
-    | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins' | 'sidebar.about'
+    | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins' | 'sidebar.about' | 'sidebar.spelling'
     | 'about.title' | 'about.description' | 'about.greeting' | 'about.teacherIntro' | 'about.aiIntro' | 'about.signature' | 'about.version'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
@@ -574,5 +576,7 @@ export type TranslationKey =
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+
+    
 
     
