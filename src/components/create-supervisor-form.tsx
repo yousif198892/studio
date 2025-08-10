@@ -20,6 +20,15 @@ const createSupervisorSchema = z.object({
   isTrial: z.boolean().optional(),
 });
 
+function generateShortID(length = 6) {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
 
 export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded: (user: User) => void }) {
   const { toast } = useToast();
@@ -49,16 +58,8 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
     const { name, email, password, isTrial } = validatedFields.data;
 
      try {
-        const allUsers = await getAllUsers();
-        const supervisorIds = allUsers
-            .filter(u => u.role === 'supervisor' && u.id.startsWith('sup'))
-            .map(u => parseInt(u.id.replace('sup', ''), 10))
-            .filter(id => !isNaN(id));
-
-        const newIdNumber = supervisorIds.length > 0 ? Math.max(...supervisorIds) + 1 : 1;
-
         const newUser: User = {
-            id: `sup${newIdNumber}`,
+            id: `sup_${generateShortID()}`,
             name,
             email,
             password,

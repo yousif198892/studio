@@ -29,6 +29,15 @@ const registerSchema = z.object({
     supervisorId: z.string().min(1, 'Supervisor ID is required.'),
   });
 
+function generateShortID(length = 6) {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+}
+
 export function RegisterForm() {
   const { toast } = useToast();
   const { t } = useLanguage();
@@ -72,16 +81,8 @@ export function RegisterForm() {
             return;
         }
 
-        const allUsers = await getAllUsers();
-        const studentIds = allUsers
-            .filter(u => u.role === 'student' && u.id.startsWith('user'))
-            .map(u => parseInt(u.id.replace('user', ''), 10))
-            .filter(id => !isNaN(id));
-            
-        const newIdNumber = studentIds.length > 0 ? Math.max(...studentIds) + 1 : 1;
-
         const newUser: User = {
-            id: `user${newIdNumber}`,
+            id: `user_${generateShortID()}`,
             name,
             email,
             password,
