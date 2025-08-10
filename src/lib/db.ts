@@ -39,51 +39,55 @@ const getDb = () => {
   }
   if (!dbPromise) {
     const dbName = 'lingua-leap-db';
-    const dbVersion = 2;
+    const dbVersion = 2; // Keep version the same or increment if needed
 
     dbPromise = openDB<LinguaLeapDB>(dbName, dbVersion, {
       upgrade(db, oldVersion, newVersion, tx) {
-        console.log(`Upgrading database '${dbName}' from version ${oldVersion} to ${newVersion}...`);
-
-        // --- Schema Creation ---
-        if (oldVersion < 1) {
-            if (!db.objectStoreNames.contains('users')) {
-                const userStore = db.createObjectStore('users', { keyPath: 'id' });
-                userStore.createIndex('by-email', 'email', { unique: true });
-                // Seed initial users right after creation
-                mockUsers.forEach(user => {
-                    console.log(`Seeding user: ${user.name}`);
-                    userStore.add(user);
-                });
-            }
-             if (!db.objectStoreNames.contains('words')) {
-                const wordStore = db.createObjectStore('words', { keyPath: 'id' });
-                wordStore.createIndex('by-supervisorId', 'supervisorId');
-            }
-            if (!db.objectStoreNames.contains('adminMessages')) {
-                const messageStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
-                 // Seed initial messages right after creation
-                mockMessages.forEach(message => {
-                    console.log(`Seeding message from: ${message.name}`);
-                    messageStore.add(message);
-                });
-            }
-            if (!db.objectStoreNames.contains('wordProgress')) {
-                const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
-                progressStore.createIndex('by-studentId', 'studentId');
-            }
+        console.log(`Upgrading database from version ${oldVersion} to ${newVersion}.`);
+        
+        // Users store
+        if (!db.objectStoreNames.contains('users')) {
+          const userStore = db.createObjectStore('users', { keyPath: 'id' });
+          userStore.createIndex('by-email', 'email', { unique: true });
+          mockUsers.forEach(user => {
+            console.log(`Seeding user: ${user.name}`);
+            tx.objectStore('users').add(user);
+          });
         }
-        if (oldVersion < 2) {
-             if (!db.objectStoreNames.contains('landingPage')) {
-                db.createObjectStore('landingPage', { keyPath: 'id' });
-             }
+        
+        // Words store
+        if (!db.objectStoreNames.contains('words')) {
+          const wordStore = db.createObjectStore('words', { keyPath: 'id' });
+          wordStore.createIndex('by-supervisorId', 'supervisorId');
+        }
+
+        // AdminMessages store
+        if (!db.objectStoreNames.contains('adminMessages')) {
+           const messageStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
+           mockMessages.forEach(message => {
+             console.log(`Seeding message from: ${message.name}`);
+             tx.objectStore('adminMessages').add(message);
+           });
+        }
+        
+        // wordProgress store
+        if (!db.objectStoreNames.contains('wordProgress')) {
+          const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
+          progressStore.createIndex('by-studentId', 'studentId');
+        }
+        
+        // landingPage store
+        if (!db.objectStoreNames.contains('landingPage')) {
+          db.createObjectStore('landingPage', { keyPath: 'id' });
         }
       },
        blocked() {
         console.error('Database is blocked. Please close other tabs with this app open.');
+        // Optionally, inform the user to close other tabs.
       },
       blocking() {
         console.warn('Database is blocked by an old version. Please refresh the page.');
+        // This is a good place to prompt the user to reload the page.
       },
       terminated() {
         console.error('Database connection terminated unexpectedly.');
