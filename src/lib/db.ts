@@ -44,27 +44,23 @@ const getDb = () => {
       upgrade(db, oldVersion, newVersion, tx) {
         console.log(`Upgrading database from version ${oldVersion} to ${newVersion}`);
         if (oldVersion < 1) {
-            const userStore = db.createObjectStore('users', { keyPath: 'id' });
-            userStore.createIndex('by-email', 'email', { unique: true });
-
-            const wordStore = db.createObjectStore('words', { keyPath: 'id' });
-            wordStore.createIndex('by-supervisorId', 'supervisorId');
-
-            db.createObjectStore('adminMessages', { keyPath: 'id' });
-
-            const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
-            progressStore.createIndex('by-studentId', 'studentId');
-            
-            db.createObjectStore('landingPage', { keyPath: 'id' });
-            
-            // Seed initial data
-            mockUsers.forEach(user => {
-                tx.objectStore('users').add(user);
-            });
-            mockMessages.forEach(message => {
-                tx.objectStore('adminMessages').add(message);
-            });
-             console.log("Initial data seeded.");
+            if (!db.objectStoreNames.contains('users')) {
+                const userStore = db.createObjectStore('users', { keyPath: 'id' });
+                userStore.createIndex('by-email', 'email', { unique: true });
+                mockUsers.forEach(user => tx.objectStore('users').add(user));
+            }
+             if (!db.objectStoreNames.contains('words')) {
+                const wordStore = db.createObjectStore('words', { keyPath: 'id' });
+                wordStore.createIndex('by-supervisorId', 'supervisorId');
+            }
+            if (!db.objectStoreNames.contains('adminMessages')) {
+                db.createObjectStore('adminMessages', { keyPath: 'id' });
+                mockMessages.forEach(message => tx.objectStore('adminMessages').add(message));
+            }
+            if (!db.objectStoreNames.contains('wordProgress')) {
+                const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
+                progressStore.createIndex('by-studentId', 'studentId');
+            }
         }
         if (oldVersion < 2) {
              if (!db.objectStoreNames.contains('landingPage')) {
