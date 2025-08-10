@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -13,12 +14,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "./logo";
-import { validateRegistration, redirectToDashboard } from "@/lib/actions";
+import { validateRegistration } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
 import { useActionState, useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { User, getAllUsers } from "@/lib/data";
+import { User } from "@/lib/data";
+import { redirectToDashboard } from "@/lib/actions";
 
 const initialState = {
   message: "",
@@ -35,70 +37,25 @@ export function RegisterForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
    useEffect(() => {
-    async function handleRegistration() {
       if (state.success && state.formData) {
-        setIsSubmitting(true);
-        try {
-            const name = state.formData.get("name") as string;
-            const email = state.formData.get("email") as string;
-            const password = state.formData.get("password") as string;
-            const supervisorId = state.formData.get("supervisorId") as string;
-            
-            const allUsers = getAllUsers();
-            if (allUsers.some(u => u.email === email)) {
-                toast({ title: t('toasts.error'), description: t('toasts.userExists'), variant: "destructive" });
-                return;
-            }
-            const supervisorExists = allUsers.some(u => u.id === supervisorId && u.role === 'supervisor');
-            if (!supervisorExists) {
-                toast({ title: t('toasts.error'), description: t('toasts.invalidSupervisorId'), variant: "destructive" });
-                return;
-            }
-
-            const newUser: User = {
-                id: `user${Date.now()}`,
-                name,
-                email,
-                password,
-                role: 'student',
-                avatar: "https://placehold.co/100x100.png",
-                supervisorId: supervisorId,
-            };
-            
-            const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-            storedUsers.push(newUser);
-            localStorage.setItem('users', JSON.stringify(storedUsers));
-            
-            toast({ title: t('toasts.success'), description: t('toasts.registerSuccess') });
-            await redirectToDashboard(newUser.id);
-
-        } catch (e) {
-            toast({ title: t('toasts.error'), description: "Registration failed. Please try again.", variant: "destructive" });
-        } finally {
-            setIsSubmitting(false);
-        }
+        // The redirection is now handled inside the server action
+        // so no client-side logic is needed here on success.
+        // We just need to stop the loading spinner.
+        setIsSubmitting(false);
       } else if (state.message && Object.keys(state.errors || {}).length > 0) {
         const firstErrorKey = Object.keys(state.errors || {})[0];
         const firstError = firstErrorKey ? (state.errors as any)[firstErrorKey][0] : state.message;
         toast({ title: t('toasts.error'), description: firstError, variant: "destructive" });
         setIsSubmitting(false);
       }
-    }
-    
-    if (state.success) {
-      handleRegistration();
-    } else if (state.message) {
-      setIsSubmitting(false);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
+  }, [state, t, toast]);
 
 
   return (
     <Card className="mx-auto max-w-sm w-full">
       <CardHeader className="text-center">
         <div className="flex justify-center mb-4">
-            <Logo />
+            <Logo className="h-20 w-20" />
         </div>
         <CardTitle className="text-2xl font-headline">{t('register.title')}</CardTitle>
         <CardDescription>

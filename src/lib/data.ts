@@ -10,6 +10,7 @@ import {
     getUserByIdDB,
     getWordsBySupervisorDB,
     addWordDB,
+    addUserDB,
     getMessagesDB,
     addMessageDB,
     deleteMessageDB,
@@ -22,6 +23,7 @@ import {
     saveSupervisorMessageDB,
     getPeerMessagesDB,
     savePeerMessageDB,
+    getUserByEmailDB,
 } from './db';
 
 
@@ -257,4 +259,4 @@ export const savePeerMessage = (message: PeerMessage) => {
 };
 
 // Re-exporting write functions
-export { addWordDB, addMessageDB, deleteMessageDB, updateUserDB, deleteUserDB, deleteWordDB, updateWordDB, getWordByIdDB };
+export { addUserDB, addWordDB, addMessageDB, deleteMessageDB, updateUserDB, deleteUserDB, deleteWordDB, updateWordDB, getWordByIdDB, getUserByEmailDB };

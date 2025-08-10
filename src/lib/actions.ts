@@ -155,20 +155,7 @@ export async function validateSupervisorCreation(prevState: any, formData: FormD
         }
     }
 
-  const newSupervisor: User = {
-      id: `sup${Date.now()}`,
-      name: validatedFields.data.name,
-      email: validatedFields.data.email,
-      password: validatedFields.data.password,
-      role: 'supervisor',
-      avatar: "https://placehold.co/100x100.png",
-      isSuspended: false,
-      isMainAdmin: false,
-  };
-  
-  await addUserDB(newSupervisor);
-  
-  return { success: true, message: "Validation successful", newUser: newSupervisor };
+  return { success: true, message: "Validation successful", formData };
 }
 
 export async function redirectToDashboard(userId: string) {

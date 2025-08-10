@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Label } from "@/components/ui/label";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useActionState, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { User, getAllUsers } from "@/lib/data";
+import { User, getAllUsers, addUserDB } from "@/lib/data";
 import { validateSupervisorCreation } from "@/lib/actions";
 
 const initialState: {
@@ -38,16 +39,6 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
                 const email = state.formData.get("email") as string;
                 const password = state.formData.get("password") as string;
 
-                const allUsers = getAllUsers();
-                if (allUsers.find(u => u.email === email)) {
-                    toast({
-                        title: "Error",
-                        description: "Supervisor with this email already exists.",
-                        variant: "destructive",
-                    });
-                    return;
-                }
-                
                 const newUser: User = {
                     id: `sup${Date.now()}`,
                     name,
@@ -59,9 +50,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
                     isMainAdmin: false,
                 };
                 
-                const storedUsers = JSON.parse(localStorage.getItem("users") || "[]");
-                storedUsers.push(newUser);
-                localStorage.setItem("users", JSON.stringify(storedUsers));
+                await addUserDB(newUser);
                 
                 toast({
                     title: "Success!",
@@ -91,10 +80,8 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
         }
     }
     
-    if (state.success) {
+    if (state.success || state.message) {
       createSupervisor();
-    } else if (state.message) {
-      setIsPending(false);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
