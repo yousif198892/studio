@@ -154,7 +154,7 @@ export default function AdminsPage() {
               <div className="flex items-center gap-2">
                 <span className="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">Trial</span>
                 <span className="text-xs text-muted-foreground">
-                    (expires {formatDistanceToNowStrict(trialDate, { addSuffix: true })})
+                    ({formatDistanceToNowStrict(trialDate, { addSuffix: true })} left)
                 </span>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
