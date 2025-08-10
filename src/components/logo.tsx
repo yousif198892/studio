@@ -12,7 +12,8 @@ export function Logo({ className }: { className?: string }) {
       strokeLinejoin="round"
       className={cn("h-8 w-8", className)}
     >
-      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" className="text-primary" fill="hsl(var(--primary))" stroke="hsl(var(--primary))" />
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"  className="text-primary" fill="hsl(var(--primary))" stroke="hsl(var(--primary))" />
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"  className="text-primary" />
     </svg>
   );
 }
