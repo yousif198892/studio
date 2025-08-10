@@ -1,8 +1,28 @@
 
+
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
-import { getStudentProgressFromStorage, saveAllStudentProgressInStorage, WordProgress } from './storage';
+import { getStudentProgressDB, saveStudentProgressDB } from './db';
+import { WordProgress } from './storage';
+import { 
+    getAllUsersDB,
+    getUserByIdDB,
+    getWordsBySupervisorDB,
+    addWordDB,
+    getMessagesDB,
+    addMessageDB,
+    deleteMessageDB,
+    updateUserDB,
+    deleteUserDB,
+    deleteWordDB,
+    updateWordDB,
+    getWordByIdDB,
+    getSupervisorMessagesDB,
+    saveSupervisorMessageDB,
+    getPeerMessagesDB,
+    savePeerMessageDB,
+} from './db';
 
 
 export type User = {
@@ -29,8 +49,9 @@ export type Word = {
   options: string[]; // This will include the correct word and 3 incorrect ones
   correctOption: string;
   supervisorId: string;
-  nextReview: Date;
-  strength: number; // -1 means mastered, 0 is new, >0 is SRS level
+  // Student-specific progress is now stored separately
+  nextReview?: Date; // Optional on the base word
+  strength?: number; // Optional on the base word
 };
 
 export type Message = {
@@ -85,92 +106,67 @@ export const mockUsers: User[] = [
   },
 ];
 
-export function getAllUsers(): User[] {
-  const userMap = new Map<string, User>();
-  const defaultAvatar = "https://placehold.co/100x100.png";
 
-  mockUsers.forEach(user => userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar }));
-  
-  if (typeof window !== 'undefined') {
-    const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-    storedUsers.forEach(user => userMap.set(user.id, { ...user, avatar: user.avatar || defaultAvatar }));
-  }
+// --- NEW ASYNC FUNCTIONS ---
 
-  return Array.from(userMap.values());
+export async function getAllUsers(): Promise<User[]> {
+    return await getAllUsersDB();
 }
 
-
-// Helper functions to simulate data fetching
-export const getUserById = (id: string): User | undefined => {
-    return getAllUsers().find(u => u.id === id);
+export async function getUserById(id: string): Promise<User | undefined> {
+    return await getUserByIdDB(id);
 }
 
-const getSupervisorWordsFromStorage = (): Word[] => {
-    if (typeof window === 'undefined') return [];
-    
-    // This is the master list of all words added by supervisors
-    const storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-    return storedWords.map(word => ({
-        ...word,
-        nextReview: new Date(word.nextReview)
-    }));
+export async function getWordsBySupervisor(supervisorId: string): Promise<Word[]> {
+    return await getWordsBySupervisorDB(supervisorId);
 }
 
-
-export const getWordsForStudent = (studentId: string): Word[] => {
-    if (typeof window === 'undefined') return [];
-    
-    const student = getUserById(studentId);
+export async function getWordsForStudent(studentId: string): Promise<(Word & WordProgress)[]> {
+    const student = await getUserById(studentId);
     if (!student?.supervisorId) return [];
 
-    const supervisorWords = getWordsBySupervisor(student.supervisorId);
-    const studentProgress = getStudentProgressFromStorage(studentId);
+    const supervisorWords = await getWordsBySupervisor(student.supervisorId);
+    const studentProgress = await getStudentProgressDB(studentId);
     const studentProgressMap = new Map(studentProgress.map(p => [p.id, p]));
 
     const mergedWords = supervisorWords.map(supervisorWord => {
         const progress = studentProgressMap.get(supervisorWord.id);
         if (progress) {
-            // If student has progress, merge it with the supervisor's word data
             return {
                 ...supervisorWord,
-                strength: progress.strength,
+                ...progress,
                 nextReview: new Date(progress.nextReview),
             };
         } else {
-            // If student has no progress, it's a new word for them
             return {
                 ...supervisorWord,
+                id: supervisorWord.id,
                 strength: 0,
                 nextReview: new Date(),
             };
         }
     });
 
-    // Save back to student's progress to persist new words, but only the progress part.
     const allProgressToSave: WordProgress[] = mergedWords.map(w => ({
         id: w.id,
         strength: w.strength,
         nextReview: w.nextReview,
+        studentId: studentId
     }));
-
-    saveAllStudentProgressInStorage(studentId, allProgressToSave);
+    await saveStudentProgressDB(allProgressToSave);
 
     return mergedWords;
-};
+}
 
-export const getWordForReview = (studentId: string, unit?: string | null, lesson?: string | null): Word | null => {
-  if (typeof window === 'undefined') return null;
-
-  let allWords = getWordsForStudent(studentId);
+export async function getWordForReview(studentId: string, unit?: string | null, lesson?: string | null): Promise<(Word & WordProgress) | null> {
+  let allWords = await getWordsForStudent(studentId);
 
   let filteredWords = allWords;
 
-  // If a unit is specified, filter for that unit
   if (unit) {
       filteredWords = filteredWords.filter(word => word.unit === unit);
   }
   
-  // If a lesson is specified, filter for that lesson
   if (lesson) {
       filteredWords = filteredWords.filter(word => word.lesson === lesson);
   }
@@ -181,73 +177,44 @@ export const getWordForReview = (studentId: string, unit?: string | null, lesson
 
   if (dueWords.length === 0) return null;
 
-  // Simple logic: return the word with the earliest review date
   dueWords.sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
   
   return dueWords[0];
 };
 
-
-export const getWordsBySupervisor = (supervisorId: string): Word[] => {
-    const allWords = getSupervisorWordsFromStorage();
-    return allWords.filter(w => w.supervisorId === supervisorId);
-};
-
-export const getMessages = (): Message[] => {
-    const baseMessages = mockMessages;
-    if (typeof window !== 'undefined') {
-        const storedMessages: Message[] = JSON.parse(localStorage.getItem('adminMessages') || '[]');
-        const allMessages = [...baseMessages, ...storedMessages];
-        const uniqueMessages = Array.from(new Map(allMessages.map(item => [item.id, item])).values());
-        return uniqueMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    }
-    return baseMessages.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+export async function getMessages(): Promise<Message[]> {
+    return await getMessagesDB();
 }
 
-// --- CHAT FUNCTIONS ---
-
-const getSupervisorMessagesFromStorage = (): SupervisorMessage[] => {
-    if (typeof window === 'undefined') return [];
-    try {
-        const stored = localStorage.getItem('supervisorMessages');
-        if (!stored) return [];
-        const messages: SupervisorMessage[] = JSON.parse(stored);
-        return messages.map(m => ({ ...m, createdAt: new Date(m.createdAt) }));
-    } catch (e) {
-        return [];
-    }
+export async function getStudentsBySupervisorId(supervisorId: string): Promise<User[]> {
+    const allUsers = await getAllUsers();
+    return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
 }
 
-const getPeerMessagesFromStorage = (): PeerMessage[] => {
-    if (typeof window === 'undefined') return [];
-    try {
-        const stored = localStorage.getItem('peerMessages');
-        if (!stored) return [];
-        const messages: PeerMessage[] = JSON.parse(stored);
-        return messages.map(m => ({ ...m, createdAt: new Date(m.createdAt) }));
-    } catch (e) {
-        return [];
-    }
-};
 
+// CHAT - Stays on localStorage for now to keep focus on word storage
 export const getConversationsForStudent = (userId: string): { supervisor: Record<string, SupervisorMessage[]>, peer: Record<string, PeerMessage[]> } => {
     if (typeof window === 'undefined') return { supervisor: {}, peer: {} };
     
-    const currentUser = getUserById(userId);
-    
+    // This is a synchronous placeholder. Ideally, chat would also be async.
+    // For now, we are just reading from localStorage.
+    const allUsers = JSON.parse(localStorage.getItem('users') || '[]').concat(mockUsers);
+    const currentUser = allUsers.find((u:User) => u.id === userId);
+
     const supervisorConversations: Record<string, SupervisorMessage[]> = {};
     const peerConversations: Record<string, PeerMessage[]> = {};
+    
+    const supervisorMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem("supervisorMessages") || "[]").map((m: any) => ({...m, createdAt: new Date(m.createdAt)}));
+    const peerMessages: PeerMessage[] = JSON.parse(localStorage.getItem("peerMessages") || "[]").map((m: any) => ({...m, createdAt: new Date(m.createdAt)}));
 
-    // For a student, get supervisor chat and peer chats
+
     if (currentUser?.role === 'student') {
         if (currentUser.supervisorId) {
-            const supervisorMessages = getSupervisorMessagesFromStorage();
             supervisorConversations[currentUser.supervisorId] = supervisorMessages
                 .filter(m => m.studentId === userId && m.supervisorId === currentUser.supervisorId)
                 .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         }
 
-        const peerMessages = getPeerMessagesFromStorage();
         const studentPeerMessages = peerMessages.filter(m => m.senderId === userId || m.receiverId === userId);
         for (const msg of studentPeerMessages) {
             const otherUserId = msg.senderId === userId ? msg.receiverId : msg.senderId;
@@ -258,10 +225,8 @@ export const getConversationsForStudent = (userId: string): { supervisor: Record
         }
     }
 
-    // For a supervisor, get all chats with their students
     if (currentUser?.role === 'supervisor') {
-        const students = getStudentsBySupervisorId(userId);
-        const supervisorMessages = getSupervisorMessagesFromStorage();
+        const students = allUsers.filter((u: User) => u.role === 'student' && u.supervisorId === userId);
         for (const student of students) {
             supervisorConversations[student.id] = supervisorMessages
                 .filter(m => m.studentId === student.id && m.supervisorId === userId)
@@ -269,7 +234,6 @@ export const getConversationsForStudent = (userId: string): { supervisor: Record
         }
     }
     
-    // Sort all peer conversations by date
     for (const peerId in peerConversations) {
         peerConversations[peerId].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
@@ -280,38 +244,17 @@ export const getConversationsForStudent = (userId: string): { supervisor: Record
 
 export const saveSupervisorMessage = (message: SupervisorMessage) => {
     if (typeof window === 'undefined') return;
-    const allMessages = getSupervisorMessagesFromStorage();
+    const allMessages = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
     allMessages.push(message);
-    localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
-}
-
-export const deleteSupervisorMessage = (messageId: string) => {
-    if (typeof window === 'undefined') return;
-    let allMessages = getSupervisorMessagesFromStorage();
-    allMessages = allMessages.filter(m => m.id !== messageId);
-    localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
-}
-
-export const deleteConversation = (studentId: string, supervisorId: string) => {
-    if (typeof window === 'undefined') return;
-    let allMessages = getSupervisorMessagesFromStorage();
-    allMessages = allMessages.filter(m => !(m.studentId === studentId && m.supervisorId === supervisorId));
     localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
 }
 
 export const savePeerMessage = (message: PeerMessage) => {
     if (typeof window === 'undefined') return;
-    const allMessages = getPeerMessagesFromStorage();
+    const allMessages = JSON.parse(localStorage.getItem('peerMessages') || '[]');
     allMessages.push(message);
     localStorage.setItem('peerMessages', JSON.stringify(allMessages));
 };
 
-export const getUnreadPeerMessageCount = (studentId: string): number => {
-    const allMessages = getPeerMessagesFromStorage();
-    return allMessages.filter(m => m.receiverId === studentId && !m.read).length;
-};
-
-export const getStudentsBySupervisorId = (supervisorId: string): User[] => {
-    const allUsers = getAllUsers();
-    return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
-}
+// Re-exporting write functions
+export { addWordDB, addMessageDB, deleteMessageDB, updateUserDB, deleteUserDB, deleteWordDB, updateWordDB, getWordByIdDB };

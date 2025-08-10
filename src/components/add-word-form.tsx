@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { getAiWordOptions } from "@/lib/actions";
@@ -10,7 +11,7 @@ import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word, getWordsBySupervisor } from "@/lib/data";
+import { Word, getWordsBySupervisor, addWordDB } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 
 const toBase64 = (file: File): Promise<string> =>
@@ -54,7 +55,7 @@ export function AddWordForm() {
     }
 
     try {
-        const supervisorWords = getWordsBySupervisor(userId);
+        const supervisorWords = await getWordsBySupervisor(userId);
         if (supervisorWords.some(w => w.word.toLowerCase() === wordInput.toLowerCase())) {
             toast({
                 title: t('toasts.error'),
@@ -86,15 +87,10 @@ export function AddWordForm() {
                 options: [...result.options, wordInput], // AI options + correct option
                 correctOption: wordInput,
                 supervisorId: userId,
-                nextReview: new Date(),
-                strength: 0,
             };
 
-            // Save to localStorage
-            const existingWords = getWordsBySupervisor(userId);
-            const allWords = [...existingWords, newWord];
-            const otherSupervisorWords = JSON.parse(localStorage.getItem('userWords') || '[]').filter((w: Word) => w.supervisorId !== userId);
-            localStorage.setItem('userWords', JSON.stringify([...otherSupervisorWords, ...allWords]));
+            // Save to IndexedDB
+            await addWordDB(newWord);
             
             toast({
                 title: t('toasts.success'),
@@ -103,6 +99,7 @@ export function AddWordForm() {
             
             formRef.current?.reset();
             router.push(`/dashboard/words?userId=${userId}`);
+            router.refresh(); // Force a refresh to show the new word
 
         } else {
             const errorMessage = result.message || "An unknown error occurred.";
@@ -170,3 +167,4 @@ export function AddWordForm() {
     </form>
   );
 }
+

@@ -1,9 +1,12 @@
 
+
 'use server';
 
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
 import { redirect } from "next/navigation";
+import { addUserDB, getAllUsers, getUserByEmailDB, getUserById } from "./data";
+import { User } from "./data";
 
 // --- WORD ACTIONS ---
 
@@ -14,7 +17,7 @@ const addWordSchema = z.object({
 });
 
 // This action ONLY calls the AI and returns the options.
-// The client is responsible for creating the word and saving it to localStorage.
+// The client is responsible for creating the word and saving it to storage.
 export async function getAiWordOptions(data: {
     word: string;
     definition: string;
@@ -87,7 +90,39 @@ export async function validateRegistration(prevState: any, formData: FormData) {
         };
     }
     
-    return { success: true, message: "Validation successful.", formData };
+    // Server-side check if user exists
+    const existingUser = await getUserByEmailDB(validatedFields.data.email);
+    if(existingUser) {
+        return {
+            errors: { email: ["User with this email already exists."] },
+            message: "User with this email already exists.",
+            success: false,
+        }
+    }
+    
+    // Server-side check if supervisor exists
+    const supervisor = await getUserById(supervisorId);
+    if (!supervisor || supervisor.role !== 'supervisor') {
+         return {
+            errors: { supervisorId: ["Invalid Supervisor ID provided."] },
+            message: "Invalid Supervisor ID provided.",
+            success: false,
+        };
+    }
+
+    const newUser: User = {
+        id: `user${Date.now()}`,
+        name: validatedFields.data.name,
+        email: validatedFields.data.email,
+        password: validatedFields.data.password,
+        role: 'student',
+        avatar: "https://placehold.co/100x100.png",
+        supervisorId: supervisorId,
+    };
+    
+    await addUserDB(newUser);
+    
+    redirect(`/dashboard?userId=${newUser.id}`);
 }
 
 const createSupervisorSchema = z.object({
@@ -111,7 +146,29 @@ export async function validateSupervisorCreation(prevState: any, formData: FormD
     };
   }
   
-  return { success: true, message: "Validation successful", formData };
+  const existingUser = await getUserByEmailDB(validatedFields.data.email);
+   if(existingUser) {
+        return {
+            errors: { email: ["Supervisor with this email already exists."] },
+            message: "Supervisor with this email already exists.",
+            success: false,
+        }
+    }
+
+  const newSupervisor: User = {
+      id: `sup${Date.now()}`,
+      name: validatedFields.data.name,
+      email: validatedFields.data.email,
+      password: validatedFields.data.password,
+      role: 'supervisor',
+      avatar: "https://placehold.co/100x100.png",
+      isSuspended: false,
+      isMainAdmin: false,
+  };
+  
+  await addUserDB(newSupervisor);
+  
+  return { success: true, message: "Validation successful", newUser: newSupervisor };
 }
 
 export async function redirectToDashboard(userId: string) {

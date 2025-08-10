@@ -21,7 +21,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { redirectToDashboard } from "@/lib/actions";
-import { getAllUsers } from "@/lib/data";
+import { getUserByEmailDB } from "@/lib/db";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -40,66 +40,47 @@ export function LoginForm() {
         event.preventDefault();
         setIsPending(true);
 
-        try {
-            const formData = new FormData(event.currentTarget);
-            const validatedFields = loginSchema.safeParse({
-                email: formData.get("email"),
-                password: formData.get("password"),
-            });
+        const formData = new FormData(event.currentTarget);
+        const validatedFields = loginSchema.safeParse({
+            email: formData.get("email"),
+            password: formData.get("password"),
+        });
 
-            if (!validatedFields.success) {
-                const firstError = Object.values(validatedFields.error.flatten().fieldErrors)[0]?.[0];
-                toast({
-                    title: t('toasts.error'),
-                    description: firstError || "Validation failed.",
-                    variant: "destructive"
-                });
-                setIsPending(false);
-                return;
-            }
-
-            const { email, password } = validatedFields.data;
-            const allUsers = getAllUsers();
-            const user = allUsers.find((u) => u.email === email);
-
-            if (!user || user.password !== password) {
-                 toast({
-                    title: t('toasts.error'),
-                    description: "Invalid email or password.",
-                    variant: "destructive"
-                });
-                setIsPending(false);
-                return;
-            }
-
-            if (user.isSuspended) {
-                 toast({
-                    title: t('toasts.error'),
-                    description: "This account has been suspended.",
-                    variant: "destructive"
-                });
-                setIsPending(false);
-                return;
-            }
-            
-            // This function will throw a NEXT_REDIRECT error which is handled by Next.js
-            await redirectToDashboard(user.id);
-
-        } catch (error) {
-            // This catch block will only handle unexpected errors, not the redirect.
-            if ((error as any)?.digest?.startsWith('NEXT_REDIRECT')) {
-              throw error;
-            }
-            console.error("An unexpected error occurred during login:", error);
+        if (!validatedFields.success) {
+            const firstError = Object.values(validatedFields.error.flatten().fieldErrors)[0]?.[0];
             toast({
                 title: t('toasts.error'),
-                description: "An unexpected error occurred during login.",
+                description: firstError || "Validation failed.",
                 variant: "destructive"
             });
-        } finally {
-            // This might not run on successful redirect, which is fine.
             setIsPending(false);
+            return;
         }
+
+        const { email, password } = validatedFields.data;
+        const user = await getUserByEmailDB(email);
+        
+        if (!user || user.password !== password) {
+             toast({
+                title: t('toasts.error'),
+                description: "Invalid email or password.",
+                variant: "destructive"
+            });
+            setIsPending(false);
+            return;
+        }
+
+        if (user.isSuspended) {
+             toast({
+                title: t('toasts.error'),
+                description: "This account has been suspended.",
+                variant: "destructive"
+            });
+            setIsPending(false);
+            return;
+        }
+        
+        await redirectToDashboard(user.id);
     }
 
 
@@ -107,7 +88,7 @@ export function LoginForm() {
     <Card className="mx-auto max-w-sm w-full">
       <CardHeader className="text-center">
         <div className="flex justify-center mb-4">
-            <Logo className="h-16 w-16" />
+            <Logo className="h-20 w-20" />
         </div>
         <CardTitle className="text-2xl font-headline">{t('login.welcome')}</CardTitle>
         <CardDescription>
@@ -169,3 +150,4 @@ export function LoginForm() {
     </Card>
   );
 }
+
