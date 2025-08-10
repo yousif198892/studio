@@ -19,9 +19,10 @@ import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle, Star, Calendar } from "lucide-react";
 import type { ScheduleOption } from "@/app/learn/page";
 import { useLanguage } from "@/hooks/use-language";
+import { WordProgress } from "@/lib/storage";
 
 interface QuizCardProps {
-  word: Word;
+  word: Word & WordProgress;
   onCorrect: (option: ScheduleOption) => void;
   onIncorrect: () => void;
 }

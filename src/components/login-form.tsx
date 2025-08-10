@@ -21,7 +21,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { redirectToDashboard } from "@/lib/actions";
-import { getUserByEmailDB } from "@/lib/db";
+import { getUserByEmailDB } from "@/lib/data";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -150,4 +150,3 @@ export function LoginForm() {
     </Card>
   );
 }
-

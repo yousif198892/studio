@@ -25,7 +25,7 @@ import { Upload } from "@/components/ui/upload";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User, Word, getAllUsers, getUserById } from "@/lib/data";
+import { User, Word, getAllUsers, getUserById, updateUserDB, deleteUserDB, getWordsBySupervisorDB, deleteWordDB } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -56,15 +56,18 @@ export default function ProfilePage() {
   useEffect(() => {
     const userId = searchParams.get("userId");
     if (userId) {
-      const foundUser = getUserById(userId);
-      setUser(foundUser || null);
-      if (foundUser) {
-          setName(foundUser.name);
-          if (foundUser.role === 'student' && foundUser.supervisorId) {
-            const foundSupervisor = getUserById(foundUser.supervisorId);
-            setSupervisor(foundSupervisor || null);
-          }
+      const fetchUser = async () => {
+        const foundUser = await getUserById(userId);
+        setUser(foundUser || null);
+        if (foundUser) {
+            setName(foundUser.name);
+            if (foundUser.role === 'student' && foundUser.supervisorId) {
+              const foundSupervisor = await getUserById(foundUser.supervisorId);
+              setSupervisor(foundSupervisor || null);
+            }
+        }
       }
+      fetchUser();
     }
   }, [searchParams]);
 
@@ -80,24 +83,11 @@ export default function ProfilePage() {
     setLanguage(value);
   };
   
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
       if (!user) return;
       
-      const allUsers = getAllUsers();
-      const userIndex = allUsers.findIndex(u => u.id === user.id);
-      
       const updatedUser: User = { ...user, name };
-
-      if(userIndex > -1) {
-          const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-          const storedUserIndex = storedUsers.findIndex(u => u.id === user.id);
-
-          if (storedUserIndex > -1) {
-              storedUsers[storedUserIndex] = updatedUser;
-              localStorage.setItem('users', JSON.stringify(storedUsers));
-          }
-      }
-      
+      await updateUserDB(updatedUser);
       setUser(updatedUser);
 
       toast({
@@ -150,23 +140,11 @@ export default function ProfilePage() {
   };
 
 
-  const handlePictureUpload = () => {
+  const handlePictureUpload = async () => {
     if (!user || !previewImage) return;
     
-    const allUsers = getAllUsers();
-    const userIndex = allUsers.findIndex(u => u.id === user.id);
-    
     const updatedUser = { ...user, avatar: previewImage };
-
-    if(userIndex > -1) {
-        const storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-        const storedUserIndex = storedUsers.findIndex(u => u.id === user.id);
-        if (storedUserIndex > -1) {
-            storedUsers[storedUserIndex] = updatedUser;
-            localStorage.setItem('users', JSON.stringify(storedUsers));
-        }
-    }
-    
+    await updateUserDB(updatedUser);
     setUser(updatedUser);
     setPreviewImage(null);
 
@@ -210,18 +188,17 @@ export default function ProfilePage() {
     });
   }
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async () => {
     if (!user) return;
     
     try {
-        let storedUsers: User[] = JSON.parse(localStorage.getItem('users') || '[]');
-        storedUsers = storedUsers.filter(u => u.id !== user.id);
-        localStorage.setItem('users', JSON.stringify(storedUsers));
+        await deleteUserDB(user.id);
         
         if (user.role === 'supervisor') {
-            let storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-            storedWords = storedWords.filter(w => w.supervisorId !== user.id);
-            localStorage.setItem('userWords', JSON.stringify(storedWords));
+            const supervisorWords = await getWordsBySupervisorDB(user.id);
+            for (const word of supervisorWords) {
+                await deleteWordDB(word.id);
+            }
         }
 
         toast({

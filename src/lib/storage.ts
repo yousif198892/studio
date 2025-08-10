@@ -3,7 +3,7 @@
 'use client';
 
 import type { Word } from './data';
-import { saveStudentProgressDB } from './db';
+import { getStudentProgressDB, saveStudentProgressDB } from './db';
 
 // This interface represents only the data that changes per student.
 export interface WordProgress {
@@ -22,14 +22,26 @@ export const updateStudentProgressInStorage = async (studentId: string, wordId: 
   if (typeof window === 'undefined') return;
   
   const progress: WordProgress = {
-    id: wordId,
+    id: `${studentId}-${wordId}`, // Create a unique key for the student-word pair
     studentId: studentId,
-    ...newProgress
+    ...newProgress,
+    // Add the wordId to the object itself if needed for querying, though the key is now unique
   }
+
+  const existingProgress = await getStudentProgressDB(studentId);
+  const progressToSave = existingProgress.find(p => p.id === wordId) || { id: wordId, studentId, strength: 0, nextReview: new Date() };
+
+  const updatedProgress: WordProgress = {
+      ...progressToSave,
+      ...newProgress,
+  };
+
 
   try {
     // In IndexedDB, a simple "put" will either add or update the record.
-    await saveStudentProgressDB([progress]);
+    // We are now saving the entire progress list for a student, not just one word.
+    // This function should be updated to only save a single item.
+    await saveStudentProgressDB([updatedProgress]);
   } catch (e) {
     console.error("Failed to update student progress in IndexedDB", e);
   }

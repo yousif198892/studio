@@ -6,7 +6,7 @@ import { redirect, usePathname, useSearchParams } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
-import { User, getMessages, Word, getWordsBySupervisor, getWordsForStudent, getConversationsForStudent, getStudentsBySupervisorId, getAllUsers } from "@/lib/data";
+import { User, getMessages, Word, getWordsBySupervisor, getWordsForStudent, getConversationsForStudent, getStudentsBySupervisorId, getAllUsers, getUserById } from "@/lib/data";
 import { useEffect, useState, useCallback } from "react";
 
 export default function DashboardLayout({
@@ -30,7 +30,7 @@ export default function DashboardLayout({
   const [masteredWordsCount, setMasteredWordsCount] = useState(0);
   const [chatConversationsCount, setChatConversationsCount] = useState(0);
 
-  const fetchUserAndCounts = useCallback(() => {
+  const fetchUserAndCounts = useCallback(async () => {
     const userId = searchParams?.get('userId') as string;
     
     if (!userId) {
@@ -38,8 +38,7 @@ export default function DashboardLayout({
       return;
     }
     
-    const allUsers = getAllUsers();
-    const foundUser = allUsers.find(u => u.id === userId);
+    const foundUser = await getUserById(userId);
     
     if (foundUser) {
       setUser(foundUser);
@@ -48,17 +47,19 @@ export default function DashboardLayout({
       // Calculate counts based on role
       if (foundUser.role === 'supervisor') {
           if (foundUser.isMainAdmin) {
-              setRequestsCount(getMessages().length);
+              const messages = await getMessages();
+              setRequestsCount(messages.length);
+              const allUsers = await getAllUsers();
               const otherAdmins = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin).length;
               setAdminsCount(otherAdmins);
           }
           const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
           setUnreadChatCount(supervisorUnread);
 
-          const words = getWordsBySupervisor(userId);
+          const words = await getWordsBySupervisor(userId);
           setWordsCount(words.length);
           
-          const students = getStudentsBySupervisorId(userId);
+          const students = await getStudentsBySupervisorId(userId);
           setStudentsCount(students.length);
           setChatConversationsCount(students.length);
 
@@ -67,13 +68,13 @@ export default function DashboardLayout({
            const peerUnread = Object.values(allConversations.peer).flat().filter(m => m.senderId !== userId && !m.read).length;
            setUnreadChatCount(supervisorUnread + peerUnread);
            
-           const studentWords = getWordsForStudent(foundUser.id);
+           const studentWords = await getWordsForStudent(foundUser.id);
            const learning = studentWords.filter(w => w.strength >= 0).length;
            const mastered = studentWords.filter(w => w.strength === -1).length;
            setLearningWordsCount(learning);
            setMasteredWordsCount(mastered);
 
-           const classmates = getStudentsBySupervisorId(foundUser.supervisorId).filter(s => s.id !== foundUser.id);
+           const classmates = (await getStudentsBySupervisorId(foundUser.supervisorId)).filter(s => s.id !== foundUser.id);
            setClassmatesCount(classmates.length);
            setChatConversationsCount(classmates.length + 1); // classmates + supervisor
       }
@@ -87,8 +88,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     setLoading(true);
-    fetchUserAndCounts();
-    setLoading(false);
+    fetchUserAndCounts().finally(() => setLoading(false));
     
     // Polling might be too intense for production, but for this demo it ensures data sync
     const interval = setInterval(fetchUserAndCounts, 5000); // Re-fetch every 5 seconds
