@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import {
@@ -23,7 +24,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import { format, subDays } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -65,6 +66,7 @@ const allTests = ["Present Simple", "Past Simple", "Present Continuous", "Compre
 
 export default function Dashboard() {
   const searchParams = useSearchParams();
+  const userId = searchParams.get('userId');
   const { t } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [students, setStudents] = useState<User[]>([]);
@@ -86,60 +88,62 @@ export default function Dashboard() {
 
 
   useEffect(() => {
-    const userId = searchParams?.get('userId') as string;
-    if (userId) {
-      const foundUser = getUserById(userId);
-      setUser(foundUser);
-      
-      if (foundUser?.role === 'student') {
-        const words = getWordsForStudent(userId);
-        setAllStudentWords(words);
-
-        const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
-        const mastered = words.filter(w => w.strength === -1).length;
-        const learning = words.length - mastered;
-
-        setWordsToReviewCount(toReview);
-        setWordsMasteredCount(mastered);
-        setWordsLearningCount(learning);
+    const fetchData = async () => {
+      if (userId) {
+        const foundUser = await getUserById(userId);
+        setUser(foundUser || null);
         
-        const storedStats = localStorage.getItem(`learningStats_${userId}`);
-        const today = new Date().toISOString().split('T')[0];
-        let currentStats: LearningStats;
+        if (foundUser?.role === 'student') {
+          const words = await getWordsForStudent(userId);
+          setAllStudentWords(words);
 
-        if (storedStats) {
-          currentStats = JSON.parse(storedStats);
-        } else {
-           currentStats = {
-            timeSpentSeconds: 0,
-            totalWordsReviewed: 0,
-            reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
-            activityLog: [],
-          };
-        }
-        
-        if (!currentStats.reviewedToday || currentStats.reviewedToday.date !== today) {
-            currentStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
-        }
-        if (typeof currentStats.reviewedToday.timeSpentSeconds !== 'number') {
-            currentStats.reviewedToday.timeSpentSeconds = 0;
-        }
-        if (!Array.isArray(currentStats.reviewedToday.completedTests)) {
-            currentStats.reviewedToday.completedTests = [];
-        }
-        if (!Array.isArray(currentStats.activityLog)) {
-            currentStats.activityLog = [];
-        }
-        
-        localStorage.setItem(`learningStats_${userId}`, JSON.stringify(currentStats));
-        setStats(currentStats);
+          const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
+          const mastered = words.filter(w => w.strength === -1).length;
+          const learning = words.length - mastered;
 
-      } else if (foundUser?.role === 'supervisor') {
-          const studentList = getStudentsBySupervisorId(userId);
-          setStudents(studentList);
+          setWordsToReviewCount(toReview);
+          setWordsMasteredCount(mastered);
+          setWordsLearningCount(learning);
+          
+          const storedStats = localStorage.getItem(`learningStats_${userId}`);
+          const today = new Date().toISOString().split('T')[0];
+          let currentStats: LearningStats;
+
+          if (storedStats) {
+            currentStats = JSON.parse(storedStats);
+          } else {
+             currentStats = {
+              timeSpentSeconds: 0,
+              totalWordsReviewed: 0,
+              reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
+              activityLog: [],
+            };
+          }
+          
+          if (!currentStats.reviewedToday || currentStats.reviewedToday.date !== today) {
+              currentStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
+          }
+          if (typeof currentStats.reviewedToday.timeSpentSeconds !== 'number') {
+              currentStats.reviewedToday.timeSpentSeconds = 0;
+          }
+          if (!Array.isArray(currentStats.reviewedToday.completedTests)) {
+              currentStats.reviewedToday.completedTests = [];
+          }
+          if (!Array.isArray(currentStats.activityLog)) {
+              currentStats.activityLog = [];
+          }
+          
+          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(currentStats));
+          setStats(currentStats);
+
+        } else if (foundUser?.role === 'supervisor') {
+            const studentList = await getStudentsBySupervisorId(userId);
+            setStudents(studentList);
+        }
       }
-    }
-  }, [searchParams, t]);
+    };
+    fetchData();
+  }, [userId]);
 
   const availableUnits = useMemo(() => {
     return Array.from(new Set(allStudentWords.map(w => w.unit).filter(Boolean)));

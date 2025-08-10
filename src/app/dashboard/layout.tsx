@@ -29,68 +29,64 @@ export default function DashboardLayout({
   const [learningWordsCount, setLearningWordsCount] = useState(0);
   const [masteredWordsCount, setMasteredWordsCount] = useState(0);
   const [chatConversationsCount, setChatConversationsCount] = useState(0);
-  
-  const fetchUserAndCounts = useCallback(async () => {
-    if (!userId) {
-      setLoading(false);
-      return;
-    }
-    
-    setLoading(true);
-    const foundUser = await getUserById(userId);
-    
-    if (foundUser) {
-      setUser(foundUser);
-      const allConversations = getConversationsForStudent(userId);
-      
-      // Calculate counts based on role
-      if (foundUser.role === 'supervisor') {
-          if (foundUser.isMainAdmin) {
-              const messages = await getMessages();
-              setRequestsCount(messages.length);
-              const allUsers = await getAllUsers();
-              const otherAdmins = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin).length;
-              setAdminsCount(otherAdmins);
-          }
-          const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
-          setUnreadChatCount(supervisorUnread);
-
-          const words = await getWordsBySupervisor(userId);
-          setWordsCount(words.length);
-          
-          const students = await getStudentsBySupervisorId(userId);
-          setStudentsCount(students.length);
-          setChatConversationsCount(students.length);
-
-      } else if (foundUser.role === 'student' && foundUser.supervisorId) {
-           const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
-           const peerUnread = Object.values(allConversations.peer).flat().filter(m => m.senderId !== userId && !m.read).length;
-           setUnreadChatCount(supervisorUnread + peerUnread);
-           
-           const studentWords = await getWordsForStudent(foundUser.id);
-           const learning = studentWords.filter(w => w.strength >= 0).length;
-           const mastered = studentWords.filter(w => w.strength === -1).length;
-           setLearningWordsCount(learning);
-           setMasteredWordsCount(mastered);
-
-           const classmates = (await getStudentsBySupervisorId(foundUser.supervisorId)).filter(s => s.id !== foundUser.id);
-           setClassmatesCount(classmates.length);
-           setChatConversationsCount(classmates.length + 1); // classmates + supervisor
-      }
-
-    } else {
-       console.error("User not found, will redirect.");
-       redirect("/login");
-    }
-    setLoading(false);
-  }, [userId]);
-
 
   useEffect(() => {
-    if (!userId) {
+    const fetchUserAndCounts = async () => {
+      if (!userId) {
+        setLoading(false);
         redirect("/login");
         return;
-    }
+      }
+      
+      setLoading(true);
+      const foundUser = await getUserById(userId);
+      
+      if (foundUser) {
+        setUser(foundUser);
+        const allConversations = getConversationsForStudent(userId);
+        
+        // Calculate counts based on role
+        if (foundUser.role === 'supervisor') {
+            if (foundUser.isMainAdmin) {
+                const messages = await getMessages();
+                setRequestsCount(messages.length);
+                const allUsers = await getAllUsers();
+                const otherAdmins = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin).length;
+                setAdminsCount(otherAdmins);
+            }
+            const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
+            setUnreadChatCount(supervisorUnread);
+
+            const words = await getWordsBySupervisor(userId);
+            setWordsCount(words.length);
+            
+            const students = await getStudentsBySupervisorId(userId);
+            setStudentsCount(students.length);
+            setChatConversationsCount(students.length);
+
+        } else if (foundUser.role === 'student' && foundUser.supervisorId) {
+             const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
+             const peerUnread = Object.values(allConversations.peer).flat().filter(m => m.senderId !== userId && !m.read).length;
+             setUnreadChatCount(supervisorUnread + peerUnread);
+             
+             const studentWords = await getWordsForStudent(foundUser.id);
+             const learning = studentWords.filter(w => w.strength >= 0).length;
+             const mastered = studentWords.filter(w => w.strength === -1).length;
+             setLearningWordsCount(learning);
+             setMasteredWordsCount(mastered);
+
+             const classmates = (await getStudentsBySupervisorId(foundUser.supervisorId)).filter(s => s.id !== foundUser.id);
+             setClassmatesCount(classmates.length);
+             setChatConversationsCount(classmates.length + 1); // classmates + supervisor
+        }
+
+      } else {
+         console.error("User not found, will redirect.");
+         redirect("/login");
+      }
+      setLoading(false);
+    };
+
     fetchUserAndCounts();
     
     // Set up a listener for storage changes to re-fetch data
@@ -103,7 +99,7 @@ export default function DashboardLayout({
     return () => {
         window.removeEventListener('storage', handleStorageChange);
     };
-  }, [userId, fetchUserAndCounts]);
+  }, [userId]);
 
   if (loading) {
     return (
