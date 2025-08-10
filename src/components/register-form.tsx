@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import Link from "next/link";
@@ -17,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { User, addUserDB, getUserByEmailDB, getUserById } from "@/lib/data";
+import { User, addUserDB, getAllUsers, getUserByEmailDB, getUserById } from "@/lib/data";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 
@@ -71,8 +72,16 @@ export function RegisterForm() {
             return;
         }
 
+        const allUsers = await getAllUsers();
+        const studentIds = allUsers
+            .filter(u => u.role === 'student' && u.id.startsWith('user'))
+            .map(u => parseInt(u.id.replace('user', ''), 10))
+            .filter(id => !isNaN(id));
+            
+        const newIdNumber = studentIds.length > 0 ? Math.max(...studentIds) + 1 : 1;
+
         const newUser: User = {
-            id: `user${Date.now()}`,
+            id: `user${newIdNumber}`,
             name,
             email,
             password,
