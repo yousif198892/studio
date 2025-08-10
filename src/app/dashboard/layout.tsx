@@ -15,7 +15,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const searchParams = useSearchParams();
-  const pathname = usePathname();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -32,7 +31,7 @@ export default function DashboardLayout({
 
   useEffect(() => {
     const fetchUserAndCounts = async () => {
-      const userId = searchParams?.get('userId') as string;
+      const userId = searchParams?.get('userId');
       
       if (!userId) {
         redirect("/login");

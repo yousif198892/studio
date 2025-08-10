@@ -69,10 +69,10 @@ export default function LearningWordsPage() {
     };
   }, [fetchWords]);
 
-  const handleWordRescheduled = () => {
+  const handleWordRescheduled = useCallback(() => {
     // Re-fetch the words to update the list after rescheduling
     fetchWords();
-  }
+  }, [fetchWords]);
 
   const uniqueUnits = useMemo(() => {
     const units = new Set(allLearningWords.map((word) => word.unit).filter(Boolean));
