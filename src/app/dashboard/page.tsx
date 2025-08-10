@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import {
@@ -26,7 +25,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { format, subDays } from "date-fns";
+import { format, subDays, formatDistanceToNowStrict, isPast } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -36,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 
 type LearningStats = {
@@ -293,106 +293,121 @@ export default function Dashboard() {
              <Card className="lg:col-span-3">
                 <CardHeader>
                     <CardTitle>{t('dashboard.student.activity.title')}</CardTitle>
-                </CardHeader>
+                 </CardHeader>
                  <CardContent>
                     <div className="flex justify-around items-center p-4 rounded-lg bg-secondary">
                         {last7Days.map(({ date, dayInitial }) => {
-                        const isActive = stats.activityLog.includes(date);
-                        return (
-                            <div key={date} className="flex flex-col items-center gap-2">
-                            <span className="text-sm font-medium text-muted-foreground">{dayInitial}</span>
-                            {isActive ? (
-                                <CheckCircle className="h-6 w-6 text-green-500" />
-                            ) : (
-                                <XCircle className="h-6 w-6 text-muted-foreground/50" />
-                            )}
-                            </div>
-                        );
-                        })}
-                    </div>
-                </CardContent>
-            </Card>
+                         const isActive = stats.activityLog.includes(date);
+                         return (
+                             <div key={date} className="flex flex-col items-center gap-2">
+                             <span className="text-sm font-medium text-muted-foreground">{dayInitial}</span>
+                             {isActive ? (
+                                 <CheckCircle className="h-6 w-6 text-green-500" />
+                             ) : (
+                                 <XCircle className="h-6 w-6 text-muted-foreground/50" />
+                             )}
+                             </div>
+                         );
+                         })}
+                     </div>
+                 </CardContent>
+             </Card>
              <Card className="lg:col-span-2">
-                <CardHeader>
-                  <CardTitle>{t('dashboard.student.tests.title')}</CardTitle>
-                </CardHeader>
+                 <CardHeader>
+                   <CardTitle>{t('dashboard.student.tests.title')}</CardTitle>
+                 </CardHeader>
                  <CardContent className="space-y-3">
-                    {allTests.map(testName => (
-                      <div key={testName} className="flex items-center gap-2">
-                        <Checkbox 
-                          id={`test-${testName}`} 
-                          checked={stats.reviewedToday.completedTests.includes(testName)}
-                          disabled 
-                        />
-                        <label
-                          htmlFor={`test-${testName}`}
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                        >
-                          {testName}
-                        </label>
-                      </div>
-                    ))}
-                </CardContent>
-            </Card>
-        </div>
-      </div>
-    );
-  }
+                     {allTests.map(testName => (
+                       <div key={testName} className="flex items-center gap-2">
+                         <Checkbox 
+                           id={`test-${testName}`} 
+                           checked={stats.reviewedToday.completedTests.includes(testName)}
+                           disabled 
+                         />
+                         <label
+                           htmlFor={`test-${testName}`}
+                           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                         >
+                           {testName}
+                         </label>
+                       </div>
+                     ))}
+                 </CardContent>
+             </Card>
+         </div>
+       </div>
+     );
+   }
 
-  if (user?.role === "supervisor") {
-    return (
-        <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">{t('dashboard.supervisor.title')}</h1>
-            <p className="text-muted-foreground">{t('dashboard.supervisor.welcome', user.name)}</p>
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('dashboard.supervisor.supervisorId.title')}</CardTitle>
-                    <CardDescription>{t('dashboard.supervisor.supervisorId.description')}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex items-center gap-4">
-                    <KeyRound className="h-8 w-8 text-primary"/>
-                    <Badge variant="outline" className="text-lg py-2 px-4">{user.id}</Badge>
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                    <CardTitle>{t('dashboard.supervisor.myStudents.title')}</CardTitle>
-                    <CardDescription>{t('dashboard.supervisor.myStudents.description')}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                            <TableHead className="hidden w-[100px] sm:table-cell">
-                                <span className="sr-only">Image</span>
-                            </TableHead>
-                            <TableHead>{t('dashboard.supervisor.myStudents.name')}</TableHead>
-                            <TableHead>{t('dashboard.supervisor.myStudents.email')}</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {students.map((student) => (
-                                <TableRow key={student.id}>
-                                    <TableCell className="hidden sm:table-cell">
-                                        <Image
-                                        alt="Student avatar"
-                                        className="aspect-square rounded-full object-cover"
-                                        height="64"
-                                        src={student.avatar}
-                                        width="64"
-                                        />
-                                    </TableCell>
-                                    <TableCell className="font-medium">{student.name}</TableCell>
-                                    <TableCell>{student.email}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </CardContent>
-            </Card>
-        </div>
-    )
-  }
+   if (user?.role === "supervisor") {
+     const isTrial = user.trialExpiresAt && !isPast(new Date(user.trialExpiresAt));
+     
+     return (
+         <div className="space-y-6">
+             <h1 className="text-3xl font-bold font-headline">{t('dashboard.supervisor.title')}</h1>
+             <p className="text-muted-foreground">{t('dashboard.supervisor.welcome', user.name)}</p>
 
-  return <div>{t('dashboard.loading')}</div>
-}
+             {isTrial && user.trialExpiresAt && (
+                 <Alert>
+                     <Clock className="h-4 w-4" />
+                     <AlertTitle>Trial Account</AlertTitle>
+                     <AlertDescription>
+                         Your trial period expires {formatDistanceToNowStrict(new Date(user.trialExpiresAt), { addSuffix: true })}. Please contact the main administrator to upgrade to a full account.
+                     </AlertDescription>
+                 </Alert>
+             )}
+
+             <Card>
+                 <CardHeader>
+                     <CardTitle>{t('dashboard.supervisor.supervisorId.title')}</CardTitle>
+                     <CardDescription>{t('dashboard.supervisor.supervisorId.description')}</CardDescription>
+                 </CardHeader>
+                 <CardContent className="flex items-center gap-4">
+                     <KeyRound className="h-8 w-8 text-primary"/>
+                     <Badge variant="outline" className="text-lg py-2 px-4">{user.id}</Badge>
+                 </CardContent>
+             </Card>
+             <Card>
+                 <CardHeader>
+                     <CardTitle>{t('dashboard.supervisor.myStudents.title')}</CardTitle>
+                     <CardDescription>{t('dashboard.supervisor.myStudents.description')}</CardDescription>
+                 </CardHeader>
+                 <CardContent>
+                     <Table>
+                         <TableHeader>
+                             <TableRow>
+                             <TableHead className="hidden w-[100px] sm:table-cell">
+                                 <span className="sr-only">Image</span>
+                             </TableHead>
+                             <TableHead>{t('dashboard.supervisor.myStudents.name')}</TableHead>
+                             <TableHead>{t('dashboard.supervisor.myStudents.email')}</TableHead>
+                             </TableRow>
+                         </TableHeader>
+                         <TableBody>
+                             {students.map((student) => (
+                                 <TableRow key={student.id}>
+                                     <TableCell className="hidden sm:table-cell">
+                                         <Image
+                                         alt="Student avatar"
+                                         className="aspect-square rounded-full object-cover"
+                                         height="64"
+                                         src={student.avatar}
+                                         width="64"
+                                         />
+                                     </TableCell>
+                                     <TableCell className="font-medium">{student.name}</TableCell>
+                                     <TableCell>{student.email}</TableCell>
+                                 </TableRow>
+                             ))}
+                         </TableBody>
+                     </Table>
+                 </CardContent>
+             </Card>
+         </div>
+     )
+   }
+
+   return <div>{t('dashboard.loading')}</div>
+ }
+ 
+    
