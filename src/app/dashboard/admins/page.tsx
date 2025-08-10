@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -45,17 +45,19 @@ export default function AdminsPage() {
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const { toast } = useToast();
 
-  const fetchSupervisors = () => {
-    const allUsers = getAllUsers();
-    const otherSupervisors = allUsers.filter(
-      (u) => u.role === "supervisor" && !u.isMainAdmin
-    );
-    setSupervisors(otherSupervisors);
-  }
+  const fetchSupervisors = useCallback(async () => {
+    const allUsers = await getAllUsers();
+    if (Array.isArray(allUsers)) {
+      const otherSupervisors = allUsers.filter(
+        (u) => u.role === "supervisor" && !u.isMainAdmin
+      );
+      setSupervisors(otherSupervisors);
+    }
+  }, []);
 
   useEffect(() => {
     fetchSupervisors();
-  }, []);
+  }, [fetchSupervisors]);
 
   const handleSupervisorAdded = (newUser: User) => {
     setSupervisors((prev) => [...prev, newUser]);
