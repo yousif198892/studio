@@ -58,7 +58,7 @@ export default function WordsPage() {
     const handleStorageChange = (event: StorageEvent) => {
         // This is a simplified listener. A real-world app might need a more robust
         // way to sync state across tabs, like using BroadcastChannel.
-        if (event.key === 'userWords-last-updated') {
+        if (event.key === 'userWords' || event.key === 'users') {
             fetchWords();
         }
     };
@@ -72,12 +72,13 @@ export default function WordsPage() {
   }, [fetchWords]);
 
   const uniqueUnits = useMemo(() => {
+    if (!Array.isArray(words)) return [];
     const units = new Set(words.map((word) => word.unit).filter(Boolean));
     return Array.from(units);
   }, [words]);
 
   const lessonsForSelectedUnit = useMemo(() => {
-    if (!selectedUnit) return [];
+    if (!Array.isArray(words) || !selectedUnit) return [];
     const lessons = new Set(
       words
         .filter((word) => word.unit === selectedUnit)
@@ -88,6 +89,7 @@ export default function WordsPage() {
   }, [words, selectedUnit]);
 
   const filteredWords = useMemo(() => {
+     if (!Array.isArray(words)) return [];
     return words.filter((word) => {
       const unitMatch = !selectedUnit || word.unit === selectedUnit;
       const lessonMatch = !selectedLesson || word.lesson === selectedLesson;
@@ -113,10 +115,8 @@ export default function WordsPage() {
     try {
         await deleteWordDB(wordId);
         
-        // This triggers a refetch in the useEffect hook
-        localStorage.setItem('userWords-last-updated', Date.now().toString());
-        
-        fetchWords(); // Manually refetch for immediate update
+        // Manually refetch for immediate update
+        fetchWords(); 
 
         toast({
             title: t('toasts.success'),
