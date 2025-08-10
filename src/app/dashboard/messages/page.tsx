@@ -46,10 +46,14 @@ function AdminInbox() {
   const { toast } = useToast();
 
   useEffect(() => {
-    setMessages(getMessages());
+    async function fetchMessages() {
+        const fetchedMessages = await getMessages();
+        setMessages(fetchedMessages);
+    }
+    fetchMessages();
   }, []);
 
-  const handleDelete = (messageId: string) => {
+  const handleDelete = async (messageId: string) => {
     // In a real app, this would be a server action.
     let storedMessages: Message[] = JSON.parse(localStorage.getItem("adminMessages") || "[]");
     storedMessages = storedMessages.filter((m) => m.id !== messageId);
@@ -160,10 +164,14 @@ export default function MessagesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userId) {
-      setUser(getUserById(userId) || null);
+    const fetchUser = async () => {
+        if (userId) {
+            const foundUser = await getUserById(userId);
+            setUser(foundUser || null);
+        }
+        setLoading(false);
     }
-    setLoading(false);
+    fetchUser();
   }, [userId]);
 
   if (loading) {
