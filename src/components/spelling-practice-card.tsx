@@ -179,4 +179,3 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
     </Card>
   );
 }
-
