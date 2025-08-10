@@ -17,18 +17,18 @@ import { RefreshCw, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { updateStudentProgressInStorage } from "@/lib/storage";
-import { add } from "date-fns";
+import { WordProgress } from "@/lib/storage";
 
 interface SpellingPracticeCardProps {
-  allWords: Word[];
+  allWords: (Word & Partial<WordProgress>)[];
   userId: string;
 }
 
 type FeedbackState = "idle" | "correct" | "incorrect";
 
 export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardProps) {
-  const [practiceWords, setPracticeWords] = useState<Word[]>([]);
-  const [currentWord, setCurrentWord] = useState<Word | null>(null);
+  const [practiceWords, setPracticeWords] = useState<(Word & Partial<WordProgress>)[]>([]);
+  const [currentWord, setCurrentWord] = useState<(Word & Partial<WordProgress>) | null>(null);
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>("idle");
   const { toast } = useToast();
@@ -66,30 +66,34 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
 
     if (answer.trim().toLowerCase() === currentWord.word.toLowerCase()) {
       setFeedback("correct");
-      // Schedule for 2 days later
-      const nextReview = add(new Date(), { days: 2 });
+      // On correct, slightly increase strength, but do not change nextReview date
+      const newStrength = (currentWord.strength || 0) + 1;
+      const nextReview = currentWord.nextReview ? new Date(currentWord.nextReview) : new Date();
+
        updateStudentProgressInStorage(userId, currentWord.id, {
-         strength: currentWord.strength || 1, // Keep strength, but ensure it's at least 1
+         strength: newStrength,
          nextReview: nextReview,
        });
        toast({
          title: "Correct!",
-         description: `Next review for "${currentWord.word}" is in 2 days.`,
+         description: `"${currentWord.word}" feels a little stronger now.`,
        })
       setTimeout(() => {
         selectNewWord();
       }, 1500);
     } else {
       setFeedback("incorrect");
-      // Schedule for tomorrow
-       const nextReview = add(new Date(), { days: 1 });
+       // On incorrect, slightly decrease strength, but do not change nextReview date
+       const newStrength = Math.max(0, (currentWord.strength || 1) - 1);
+       const nextReview = currentWord.nextReview ? new Date(currentWord.nextReview) : new Date();
+
        updateStudentProgressInStorage(userId, currentWord.id, {
-         strength: Math.max(0, (currentWord.strength || 1) - 1), // Decrease strength on incorrect
+         strength: newStrength,
          nextReview: nextReview,
        });
        toast({
         title: "Incorrect",
-        description: `"${currentWord.word}" will be reviewed again tomorrow.`,
+        description: `The correct spelling is "${currentWord.word}". We'll keep practicing.`,
         variant: "destructive"
        });
        // Show correct answer
