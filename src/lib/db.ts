@@ -38,22 +38,35 @@ const getDb = () => {
     return null;
   }
   if (!dbPromise) {
-    dbPromise = openDB<LinguaLeapDB>('lingua-leap-db', 2, {
+    const dbName = 'lingua-leap-db';
+    const dbVersion = 2;
+
+    dbPromise = openDB<LinguaLeapDB>(dbName, dbVersion, {
       upgrade(db, oldVersion, newVersion, tx) {
-        console.log(`Upgrading database from version ${oldVersion} to ${newVersion}`);
-        
+        console.log(`Upgrading database '${dbName}' from version ${oldVersion} to ${newVersion}...`);
+
         // --- Schema Creation ---
         if (oldVersion < 1) {
             if (!db.objectStoreNames.contains('users')) {
                 const userStore = db.createObjectStore('users', { keyPath: 'id' });
                 userStore.createIndex('by-email', 'email', { unique: true });
+                // Seed initial users right after creation
+                mockUsers.forEach(user => {
+                    console.log(`Seeding user: ${user.name}`);
+                    userStore.add(user);
+                });
             }
              if (!db.objectStoreNames.contains('words')) {
                 const wordStore = db.createObjectStore('words', { keyPath: 'id' });
                 wordStore.createIndex('by-supervisorId', 'supervisorId');
             }
             if (!db.objectStoreNames.contains('adminMessages')) {
-                db.createObjectStore('adminMessages', { keyPath: 'id' });
+                const messageStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
+                 // Seed initial messages right after creation
+                mockMessages.forEach(message => {
+                    console.log(`Seeding message from: ${message.name}`);
+                    messageStore.add(message);
+                });
             }
             if (!db.objectStoreNames.contains('wordProgress')) {
                 const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
@@ -65,36 +78,16 @@ const getDb = () => {
                 db.createObjectStore('landingPage', { keyPath: 'id' });
              }
         }
-
-        // --- Data Seeding (within the same upgrade transaction) ---
-        // This runs after schema changes and ensures data is present on first load.
-        // It's safe to run even if stores exist, as `add` will not overwrite.
-        const seedData = async () => {
-          const userStore = tx.objectStore('users');
-          const messageStore = tx.objectStore('adminMessages');
-          
-          const userPromises = mockUsers.map(user => {
-            // Check if user exists before adding to prevent errors on subsequent loads
-            return userStore.get(user.id).then(existing => {
-              if (!existing) {
-                return userStore.add(user);
-              }
-            });
-          });
-
-          const messagePromises = mockMessages.map(message => {
-            return messageStore.get(message.id).then(existing => {
-              if (!existing) {
-                return messageStore.add(message);
-              }
-            });
-          });
-
-          await Promise.all([...userPromises, ...messagePromises]);
-        };
-
-        seedData();
       },
+       blocked() {
+        console.error('Database is blocked. Please close other tabs with this app open.');
+      },
+      blocking() {
+        console.warn('Database is blocked by an old version. Please refresh the page.');
+      },
+      terminated() {
+        console.error('Database connection terminated unexpectedly.');
+      }
     });
   }
   return dbPromise;
