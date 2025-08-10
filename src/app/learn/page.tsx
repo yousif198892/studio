@@ -12,15 +12,18 @@ import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { updateLearningStats } from "@/lib/stats";
+import { WordProgress } from "@/lib/storage";
 
 
 export type ScheduleOption = 'tomorrow' | 'twoDays' | 'week' | 'twoWeeks' | 'month' | 'mastered';
+
+type ReviewWord = Word & WordProgress;
 
 export default function LearnPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { t } = useLanguage();
-  const [word, setWord] = useState<Word | null>(null);
+  const [word, setWord] = useState<ReviewWord | null>(null);
   const [sessionFinished, setSessionFinished] = useState(false);
   const startTimeRef = useRef<number | null>(null);
 
@@ -28,9 +31,9 @@ export default function LearnPage() {
   const unitFilter = searchParams.get("unit");
   const lessonFilter = searchParams.get("lesson");
 
-  const loadNextWord = useCallback(() => {
+  const loadNextWord = useCallback(async () => {
     if (userId) {
-      const nextWord = getWordForReview(userId, unitFilter, lessonFilter);
+      const nextWord = await getWordForReview(userId, unitFilter, lessonFilter);
       setWord(nextWord);
       if (!nextWord) {
         setSessionFinished(true);
@@ -70,7 +73,7 @@ export default function LearnPage() {
   }, [userId, loadNextWord, handleUpdateStats]);
 
 
-  const handleCorrect = (option: ScheduleOption) => {
+  const handleCorrect = async (option: ScheduleOption) => {
     if (!word || !userId) return;
 
     let newStrength = word.strength >= 0 ? word.strength + 1 : 1;
@@ -97,19 +100,19 @@ export default function LearnPage() {
             break;
     }
     
-    updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
+    await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     handleUpdateStats(1, 0); // Only update review count, not time
     loadNextWord();
   };
 
-  const handleIncorrect = () => {
+  const handleIncorrect = async () => {
     if (!word || !userId) return;
 
     const newStrength = Math.max(0, word.strength - 1);
     const nextReview = new Date();
     nextReview.setDate(nextReview.getDate() + 1); // Schedule for tomorrow
     
-    updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
+    await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     handleUpdateStats(1, 0); // Only update review count, not time
     loadNextWord();
   };

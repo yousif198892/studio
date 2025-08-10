@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { getWordsForStudent, Word } from "@/lib/data";
 import {
@@ -29,24 +29,38 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { WordAudioPlayer } from "@/components/word-audio-player";
+import { WordProgress } from "@/lib/storage";
+
+type MasteredWord = Word & WordProgress;
 
 export default function MasteredWordsPage() {
   const searchParams = useSearchParams();
-  const [allMasteredWords, setAllMasteredWords] = useState<Word[]>([]);
+  const [allMasteredWords, setAllMasteredWords] = useState<MasteredWord[]>([]);
   const [loading, setLoading] = useState(true);
 
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
-
-  useEffect(() => {
-    const userId = searchParams.get("userId");
+  const userId = searchParams.get("userId");
+  
+  const fetchWords = useCallback(async () => {
     if (userId) {
-      const allWords = getWordsForStudent(userId);
+      setLoading(true);
+      const allWords = await getWordsForStudent(userId);
       const mastered = allWords.filter((w) => w.strength === -1);
-      setAllMasteredWords(mastered);
+      setAllMasteredWords(mastered || []);
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [userId]);
+
+  useEffect(() => {
+    fetchWords();
+     const handleStorageChange = () => fetchWords();
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [fetchWords]);
 
   const uniqueUnits = useMemo(() => {
     const units = new Set(allMasteredWords.map((word) => word.unit).filter(Boolean));

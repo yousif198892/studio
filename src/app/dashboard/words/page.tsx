@@ -5,7 +5,7 @@ import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { getWordsBySupervisor, Word } from "@/lib/data";
+import { getWordsBySupervisor, Word, deleteWordDB } from "@/lib/data";
 import {
   Table,
   TableBody,
@@ -47,16 +47,18 @@ export default function WordsPage() {
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
 
-  const fetchWords = useCallback(() => {
-    const supervisorWords = getWordsBySupervisor(userId);
-    setWords(supervisorWords);
+  const fetchWords = useCallback(async () => {
+    const supervisorWords = await getWordsBySupervisor(userId);
+    setWords(supervisorWords || []);
   }, [userId]);
 
   useEffect(() => {
     fetchWords();
     
     const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'userWords') {
+        // This is a simplified listener. A real-world app might need a more robust
+        // way to sync state across tabs, like using BroadcastChannel.
+        if (event.key === 'userWords-last-updated') {
             fetchWords();
         }
     };
@@ -107,13 +109,14 @@ export default function WordsPage() {
       setSelectedLesson(null);
   }
 
-  const handleDeleteWord = (wordId: string) => {
+  const handleDeleteWord = async (wordId: string) => {
     try {
-        let storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-        const updatedWords = storedWords.filter(w => w.id !== wordId);
-        localStorage.setItem('userWords', JSON.stringify(updatedWords));
-
-        setWords(updatedWords.filter(w => w.supervisorId === userId));
+        await deleteWordDB(wordId);
+        
+        // This triggers a refetch in the useEffect hook
+        localStorage.setItem('userWords-last-updated', Date.now().toString());
+        
+        fetchWords(); // Manually refetch for immediate update
 
         toast({
             title: t('toasts.success'),

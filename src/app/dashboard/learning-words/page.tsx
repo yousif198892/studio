@@ -31,10 +31,13 @@ import { Button } from "@/components/ui/button";
 import { WordAudioPlayer } from "@/components/word-audio-player";
 import { RescheduleWordDialog } from "@/components/reschedule-word-dialog";
 import { formatDistanceToNowStrict, isPast, differenceInHours, differenceInDays } from "date-fns";
+import { WordProgress } from "@/lib/storage";
+
+type LearningWord = Word & WordProgress;
 
 export default function LearningWordsPage() {
   const searchParams = useSearchParams();
-  const [allLearningWords, setAllLearningWords] = useState<Word[]>([]);
+  const [allLearningWords, setAllLearningWords] = useState<LearningWord[]>([]);
   const [loading, setLoading] = useState(true);
   const [, setNow] = useState(new Date()); // Used to trigger re-renders for time updates
 
@@ -42,11 +45,11 @@ export default function LearningWordsPage() {
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
   const userId = searchParams.get("userId");
 
-  const fetchWords = useCallback(() => {
+  const fetchWords = useCallback(async () => {
     if (userId) {
-      const allWords = getWordsForStudent(userId);
+      const allWords = await getWordsForStudent(userId);
       const learning = allWords.filter((w) => w.strength >= 0);
-      setAllLearningWords(learning);
+      setAllLearningWords(learning || []);
       setLoading(false);
     }
   }, [userId]);
@@ -55,7 +58,15 @@ export default function LearningWordsPage() {
     fetchWords();
      // Set up an interval to update the "time left" every minute
     const interval = setInterval(() => setNow(new Date()), 60000);
-    return () => clearInterval(interval);
+    
+    // Also add a listener for when progress changes in another tab
+    const handleStorageChange = () => fetchWords();
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [fetchWords]);
 
   const handleWordRescheduled = () => {
