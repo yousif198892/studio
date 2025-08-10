@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -14,41 +13,86 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "./logo";
-import { validateRegistration } from "@/lib/actions";
 import { useToast } from "@/hooks/use-toast";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { User } from "@/lib/data";
-import { redirectToDashboard } from "@/lib/actions";
+import { User, addUserDB, getUserByEmailDB, getUserById } from "@/lib/data";
+import { useRouter } from "next/navigation";
+import { z } from "zod";
 
-const initialState = {
-  message: "",
-  errors: {},
-  success: false,
-  formData: null
-};
+const registerSchema = z.object({
+    name: z.string().min(1, 'Name is required.'),
+    email: z.string().email('Invalid email address.'),
+    password: z.string().min(6, 'Password must be at least 6 characters.'),
+    supervisorId: z.string().min(1, 'Supervisor ID is required.'),
+  });
 
 export function RegisterForm() {
-  const [state, formAction] = useActionState(validateRegistration, initialState);
   const { toast } = useToast();
   const { t } = useLanguage();
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-   useEffect(() => {
-      if (state.success && state.formData) {
-        // The redirection is now handled inside the server action
-        // so no client-side logic is needed here on success.
-        // We just need to stop the loading spinner.
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+
+    const formData = new FormData(event.currentTarget);
+    const validatedFields = registerSchema.safeParse({
+        name: formData.get("name"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+        supervisorId: formData.get("supervisorId"),
+    });
+
+    if (!validatedFields.success) {
+        const firstError = Object.values(validatedFields.error.flatten().fieldErrors)[0]?.[0];
+        toast({ title: t('toasts.error'), description: firstError || "Validation failed.", variant: "destructive" });
         setIsSubmitting(false);
-      } else if (state.message && Object.keys(state.errors || {}).length > 0) {
-        const firstErrorKey = Object.keys(state.errors || {})[0];
-        const firstError = firstErrorKey ? (state.errors as any)[firstErrorKey][0] : state.message;
-        toast({ title: t('toasts.error'), description: firstError, variant: "destructive" });
+        return;
+    }
+
+    const { name, email, password, supervisorId } = validatedFields.data;
+
+    try {
+        const existingUser = await getUserByEmailDB(email);
+        if(existingUser) {
+            toast({ title: t('toasts.error'), description: t('toasts.userExists'), variant: "destructive" });
+            setIsSubmitting(false);
+            return;
+        }
+
+        const supervisor = await getUserById(supervisorId);
+        if (!supervisor || supervisor.role !== 'supervisor') {
+            toast({ title: t('toasts.error'), description: t('toasts.invalidSupervisorId'), variant: "destructive" });
+            setIsSubmitting(false);
+            return;
+        }
+
+        const newUser: User = {
+            id: `user${Date.now()}`,
+            name,
+            email,
+            password,
+            role: 'student',
+            avatar: "https://placehold.co/100x100.png",
+            supervisorId,
+        };
+        
+        await addUserDB(newUser);
+
+        toast({ title: t('toasts.success'), description: "Account created successfully!"});
+
+        router.push(`/welcome?userId=${newUser.id}`);
+
+    } catch (error) {
+        toast({ title: t('toasts.error'), description: "An unexpected error occurred.", variant: "destructive" });
+    } finally {
         setIsSubmitting(false);
-      }
-  }, [state, t, toast]);
+    }
+  }
 
 
   return (
@@ -63,15 +107,11 @@ export function RegisterForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-            <form action={(formData) => {
-              setIsSubmitting(true);
-              formAction(formData);
-            }}>
+            <form onSubmit={handleSubmit}>
               <div className="grid gap-4 mt-4">
                 <div className="grid gap-2">
                   <Label htmlFor="student-name">{t('register.fullNameLabel')}</Label>
                   <Input id="student-name" name="name" placeholder={t('register.fullNamePlaceholder')} required />
-                  {state.errors?.name && <p className="text-sm text-destructive">{state.errors.name[0]}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="student-email">{t('register.emailLabel')}</Label>
@@ -82,7 +122,6 @@ export function RegisterForm() {
                     placeholder={t('register.emailPlaceholder')}
                     required
                   />
-                  {state.errors?.email && <p className="text-sm text-destructive">{state.errors.email[0]}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="student-password">{t('register.passwordLabel')}</Label>
@@ -97,12 +136,10 @@ export function RegisterForm() {
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
-                  {state.errors?.password && <p className="text-sm text-destructive">{state.errors.password[0]}</p>}
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="supervisor-id">{t('register.supervisorIdLabel')}</Label>
-                  <Input id="supervisor-id" name="supervisorId" placeholder={t('register.supervisorIdPlaceholder')} />
-                  {state.errors?.supervisorId && <p className="text-sm text-destructive">{state.errors.supervisorId[0]}</p>}
+                  <Input id="supervisor-id" name="supervisorId" placeholder={t('register.supervisorIdPlaceholder')} required />
                 </div>
                  <Button type="submit" className="w-full mt-2" disabled={isSubmitting}>
                     {isSubmitting ? (<><Loader2 className="me-2 h-4 w-4 animate-spin" /> {t('register.createAccountButton')}...</>) : t('register.createAccountButton')}
