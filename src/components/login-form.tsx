@@ -21,7 +21,8 @@ import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { redirectToDashboard } from "@/lib/actions";
-import { getUserByEmailDB } from "@/lib/data";
+import { getUserByEmailDB, updateUserDB } from "@/lib/data";
+import { isPast } from "date-fns";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -58,7 +59,7 @@ export function LoginForm() {
         }
 
         const { email, password } = validatedFields.data;
-        const user = await getUserByEmailDB(email);
+        let user = await getUserByEmailDB(email);
         
         if (!user || user.password !== password) {
              toast({
@@ -68,6 +69,21 @@ export function LoginForm() {
             });
             setIsPending(false);
             return;
+        }
+
+        // Check for trial expiration
+        if (user.role === 'supervisor' && user.trialExpiresAt && isPast(new Date(user.trialExpiresAt))) {
+            if (!user.isSuspended) {
+                user.isSuspended = true;
+                await updateUserDB(user);
+                 toast({
+                    title: "Trial Expired",
+                    description: "Your trial period has ended. Please contact an administrator.",
+                    variant: "destructive"
+                });
+                setIsPending(false);
+                return;
+            }
         }
 
         if (user.isSuspended) {
@@ -138,6 +154,15 @@ export function LoginForm() {
             ) : (
                 t('login.loginButton')
             )}
+            </Button>
+            <Button variant="outline" type="button" onClick={() => {
+                const reset = async () => {
+                    await (await import('@/lib/db')).resetDatabase();
+                    window.location.reload();
+                }
+                reset();
+            }}>
+                Reset Database
             </Button>
         </form>
         <div className="mt-4 text-center text-sm">

@@ -5,106 +5,93 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useActionState, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { User, getAllUsers, addUserDB } from "@/lib/data";
-import { validateSupervisorCreation } from "@/lib/actions";
+import { User, addUserDB } from "@/lib/data";
+import { z } from "zod";
+import { Checkbox } from "./ui/checkbox";
+import { add } from "date-fns";
 
-const initialState: {
-  message: string;
-  errors?: any;
-  success: boolean;
-  formData?: FormData | null;
-} = {
-  message: "",
-  errors: {},
-  success: false,
-  formData: null,
-};
+const createSupervisorSchema = z.object({
+  name: z.string().min(1, 'Name is required.'),
+  email: z.string().email('Invalid email address.'),
+  password: z.string().min(6, 'Password must be at least 6 characters.'),
+  isTrial: z.boolean().optional(),
+});
 
 
 export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded: (user: User) => void }) {
-  const [state, formAction] = useActionState(validateSupervisorCreation, initialState);
   const { toast } = useToast();
   const formRef = useRef<HTMLFormElement>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [isPending, setIsPending] = useState(false);
 
-  useEffect(() => {
-    async function createSupervisor() {
-        if (state.success && state.formData) {
-            try {
-                const name = state.formData.get("name") as string;
-                const email = state.formData.get("email") as string;
-                const password = state.formData.get("password") as string;
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsPending(true);
 
-                const newUser: User = {
-                    id: `sup${Date.now()}`,
-                    name,
-                    email,
-                    password,
-                    role: 'supervisor',
-                    avatar: "https://placehold.co/100x100.png",
-                    isSuspended: false,
-                    isMainAdmin: false,
-                };
-                
-                await addUserDB(newUser);
-                
-                toast({
-                    title: "Success!",
-                    description: "Supervisor account created.",
-                });
+    const formData = new FormData(event.currentTarget);
+    const validatedFields = createSupervisorSchema.safeParse({
+        name: formData.get("name"),
+        email: formData.get("email"),
+        password: formData.get("password"),
+        isTrial: formData.get("isTrial") === 'on',
+    });
 
-                onSupervisorAdded(newUser);
-                formRef.current?.reset();
-
-            } catch (e) {
-                 toast({
-                    title: "Error",
-                    description: "Could not create supervisor account.",
-                    variant: "destructive",
-                });
-            } finally {
-                setIsPending(false);
-            }
-        } else if (state.message && !state.success && state.errors) {
-            const firstError = Object.values(state.errors)[0]?.[0] || state.message;
-            toast({
-                title: "Error",
-                description: firstError,
-                variant: "destructive",
-            });
-            setIsPending(false);
-        }
+    if (!validatedFields.success) {
+        const firstError = Object.values(validatedFields.error.flatten().fieldErrors)[0]?.[0];
+        toast({ title: "Error", description: firstError || "Validation failed.", variant: "destructive" });
+        setIsPending(false);
+        return;
     }
-    
-    if (state.success || state.message) {
-      createSupervisor();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state]);
 
+    const { name, email, password, isTrial } = validatedFields.data;
+
+     try {
+        const newUser: User = {
+            id: `sup${Date.now()}`,
+            name,
+            email,
+            password,
+            role: 'supervisor',
+            avatar: "https://placehold.co/100x100.png",
+            isSuspended: false,
+            isMainAdmin: false,
+            trialExpiresAt: isTrial ? add(new Date(), { months: 1 }).toISOString() : undefined,
+        };
+        
+        await addUserDB(newUser);
+        
+        toast({
+            title: "Success!",
+            description: "Supervisor account created.",
+        });
+
+        onSupervisorAdded(newUser);
+        formRef.current?.reset();
+        setShowPassword(false);
+
+    } catch (e) {
+         toast({
+            title: "Error",
+            description: "Could not create supervisor account. Email may already be in use.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsPending(false);
+    }
+  }
 
   return (
-    <form ref={formRef} action={(formData) => {
-      setIsPending(true);
-      formAction(formData);
-    }} className="space-y-4">
+    <form ref={formRef} onSubmit={handleSubmit} className="space-y-4">
       <div className="grid gap-2">
         <Label htmlFor="name">Full Name</Label>
         <Input id="name" name="name" placeholder="Jane Doe" required />
-        {state?.errors?.name && (
-          <p className="text-sm text-destructive">{state.errors.name[0]}</p>
-        )}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="email">Email</Label>
         <Input id="email" name="email" type="email" placeholder="jane@example.com" required />
-        {state?.errors?.email && (
-          <p className="text-sm text-destructive">{state.errors.email[0]}</p>
-        )}
       </div>
       <div className="grid gap-2">
         <Label htmlFor="password">Password</Label>
@@ -119,9 +106,15 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
         </div>
-         {state?.errors?.password && (
-          <p className="text-sm text-destructive">{state.errors.password[0]}</p>
-        )}
+      </div>
+      <div className="flex items-center space-x-2">
+        <Checkbox id="isTrial" name="isTrial" />
+        <label
+          htmlFor="isTrial"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          Create as 1-Month Trial Account
+        </label>
       </div>
        <Button type="submit" disabled={isPending} className="w-full">
           {isPending ? (

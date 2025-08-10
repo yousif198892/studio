@@ -35,6 +35,7 @@ export type User = {
   fontSize?: "sm" | "base" | "lg";
   isMainAdmin?: boolean;
   isSuspended?: boolean;
+  trialExpiresAt?: string; // ISO date string for trial accounts
 };
 
 export type Word = {
@@ -258,5 +259,3 @@ export const savePeerMessage = (message: PeerMessage) => {
 
 // Re-exporting write functions
 export { addUserDB, addWordDB, addMessageDB, deleteMessageDB, updateUserDB, deleteUserDB, deleteWordDB, updateWordDB, getWordByIdDB, getUserByEmailDB, getWordsBySupervisorDB };
-
-    

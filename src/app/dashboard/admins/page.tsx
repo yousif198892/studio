@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Ban } from "lucide-react";
+import { Trash2, Ban, Clock } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,16 +32,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { User, getAllUsers } from "@/lib/data";
+import { User, getAllUsers, updateUserDB, deleteUserDB } from "@/lib/data";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
+import { formatDistanceToNowStrict, isPast } from "date-fns";
 
 
 export default function AdminsPage() {
-  const searchParams = useSearchParams();
-  const mainAdminId = searchParams.get("userId");
   const [supervisors, setSupervisors] = useState<User[]>([]);
   const { toast } = useToast();
 
@@ -63,53 +61,67 @@ export default function AdminsPage() {
     setSupervisors((prev) => [...prev, newUser]);
   };
   
-  const handleToggleSuspension = (userToToggle: User) => {
-    const allUsers = getAllUsers();
-    const userIndex = allUsers.findIndex(u => u.id === userToToggle.id);
-    
-    if (userIndex === -1) {
-        toast({ title: "Error", description: "Could not find user to update.", variant: "destructive" });
-        return;
-    }
-
+  const handleToggleSuspension = async (userToToggle: User) => {
     const updatedUser = {
       ...userToToggle,
       isSuspended: !userToToggle.isSuspended,
     };
     
-    // In a real app, this would be a server action.
-    // For now, we update the user in our "database" (localStorage).
-    const storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
-    const storedUserIndex = storedUsers.findIndex(u => u.id === userToToggle.id);
-    
-    if (storedUserIndex > -1) {
-        storedUsers[storedUserIndex] = updatedUser;
-        localStorage.setItem("users", JSON.stringify(storedUsers));
+    try {
+        await updateUserDB(updatedUser);
+        setSupervisors(supervisors.map(s => s.id === updatedUser.id ? updatedUser : s));
+        toast({
+            title: "Success!",
+            description: `Supervisor ${userToToggle.name} has been ${updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
+        });
+    } catch(e) {
+        toast({ title: "Error", description: "Could not update user.", variant: "destructive" });
     }
-
-    // Update state
-    setSupervisors(supervisors.map(s => s.id === updatedUser.id ? updatedUser : s));
-
-    toast({
-        title: "Success!",
-        description: `Supervisor ${userToToggle.name} has been ${updatedUser.isSuspended ? 'suspended' : 'unsuspended'}.`
-    });
   }
 
-  const handleDelete = (userId: string) => {
-    // In a real app, this would be a server action.
-    let storedUsers: User[] = JSON.parse(localStorage.getItem("users") || "[]");
-    storedUsers = storedUsers.filter((u) => u.id !== userId);
-    localStorage.setItem("users", JSON.stringify(storedUsers));
-    
-    const updatedSupervisors = supervisors.filter((s) => s.id !== userId);
-    setSupervisors(updatedSupervisors);
-
-    toast({
-      title: "Success!",
-      description: "Supervisor deleted successfully.",
-    });
+  const handleDelete = async (userId: string) => {
+    try {
+        await deleteUserDB(userId);
+        const updatedSupervisors = supervisors.filter((s) => s.id !== userId);
+        setSupervisors(updatedSupervisors);
+        toast({
+          title: "Success!",
+          description: "Supervisor deleted successfully.",
+        });
+    } catch(e) {
+        toast({ title: "Error", description: "Could not delete supervisor.", variant: "destructive" });
+    }
   };
+
+  const getStatus = (supervisor: User) => {
+      const isTrial = supervisor.trialExpiresAt;
+      const trialDate = isTrial ? new Date(supervisor.trialExpiresAt!) : null;
+      const trialExpired = trialDate && isPast(trialDate);
+
+      if (supervisor.isSuspended) {
+          return (
+             <span className="px-2 py-1 text-xs font-medium text-destructive-foreground bg-destructive rounded-full">Suspended</span>
+          );
+      }
+       if (trialExpired) {
+          return (
+             <span className="px-2 py-1 text-xs font-medium text-destructive-foreground bg-destructive rounded-full">Trial Expired</span>
+          );
+      }
+      if (isTrial && trialDate) {
+          return (
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-1 text-xs font-medium text-blue-800 bg-blue-100 rounded-full">Trial</span>
+                <span className="text-xs text-muted-foreground">
+                    (expires {formatDistanceToNowStrict(trialDate, { addSuffix: true })})
+                </span>
+              </div>
+          )
+      }
+      return (
+         <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Active</span>
+      )
+  }
 
   return (
     <div className="space-y-6">
@@ -118,7 +130,7 @@ export default function AdminsPage() {
           <CardHeader>
             <CardTitle>Create New Supervisor</CardTitle>
             <CardDescription>
-              Create a new account with supervisor privileges.
+              Create a new account with supervisor privileges. You can also create temporary trial accounts.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -162,11 +174,7 @@ export default function AdminsPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {supervisor.isSuspended ? (
-                          <span className="px-2 py-1 text-xs font-medium text-destructive-foreground bg-destructive rounded-full">Suspended</span>
-                      ) : (
-                          <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">Active</span>
-                      )}
+                      {getStatus(supervisor)}
                     </TableCell>
                     <TableCell className="text-right space-x-2">
                       <AlertDialog>
