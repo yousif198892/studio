@@ -19,7 +19,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Ban, Clock } from "lucide-react";
+import { Trash2, Ban, Clock, MoreHorizontal } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -31,12 +31,21 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
 import { useToast } from "@/hooks/use-toast";
 import { User, getAllUsers, updateUserDB, deleteUserDB } from "@/lib/data";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNowStrict, isPast } from "date-fns";
+import { formatDistanceToNowStrict, isPast, add } from "date-fns";
 
 
 export default function AdminsPage() {
@@ -79,6 +88,38 @@ export default function AdminsPage() {
     }
   }
 
+  const handleUpdateTrial = async (userId: string, action: 'extend1' | 'extend2' | 'convert') => {
+      const supervisor = supervisors.find(s => s.id === userId);
+      if (!supervisor) return;
+
+      let updatedUser: User;
+      let toastMessage = "";
+
+      switch (action) {
+          case 'extend1':
+              updatedUser = { ...supervisor, trialExpiresAt: add(new Date(), { months: 1 }).toISOString() };
+              toastMessage = `Trial for ${supervisor.name} extended by 1 month.`;
+              break;
+          case 'extend2':
+              updatedUser = { ...supervisor, trialExpiresAt: add(new Date(), { months: 2 }).toISOString() };
+              toastMessage = `Trial for ${supervisor.name} extended by 2 months.`;
+              break;
+          case 'convert':
+              updatedUser = { ...supervisor, trialExpiresAt: undefined };
+              toastMessage = `${supervisor.name} has been converted to a full account.`;
+              break;
+      }
+      
+      try {
+        await updateUserDB(updatedUser);
+        setSupervisors(supervisors.map(s => s.id === updatedUser.id ? updatedUser : s));
+        toast({ title: "Success!", description: toastMessage });
+      } catch (e) {
+         toast({ title: "Error", description: "Could not update trial status.", variant: "destructive" });
+      }
+  }
+
+
   const handleDelete = async (userId: string) => {
     try {
         await deleteUserDB(userId);
@@ -115,6 +156,21 @@ export default function AdminsPage() {
                 <span className="text-xs text-muted-foreground">
                     (expires {formatDistanceToNowStrict(trialDate, { addSuffix: true })})
                 </span>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">Manage Trial</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Manage Trial</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => handleUpdateTrial(supervisor.id, 'extend1')}>Extend Trial by 1 Month</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateTrial(supervisor.id, 'extend2')}>Extend Trial by 2 Months</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleUpdateTrial(supervisor.id, 'convert')}>Convert to Full Account</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
               </div>
           )
       }
