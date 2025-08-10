@@ -259,4 +259,5 @@ export const savePeerMessage = (message: PeerMessage) => {
 };
 
 // Re-exporting write functions
-export { addUserDB, addWordDB, addMessageDB, deleteMessageDB, updateUserDB, deleteUserDB, deleteWordDB, updateWordDB, getWordByIdDB, getUserByEmailDB };
+export { addUserDB, addWordDB, addMessageDB, deleteMessageDB, updateUserDB, deleteUserDB, deleteWordDB, updateWordDB, getWordByIdDB, getUserByEmailDB, getWordsBySupervisorDB };
+
