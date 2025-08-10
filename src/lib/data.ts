@@ -19,10 +19,6 @@ import {
     deleteWordDB,
     updateWordDB,
     getWordByIdDB,
-    getSupervisorMessagesDB,
-    saveSupervisorMessageDB,
-    getPeerMessagesDB,
-    savePeerMessageDB,
     getUserByEmailDB,
 } from './db';
 
@@ -105,6 +101,86 @@ export const mockUsers: User[] = [
     timezone: "America/New_York",
     fontSize: "base",
     isMainAdmin: true,
+  },
+];
+
+export const mockWords: Word[] = [
+  {
+    id: 'word1',
+    word: 'Grandmother',
+    definition: 'جدة',
+    unit: 'Unit 1',
+    lesson: 'Lesson 1',
+    imageUrl: 'https://placehold.co/300x200.png',
+    options: ['Grandmother', 'Aunt', 'Mother', 'Sister'],
+    correctOption: 'Grandmother',
+    supervisorId: 'sup2',
+  },
+  {
+    id: 'word2',
+    word: 'Father',
+    definition: 'أب',
+    unit: 'Unit 1',
+    lesson: 'Lesson 1',
+    imageUrl: 'https://placehold.co/300x200.png',
+    options: ['Father', 'Uncle', 'Brother', 'Son'],
+    correctOption: 'Father',
+    supervisorId: 'sup2',
+  },
+  {
+    id: 'word3',
+    word: 'Mother',
+    definition: 'أم',
+    unit: 'Unit 1',
+    lesson: 'Lesson 1',
+    imageUrl: 'https://placehold.co/300x200.png',
+    options: ['Mother', 'Aunt', 'Sister', 'Grandmother'],
+    correctOption: 'Mother',
+    supervisorId: 'sup2',
+  },
+  {
+    id: 'word4',
+    word: 'Sister',
+    definition: 'أخت',
+    unit: 'Unit 1',
+    lesson: 'Lesson 1',
+    imageUrl: 'https://placehold.co/300x200.png',
+    options: ['Sister', 'Mother', 'Aunt', 'Cousin'],
+    correctOption: 'Sister',
+    supervisorId: 'sup2',
+  },
+  {
+    id: 'word5',
+    word: 'Brother',
+    definition: 'أخ',
+    unit: 'Unit 1',
+    lesson: 'Lesson 1',
+    imageUrl: 'https://placehold.co/300x200.png',
+    options: ['Brother', 'Father', 'Uncle', 'Cousin'],
+    correctOption: 'Brother',
+    supervisorId: 'sup2',
+  },
+  {
+    id: 'word6',
+    word: 'Uncle',
+    definition: 'عم / خال',
+    unit: 'Unit 1',
+    lesson: 'Lesson 1',
+    imageUrl: 'https://placehold.co/300x200.png',
+    options: ['Uncle', 'Father', 'Brother', 'Grandfather'],
+    correctOption: 'Uncle',
+    supervisorId: 'sup2',
+  },
+  {
+    id: 'word7',
+    word: 'Aunt',
+    definition: 'عمة / خالة',
+    unit: 'Unit 1',
+    lesson: 'Lesson 1',
+    imageUrl: 'https://placehold.co/300x200.png',
+    options: ['Aunt', 'Mother', 'Sister', 'Grandmother'],
+    correctOption: 'Aunt',
+    supervisorId: 'sup2',
   },
 ];
 
@@ -260,3 +336,5 @@ export const savePeerMessage = (message: PeerMessage) => {
 
 // Re-exporting write functions
 export { addUserDB, addWordDB, addMessageDB, deleteMessageDB, updateUserDB, deleteUserDB, deleteWordDB, updateWordDB, getWordByIdDB, getUserByEmailDB, getWordsBySupervisorDB };
+
+    

@@ -2,7 +2,7 @@
 'use client';
 
 import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
-import { User, Word, Message, mockUsers, mockMessages } from './data';
+import { User, Word, Message, mockUsers, mockMessages, mockWords } from './data';
 import { WordProgress } from './storage';
 
 interface LinguaLeapDB extends DBSchema {
@@ -39,7 +39,7 @@ const getDb = () => {
   }
   if (!dbPromise) {
     const dbName = 'lingua-leap-db';
-    const dbVersion = 3; // Incremented version to force upgrade
+    const dbVersion = 4; // Incremented version to force upgrade
 
     dbPromise = openDB<LinguaLeapDB>(dbName, dbVersion, {
       upgrade(db, oldVersion, newVersion, tx) {
@@ -62,6 +62,11 @@ const getDb = () => {
            console.log("Creating 'words' object store...");
           const wordStore = db.createObjectStore('words', { keyPath: 'id' });
           wordStore.createIndex('by-supervisorId', 'supervisorId');
+           // Seed data using the transaction from the upgrade event
+           mockWords.forEach(word => {
+             console.log(`Seeding word: ${word.word}`);
+             tx.objectStore('words').add(word);
+           });
         }
 
         // AdminMessages store
@@ -103,6 +108,22 @@ const getDb = () => {
   return dbPromise;
 };
 
+// Function to clear the database
+export async function resetDatabase() {
+    if (typeof window === 'undefined') return;
+    
+    // Close the database connection if it's open
+    if (dbPromise) {
+        const db = await dbPromise;
+        db.close();
+        dbPromise = null;
+    }
+
+    // Delete the database
+    await window.indexedDB.deleteDatabase('lingua-leap-db');
+    console.log("Database has been reset.");
+}
+
 
 // --- User Functions ---
 export async function getAllUsersDB(): Promise<User[]> {
@@ -141,7 +162,7 @@ export async function deleteUserDB(id: string): Promise<void> {
 // --- Word Functions ---
 export async function getWordsBySupervisorDB(supervisorId: string): Promise<Word[]> {
     const db = getDb();
-    if (!db) return [];
+    if (!db) return mockWords.filter(w => w.supervisorId === supervisorId);
     return (await db).getAllFromIndex('words', 'by-supervisorId', supervisorId);
 }
 
@@ -247,3 +268,5 @@ export async function getHeroImage(): Promise<string | undefined> {
   }
   return undefined;
 }
+
+    
