@@ -352,7 +352,7 @@ export default function Dashboard() {
                      <Clock className="h-4 w-4" />
                      <AlertTitle>Trial Account</AlertTitle>
                      <AlertDescription>
-                         Your trial period expires {formatDistanceToNowStrict(new Date(user.trialExpiresAt), { addSuffix: true })}. Please contact the main administrator to upgrade to a full account.
+                         Your trial period expires {formatDistanceToNowStrict(new Date(user.trialExpiresAt), { addSuffix: true })}.
                      </AlertDescription>
                  </Alert>
              )}
@@ -410,4 +410,5 @@ export default function Dashboard() {
    return <div>{t('dashboard.loading')}</div>
  }
  
+    
     
