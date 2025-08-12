@@ -268,10 +268,12 @@ export default function ProfilePage() {
           width: 100%;
           height: 100%;
           object-fit: contain; /* Default state */
+          transition: transform 0.3s ease;
         }
         
         .profile-picture img.scaled {
            object-fit: cover; /* Scaled state */
+           transform: scale(1.5);
         }
       `}</style>
       <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
