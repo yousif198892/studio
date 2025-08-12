@@ -11,6 +11,10 @@ type LearningStats = {
     completedTests: string[];
   };
   activityLog: string[];
+  spellingPractice: {
+    count: number;
+    date: string;
+  };
 };
 
 type UpdateStatsParams = {
@@ -18,6 +22,7 @@ type UpdateStatsParams = {
   reviewedCount?: number;
   durationSeconds?: number;
   testName?: string;
+  spelledCount?: number;
 };
 
 export const updateLearningStats = ({
@@ -25,6 +30,7 @@ export const updateLearningStats = ({
   reviewedCount = 0,
   durationSeconds = 0,
   testName,
+  spelledCount = 0,
 }: UpdateStatsParams) => {
   if (!userId) return;
   
@@ -38,12 +44,18 @@ export const updateLearningStats = ({
         totalWordsReviewed: 0,
         reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
         activityLog: [],
+        spellingPractice: { count: 0, date: today },
       };
 
   // Reset daily stats if the date has changed
   if (stats.reviewedToday.date !== today) {
     stats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
   }
+  
+  if (!stats.spellingPractice || stats.spellingPractice.date !== today) {
+    stats.spellingPractice = { count: 0, date: today };
+  }
+
 
   // Ensure properties exist
   if (typeof stats.reviewedToday.timeSpentSeconds !== 'number') {
@@ -61,6 +73,7 @@ export const updateLearningStats = ({
   stats.timeSpentSeconds += durationSeconds;
   stats.reviewedToday.count += reviewedCount;
   stats.reviewedToday.timeSpentSeconds += durationSeconds;
+  stats.spellingPractice.count += spelledCount;
 
   // Log activity
   if (!stats.activityLog.includes(today)) {
@@ -74,5 +87,3 @@ export const updateLearningStats = ({
 
   localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
 };
-
-    

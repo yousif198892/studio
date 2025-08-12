@@ -18,6 +18,9 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { updateStudentProgressInStorage } from "@/lib/storage";
 import { WordProgress } from "@/lib/storage";
+import { updateLearningStats } from "@/lib/stats";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+
 
 interface SpellingPracticeCardProps {
   allWords: (Word & Partial<WordProgress>)[];
@@ -32,61 +35,95 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>("idle");
   const { toast } = useToast();
+  
+  const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
+  const [spelledToday, setSpelledToday] = useState(0);
+
+  const DAILY_LIMIT = 10;
 
   useEffect(() => {
-    // Only include words that have been reviewed at least once (strength > 0)
+    // Load how many words the user has spelled today
+    const stats = JSON.parse(localStorage.getItem(`learningStats_${userId}`) || '{}');
+    const today = new Date().toISOString().split('T')[0];
+    if (stats.spellingPractice?.date === today) {
+        setSpelledToday(stats.spellingPractice.count);
+    } else {
+        setSpelledToday(0);
+    }
+
     const words = allWords.filter((w) => w.strength && w.strength > 0);
     setPracticeWords(words);
-  }, [allWords]);
+  }, [allWords, userId]);
+
+  const uniqueUnits = useMemo(() => {
+    return Array.from(new Set(practiceWords.map((word) => word.unit).filter(Boolean)));
+  }, [practiceWords]);
+
+  const lessonsForSelectedUnit = useMemo(() => {
+    if (!selectedUnit) return [];
+    return Array.from(new Set(
+      practiceWords
+        .filter((word) => word.unit === selectedUnit)
+        .map((word) => word.lesson)
+        .filter(Boolean)
+    ));
+  }, [practiceWords, selectedUnit]);
+
+  const filteredPracticeWords = useMemo(() => {
+    return practiceWords.filter(word => {
+        const unitMatch = !selectedUnit || word.unit === selectedUnit;
+        const lessonMatch = !selectedLesson || word.lesson === selectedLesson;
+        return unitMatch && lessonMatch;
+    });
+  }, [practiceWords, selectedUnit, selectedLesson]);
 
   const selectNewWord = useCallback(() => {
-    if (practiceWords.length === 0) {
+    if (spelledToday >= DAILY_LIMIT) {
+        setCurrentWord(null);
+        return;
+    }
+    if (filteredPracticeWords.length === 0) {
       setCurrentWord(null);
       return;
     }
-    const randomIndex = Math.floor(Math.random() * practiceWords.length);
-    setCurrentWord(practiceWords[randomIndex]);
+    const randomIndex = Math.floor(Math.random() * filteredPracticeWords.length);
+    setCurrentWord(filteredPracticeWords[randomIndex]);
     setAnswer("");
     setFeedback("idle");
-  }, [practiceWords]);
+  }, [filteredPracticeWords, spelledToday]);
 
   useEffect(() => {
-    // Select a word when the component loads or when the list of practice words changes
-    if (practiceWords.length > 0) {
-        selectNewWord();
-    } else {
-        setCurrentWord(null);
-    }
-  }, [practiceWords, selectNewWord]);
+    selectNewWord();
+  }, [selectNewWord]);
 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentWord || !answer.trim() || feedback !== 'idle') return;
+    if (!currentWord || !answer.trim() || feedback !== 'idle' || spelledToday >= DAILY_LIMIT) return;
 
-    if (answer.trim().toLowerCase() === currentWord.word.toLowerCase()) {
+    const correct = answer.trim().toLowerCase() === currentWord.word.toLowerCase();
+    
+    updateLearningStats({ userId, spelledCount: 1 });
+    setSpelledToday(prev => prev + 1);
+
+    if (correct) {
       setFeedback("correct");
-      // On correct, slightly increase strength, but do not change nextReview date
       const newStrength = (currentWord.strength || 0) + 1;
       const nextReview = currentWord.nextReview ? new Date(currentWord.nextReview) : new Date();
-
-       updateStudentProgressInStorage(userId, currentWord.id, {
+      updateStudentProgressInStorage(userId, currentWord.id, {
          strength: newStrength,
          nextReview: nextReview,
-       });
-       toast({
+      });
+      toast({
          title: "Correct!",
          description: `"${currentWord.word}" feels a little stronger now.`,
-       })
-      setTimeout(() => {
-        selectNewWord();
-      }, 1500);
+      });
+      setTimeout(selectNewWord, 1500);
     } else {
       setFeedback("incorrect");
-       // On incorrect, slightly decrease strength, but do not change nextReview date
        const newStrength = Math.max(0, (currentWord.strength || 1) - 1);
        const nextReview = currentWord.nextReview ? new Date(currentWord.nextReview) : new Date();
-
        updateStudentProgressInStorage(userId, currentWord.id, {
          strength: newStrength,
          nextReview: nextReview,
@@ -96,12 +133,9 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
         description: `The correct spelling is "${currentWord.word}". We'll keep practicing.`,
         variant: "destructive"
        });
-       // Show correct answer
        setTimeout(() => {
          setAnswer(currentWord.word);
-         setTimeout(() => {
-            selectNewWord();
-         }, 2000);
+         setTimeout(selectNewWord, 2000);
        }, 1000);
     }
   };
@@ -111,6 +145,21 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
     if (feedback === "incorrect") return "border-destructive focus-visible:ring-destructive";
     return "";
   };
+
+  const clearFilters = () => {
+      setSelectedUnit(null);
+      setSelectedLesson(null);
+  }
+
+  const handleUnitChange = (unit: string) => {
+      setSelectedUnit(unit === "all" ? null : unit);
+      setSelectedLesson(null);
+  }
+
+  const handleLessonChange = (lesson: string) => {
+      setSelectedLesson(lesson === "all" ? null : lesson);
+  }
+
 
   if (practiceWords.length === 0) {
     return (
@@ -144,9 +193,43 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
         <CardDescription>
           Type the word that matches the definition and image below.
         </CardDescription>
+        <div className="flex items-center space-x-2 pt-4">
+            <Select onValueChange={handleUnitChange} value={selectedUnit || "all"}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Unit" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Units</SelectItem>
+                {uniqueUnits.map((unit) => (
+                  <SelectItem key={unit} value={unit}>
+                    {unit}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select onValueChange={handleLessonChange} value={selectedLesson || "all"} disabled={!selectedUnit}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filter by Lesson" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Lessons</SelectItem>
+                {lessonsForSelectedUnit.map((lesson) => (
+                  <SelectItem key={lesson} value={lesson}>
+                    {lesson}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+             {(selectedUnit || selectedLesson) && <Button variant="ghost" onClick={clearFilters}>Clear</Button>}
+          </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {currentWord ? (
+        {spelledToday >= DAILY_LIMIT ? (
+            <div className="text-center text-muted-foreground py-8">
+                <p>Great job! You've reached your spelling limit for today.</p>
+                <p>Come back tomorrow for more practice.</p>
+            </div>
+        ) : currentWord ? (
           <>
             <div className="flex flex-col md:flex-row items-center gap-4 p-4 bg-secondary rounded-lg">
               <Image
@@ -176,7 +259,7 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
           </>
         ) : (
           <div className="text-center text-muted-foreground py-8">
-            <p>Loading spelling practice...</p>
+            <p>{filteredPracticeWords.length > 0 ? "Loading new word..." : "No words match the selected filters."}</p>
           </div>
         )}
       </CardContent>
