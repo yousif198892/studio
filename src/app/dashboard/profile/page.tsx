@@ -292,7 +292,9 @@ export default function ProfilePage() {
                           className={cn(isScaled && "scaled")}
                         />
                     </div>
-                     <Button variant="outline" onClick={() => setIsScaled(!isScaled)}>Scale to fit</Button>
+                     <Button variant="outline" onClick={() => setIsScaled(!isScaled)}>
+                        {isScaled ? "Shrink" : "Enlarge"}
+                     </Button>
                     <Input id="picture" type="file" accept="image/*" onChange={handlePictureChange} className="max-w-xs" />
                 </CardContent>
                 <CardFooter>
