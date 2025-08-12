@@ -1,11 +1,15 @@
 
-import type { Metadata } from "next";
+"use client";
+
 import { PT_Sans, Belleza } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
-import { LanguageProvider } from "@/hooks/use-language.tsx";
+import { LanguageProvider, useLanguage } from "@/hooks/use-language.tsx";
 import { LanguageSetter } from "@/components/language-setter";
+import { useEffect, useState } from "react";
+import { getUserById } from "@/lib/data";
+import { useSearchParams } from "next/navigation";
 
 const ptSans = PT_Sans({
   subsets: ["latin"],
@@ -19,10 +23,25 @@ const belleza = Belleza({
   variable: "--font-belleza",
 });
 
-export const metadata: Metadata = {
-  title: "LinguaLeap",
-  description: "AI-Enhanced Language Learning",
-};
+function AppBody({ children }: { children: React.ReactNode }) {
+  const { fontSize } = useLanguage();
+  return (
+    <body
+      className={cn(
+        "min-h-screen bg-background font-body antialiased",
+        ptSans.variable,
+        belleza.variable,
+        fontSize === "sm" && "text-sm",
+        fontSize === "base" && "text-base",
+        fontSize === "lg" && "text-lg"
+      )}
+      suppressHydrationWarning
+    >
+        {children}
+    </body>
+  );
+}
+
 
 export default function RootLayout({
   children,
@@ -31,20 +50,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" dir="ltr">
-      <body
-        className={cn(
-          "min-h-screen bg-background font-body antialiased",
-          ptSans.variable,
-          belleza.variable
-        )}
-        suppressHydrationWarning
-      >
         <LanguageProvider>
-          <LanguageSetter />
-          {children}
-          <Toaster />
+            <LanguageSetter />
+            <AppBody>
+              {children}
+              <Toaster />
+            </AppBody>
         </LanguageProvider>
-      </body>
     </html>
   );
 }
