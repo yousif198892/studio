@@ -215,7 +215,7 @@ export function DashboardSidebar({
         <SidebarFooter className="p-2 border-t">
             <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
             <Avatar>
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage src={user.avatar} alt={user.name} style={{ objectFit: 'contain' }}/>
                 <AvatarFallback>{user.name?.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
             <div className="flex-1 overflow-hidden">
