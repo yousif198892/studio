@@ -275,7 +275,7 @@ export default function ProfilePage() {
            object-fit: cover;
            width: 100%;
            height: 100%;
-           transform: scale(1.5);
+           transform: scale(1.3);
         }
       `}</style>
       <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
