@@ -113,18 +113,25 @@ export default function ChatPage() {
     partners.sort((a,b) => (b.lastMessage?.createdAt || 0) > (a.lastMessage?.createdAt || 0) ? 1 : -1);
     setConversations(partners);
 
-    if (contactToSelect && (!selectedContact || selectedContact.id !== contactToSelect)) {
-      const contact = partners.find(p => p.id === contactToSelect);
-      if (contact) handleSelectContact(contact);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, contactToSelect]);
+    return partners;
+  }, [userId]);
 
   useEffect(() => {
-    loadConversations();
+    const init = async () => {
+        const partners = await loadConversations();
+        if (contactToSelect && partners) {
+            const contact = partners.find(p => p.id === contactToSelect);
+            if (contact) {
+                handleSelectContact(contact, true);
+            }
+        }
+    }
+    init();
+
     const handleStorage = () => loadConversations();
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadConversations]);
 
   useEffect(() => {
@@ -132,9 +139,12 @@ export default function ChatPage() {
   }, [messages]);
 
 
-  const handleSelectContact = async (contact: ConversationPartner) => {
+  const handleSelectContact = async (contact: ConversationPartner, isInitialLoad = false) => {
     if (!userId || !currentUser) return;
-    setSelectedContact(contact);
+    
+    if (!isInitialLoad) {
+      setSelectedContact(contact);
+    }
     
     const convos = await getConversationsForStudent(userId);
     let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
@@ -154,12 +164,11 @@ export default function ChatPage() {
     setMessages(messagesToSet);
     
     if(hadUnread) {
-        // Trigger layout to refetch counts for the sidebar
+        // Visually update the unread count on the selected contact without a full reload
+        setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
+        // Also trigger sidebar update
         window.dispatchEvent(new Event('storage'));
     }
-    
-    // Visually update the unread count on the selected contact without a full reload
-    setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
   };
 
 
@@ -167,6 +176,7 @@ export default function ChatPage() {
     if (!newMessage.trim() || !userId || !selectedContact || !currentUser) return;
     
     let sentMessage: SupervisorMessage | PeerMessage | null = null;
+    const timestamp = new Date();
 
     if (currentUser.role === 'supervisor' || selectedContact.type === 'supervisor') {
         const studentId = currentUser.role === 'student' ? userId : selectedContact.id;
@@ -177,7 +187,7 @@ export default function ChatPage() {
           supervisorId: supervisorId,
           senderId: userId,
           content: newMessage,
-          createdAt: new Date(),
+          createdAt: timestamp,
           read: false,
         };
         await saveSupervisorMessage(sentMessage);
@@ -189,19 +199,24 @@ export default function ChatPage() {
             receiverId: selectedContact.id,
             conversationId,
             content: newMessage,
-            createdAt: new Date(),
+            createdAt: timestamp,
             read: false,
         };
         await savePeerMessage(sentMessage);
     }
     
-    if (sentMessage) {
-      setMessages(prev => [...prev, sentMessage!]);
-    }
-    
+    // Optimistic UI updates
+    setMessages(prev => [...prev, sentMessage!]);
+    setConversations(prev => prev.map(c => {
+        if (c.id === selectedContact.id) {
+            return { ...c, lastMessage: sentMessage };
+        }
+        return c;
+    }).sort((a,b) => (b.lastMessage?.createdAt || 0) > (a.lastMessage?.createdAt || 0) ? 1 : -1));
+
     setNewMessage("");
 
-    // This triggers a re-render of messages and counts in other tabs
+    // This triggers a re-render for other tabs, but not the current one.
     window.dispatchEvent(new Event('storage'));
   };
 
