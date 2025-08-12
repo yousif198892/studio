@@ -264,18 +264,21 @@ export default function ProfilePage() {
         }
 
         .profile-picture img {
-          object-fit: cover;
-          width: 100%;
-          height: 100%;
           transition: transform 0.3s ease;
         }
 
         .profile-picture img.shrunk {
           transform: scale(0.7);
+          object-fit: contain;
+          width: 100%;
+          height: 100%;
         }
         
         .profile-picture img.enlarged {
            transform: scale(1.1);
+           object-fit: cover;
+           width: 100%;
+           height: 100%;
         }
       `}</style>
       <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
