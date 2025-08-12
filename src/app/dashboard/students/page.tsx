@@ -73,7 +73,7 @@ export default function StudentsPage() {
   const [user, setUser] = useState<User | null>(null);
   const [students, setStudents] = useState<StudentWithStats[]>([]);
   const last7Days = getLast7Days();
-  const userId = searchParams?.get('userId') as string;
+  const userId = searchParams.get('userId');
   
   useEffect(() => {
     const fetchData = async () => {
@@ -156,7 +156,7 @@ export default function StudentsPage() {
         variant: "destructive",
       });
       // If there was an error, refetch the original list to revert the UI change
-      const userId = searchParams?.get('userId') as string;
+      const userId = searchParams.get('userId');
       if (userId) {
         const studentList = await getStudentsBySupervisorId(userId);
         const today = new Date().toISOString().split('T')[0];
