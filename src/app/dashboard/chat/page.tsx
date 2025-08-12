@@ -110,9 +110,10 @@ export default function ChatPage() {
         }
     }
     
-    setConversations(partners.sort((a,b) => (b.lastMessage?.createdAt || 0) > (a.lastMessage?.createdAt || 0) ? 1 : -1));
+    partners.sort((a,b) => (b.lastMessage?.createdAt || 0) > (a.lastMessage?.createdAt || 0) ? 1 : -1);
+    setConversations(partners);
 
-    if (contactToSelect && !selectedContact) {
+    if (contactToSelect && (!selectedContact || selectedContact.id !== contactToSelect)) {
       const contact = partners.find(p => p.id === contactToSelect);
       if (contact) handleSelectContact(contact);
     }
@@ -153,7 +154,7 @@ export default function ChatPage() {
     setMessages(messagesToSet);
     
     if(hadUnread) {
-        // This triggers the layout to refetch counts
+        // Trigger layout to refetch counts for the sidebar
         window.dispatchEvent(new Event('storage'));
     }
     
@@ -163,12 +164,14 @@ export default function ChatPage() {
 
 
   const handleSendMessage = async () => {
-    if (!newMessage.trim() || !userId || !selectedContact) return;
+    if (!newMessage.trim() || !userId || !selectedContact || !currentUser) return;
+    
+    let sentMessage: SupervisorMessage | PeerMessage | null = null;
 
-    if (currentUser?.role === 'supervisor' || selectedContact.type === 'supervisor') {
-        const studentId = currentUser?.role === 'student' ? userId : selectedContact.id;
-        const supervisorId = currentUser?.role === 'supervisor' ? userId : selectedContact.id;
-        const message: SupervisorMessage = {
+    if (currentUser.role === 'supervisor' || selectedContact.type === 'supervisor') {
+        const studentId = currentUser.role === 'student' ? userId : selectedContact.id;
+        const supervisorId = currentUser.role === 'supervisor' ? userId : selectedContact.id;
+        sentMessage = {
           id: `sup_msg_${Date.now()}`,
           studentId: studentId,
           supervisorId: supervisorId,
@@ -177,10 +180,10 @@ export default function ChatPage() {
           createdAt: new Date(),
           read: false,
         };
-        await saveSupervisorMessage(message);
+        await saveSupervisorMessage(sentMessage);
     } else { // peer to peer
         const conversationId = [userId, selectedContact.id].sort().join('-');
-        const message: PeerMessage = {
+        sentMessage = {
             id: `peer_msg_${Date.now()}`,
             senderId: userId,
             receiverId: selectedContact.id,
@@ -189,18 +192,17 @@ export default function ChatPage() {
             createdAt: new Date(),
             read: false,
         };
-        await savePeerMessage(message);
+        await savePeerMessage(sentMessage);
+    }
+    
+    if (sentMessage) {
+      setMessages(prev => [...prev, sentMessage!]);
     }
     
     setNewMessage("");
 
-    // This triggers a re-render of messages after sending and updates other tabs
+    // This triggers a re-render of messages and counts in other tabs
     window.dispatchEvent(new Event('storage'));
-
-    setTimeout(() => {
-      handleSelectContact(selectedContact);
-      loadConversations();
-    }, 100);
   };
 
   if (!currentUser) {
@@ -272,52 +274,54 @@ export default function ChatPage() {
                     </div>
                 </div>
               </CardHeader>
-              <CardContent className="flex-1 overflow-y-auto p-4 space-y-4">
-                {messages.map((msg) => (
-                  <div
-                    key={msg.id}
-                    className={cn(
-                      "flex items-end gap-2 group",
-                      msg.senderId === userId
-                        ? "justify-end"
-                        : "justify-start"
-                    )}
-                  >
-                    {msg.senderId !== userId && (
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={selectedContact.avatar} />
-                        <AvatarFallback>
-                          {selectedContact.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                    
+              <ScrollArea className="flex-1">
+                <CardContent className="p-4 space-y-4">
+                  {messages.map((msg) => (
                     <div
-                        className={cn(
-                          "rounded-lg px-4 py-2 max-w-sm",
-                          msg.senderId === userId
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-muted"
-                        )}
-                      >
-                        <p className="text-sm">{msg.content}</p>
-                        <p className="text-xs opacity-75 mt-1 text-right">
-                          {format(new Date(msg.createdAt), "p")}
-                        </p>
-                      </div>
-                    
-                    {msg.senderId === userId && currentUser && (
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={currentUser.avatar} />
-                        <AvatarFallback>
-                          {currentUser.name.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </CardContent>
+                      key={msg.id}
+                      className={cn(
+                        "flex items-end gap-2 group",
+                        msg.senderId === userId
+                          ? "justify-end"
+                          : "justify-start"
+                      )}
+                    >
+                      {msg.senderId !== userId && (
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={selectedContact.avatar} />
+                          <AvatarFallback>
+                            {selectedContact.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                      
+                      <div
+                          className={cn(
+                            "rounded-lg px-4 py-2 max-w-sm",
+                            msg.senderId === userId
+                              ? "bg-primary text-primary-foreground"
+                              : "bg-muted"
+                          )}
+                        >
+                          <p className="text-sm">{msg.content}</p>
+                          <p className="text-xs opacity-75 mt-1 text-right">
+                            {format(new Date(msg.createdAt), "p")}
+                          </p>
+                        </div>
+                      
+                      {msg.senderId === userId && currentUser && (
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src={currentUser.avatar} />
+                          <AvatarFallback>
+                            {currentUser.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </CardContent>
+              </ScrollArea>
               <CardFooter className="pt-4 border-t">
                 <div className="flex w-full items-center space-x-2">
                   <Input
@@ -346,5 +350,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
