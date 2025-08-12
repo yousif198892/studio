@@ -1,4 +1,5 @@
 
+
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
@@ -37,7 +38,6 @@ export type User = {
   avatar: string;
   supervisorId?: string;
   timezone?: string;
-  fontSize?: "sm" | "base" | "lg";
   isMainAdmin?: boolean;
   isSuspended?: boolean;
   trialExpiresAt?: string; // ISO date string for trial accounts
@@ -106,7 +106,6 @@ export const mockUsers: User[] = [
     role: "supervisor",
     avatar: "https://placehold.co/100x100.png",
     timezone: "America/New_York",
-    fontSize: "base",
     isMainAdmin: true,
   },
 ];

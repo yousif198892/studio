@@ -5,13 +5,10 @@ import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { translations, TranslationKey } from '@/lib/i18n';
 
 type Language = 'en' | 'ar';
-type FontSize = 'sm' | 'base' | 'lg';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (language: Language) => void;
-  fontSize: FontSize;
-  setFontSize: (size: FontSize) => void;
   t: (key: TranslationKey, ...args: any[]) => string;
 }
 
@@ -19,7 +16,6 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   const [language, setLanguage] = useState<Language>('en');
-  const [fontSize, setFontSize] = useState<FontSize>('base');
 
   const t = (key: TranslationKey, ...args: any[]): string => {
     const keys = key.split('.');
@@ -43,7 +39,7 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, fontSize, setFontSize, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
       {children}
     </LanguageContext.Provider>
   );

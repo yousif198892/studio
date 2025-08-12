@@ -42,7 +42,7 @@ import { setHeroImage } from "@/lib/db";
 
 
 export default function ProfilePage() {
-  const { t, language, setLanguage, fontSize, setFontSize } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const searchParams = useSearchParams();
   const router = useRouter();
   const { toast } = useToast();
@@ -55,7 +55,6 @@ export default function ProfilePage() {
   // State for preferences
   const [selectedLanguage, setSelectedLanguage] = useState(language);
   const [selectedTimezone, setSelectedTimezone] = useState<string | undefined>();
-  const [selectedFontSize, setSelectedFontSize] = useState<"sm" | "base" | "lg" | undefined>(fontSize);
 
 
   useEffect(() => {
@@ -67,8 +66,6 @@ export default function ProfilePage() {
         if (foundUser) {
             setName(foundUser.name);
             setSelectedTimezone(foundUser.timezone);
-            setSelectedFontSize(foundUser.fontSize);
-            setFontSize(foundUser.fontSize || 'base');
             if (foundUser.role === 'student' && foundUser.supervisorId) {
               const foundSupervisor = await getUserById(foundUser.supervisorId);
               setSupervisor(foundSupervisor || null);
@@ -77,15 +74,12 @@ export default function ProfilePage() {
       }
       fetchUser();
     }
-  }, [searchParams, setFontSize]);
+  }, [searchParams]);
 
   useEffect(() => {
     setSelectedLanguage(language);
   }, [language]);
   
-   useEffect(() => {
-    setSelectedFontSize(fontSize);
-  }, [fontSize]);
 
   const timezones = [
     "America/New_York",
@@ -121,7 +115,6 @@ export default function ProfilePage() {
       const updatedUser: User = {
           ...user,
           timezone: selectedTimezone,
-          fontSize: selectedFontSize,
       };
 
       await updateUserDB(updatedUser);
@@ -133,7 +126,6 @@ export default function ProfilePage() {
       });
       
       if (selectedLanguage) setLanguage(selectedLanguage);
-      if (selectedFontSize) setFontSize(selectedFontSize);
   }
 
   const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -362,19 +354,6 @@ export default function ProfilePage() {
                       {tz}
                     </SelectItem>
                   ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="font-size">{t('profile.preferences.fontSize')}</Label>
-              <Select value={selectedFontSize} onValueChange={(value) => setSelectedFontSize(value as "sm" | "base" | "lg")}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('profile.preferences.selectFontSize')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="sm">{t('profile.preferences.fontSmall')}</SelectItem>
-                  <SelectItem value="base">{t('profile.preferences.fontDefault')}</SelectItem>
-                  <SelectItem value="lg">{t('profile.preferences.fontLarge')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>

@@ -44,11 +44,6 @@ export const translations = {
             selectLanguage: "Select Language",
             timezone: "Timezone",
             selectTimezone: "Select timezone",
-            fontSize: "Font Size",
-            selectFontSize: "Select font size",
-            fontSmall: "Small",
-            fontDefault: "Default",
-            fontLarge: "Large",
             save: "Save Preferences",
         },
         account: {
@@ -315,11 +310,6 @@ export const translations = {
             selectLanguage: "اختر اللغة",
             timezone: "المنطقة الزمنية",
             selectTimezone: "اختر المنطقة الزمنية",
-            fontSize: "حجم الخط",
-            selectFontSize: "اختر حجم الخط",
-            fontSmall: "صغير",
-            fontDefault: "افتراضي",
-            fontLarge: "كبير",
             save: "حفظ التفضيلات",
         },
         account: {
@@ -549,7 +539,7 @@ export type TranslationKey =
     | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins' | 'sidebar.about' | 'sidebar.spelling'
     | 'about.title' | 'about.description' | 'about.greeting' | 'about.teacherIntro' | 'about.aiIntro' | 'about.signature' | 'about.version'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
-    | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.fontSize' | 'profile.preferences.selectFontSize' | 'profile.preferences.fontSmall' | 'profile.preferences.fontDefault' | 'profile.preferences.fontLarge' | 'profile.preferences.save'
+    | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.save'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
     | 'login.welcome' | 'login.description' | 'login.emailLabel' | 'login.passwordLabel' | 'login.forgotPassword' | 'login.loginButton' | 'login.loginWithGoogle' | 'login.noAccount' | 'login.signUp'
     | 'register.title' | 'register.description' | 'register.studentTab' | 'register.supervisorTab' | 'register.fullNameLabel' | 'register.fullNamePlaceholder' | 'register.emailLabel' | 'register.emailPlaceholder' | 'register.passwordLabel' | 'register.supervisorIdLabel' | 'register.supervisorIdPlaceholder' | 'register.createAccountButton' | 'register.createSupervisorAccountButton' | 'register.orContinueWith' | 'register.registerWithGoogle' | 'register.haveAccount' | 'register.login'
