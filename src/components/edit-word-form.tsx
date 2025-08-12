@@ -9,7 +9,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word } from "@/lib/data";
+import { Word, updateWordDB } from "@/lib/data";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
@@ -70,22 +70,16 @@ export function EditWordForm({ word: initialWord }: { word: Word }) {
         imageDataUri = await toBase64(imageFile);
       }
 
-      let storedWords: Word[] = JSON.parse(localStorage.getItem('userWords') || '[]');
-      const wordIndex = storedWords.findIndex(w => w.id === initialWord.id);
-
-      if (wordIndex === -1) throw new Error("Word not found in database.");
-
       const updatedWord: Word = {
-          ...storedWords[wordIndex],
+          ...initialWord,
           word,
           definition,
           unit: unit || "",
           lesson: lesson || "",
-          imageUrl: imageDataUri || storedWords[wordIndex].imageUrl,
+          imageUrl: imageDataUri || initialWord.imageUrl,
       };
 
-      storedWords[wordIndex] = updatedWord;
-      localStorage.setItem('userWords', JSON.stringify(storedWords));
+      await updateWordDB(updatedWord);
 
       toast({
         title: t('toasts.success'),
