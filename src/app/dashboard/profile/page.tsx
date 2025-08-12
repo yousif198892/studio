@@ -52,6 +52,11 @@ export default function ProfilePage() {
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [heroPreviewImage, setHeroPreviewImage] = useState<string | null>(null);
 
+  // State for preferences
+  const [selectedLanguage, setSelectedLanguage] = useState(language);
+  const [selectedTimezone, setSelectedTimezone] = useState<string | undefined>();
+  const [selectedFontSize, setSelectedFontSize] = useState<string | undefined>();
+
 
   useEffect(() => {
     const userId = searchParams.get("userId");
@@ -61,6 +66,8 @@ export default function ProfilePage() {
         setUser(foundUser || null);
         if (foundUser) {
             setName(foundUser.name);
+            setSelectedTimezone(foundUser.timezone);
+            setSelectedFontSize(foundUser.fontSize);
             if (foundUser.role === 'student' && foundUser.supervisorId) {
               const foundSupervisor = await getUserById(foundUser.supervisorId);
               setSupervisor(foundSupervisor || null);
@@ -70,6 +77,10 @@ export default function ProfilePage() {
       fetchUser();
     }
   }, [searchParams]);
+
+  useEffect(() => {
+    setSelectedLanguage(language);
+  }, [language]);
 
   const timezones = [
     "America/New_York",
@@ -81,6 +92,7 @@ export default function ProfilePage() {
 
   const handleLanguageChange = (value: "en" | "ar") => {
     setLanguage(value);
+    setSelectedLanguage(value);
   };
   
   const handleSaveChanges = async () => {
@@ -98,11 +110,27 @@ export default function ProfilePage() {
       window.dispatchEvent(new Event('storage'));
   }
   
-  const handleSavePreferences = () => {
+  const handleSavePreferences = async () => {
+      if (!user) return;
+      
+      const updatedUser: User = {
+          ...user,
+          timezone: selectedTimezone,
+          fontSize: selectedFontSize as "sm" | "base" | "lg" | undefined,
+      };
+
+      await updateUserDB(updatedUser);
+      setUser(updatedUser);
+      
       toast({
         title: t('toasts.success'),
         description: "Preferences saved!",
       });
+      
+      // Also update the global language setting
+      if (selectedLanguage) {
+          setLanguage(selectedLanguage);
+      }
   }
 
   const handlePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -309,7 +337,7 @@ export default function ProfilePage() {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="language">{t('profile.preferences.language')}</Label>
-               <Select value={language} onValueChange={handleLanguageChange}>
+               <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('profile.preferences.selectLanguage')} />
                 </SelectTrigger>
@@ -321,7 +349,7 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="timezone">{t('profile.preferences.timezone')}</Label>
-              <Select defaultValue={user.timezone}>
+              <Select value={selectedTimezone} onValueChange={setSelectedTimezone}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('profile.preferences.selectTimezone')} />
                 </SelectTrigger>
@@ -336,7 +364,7 @@ export default function ProfilePage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="font-size">{t('profile.preferences.fontSize')}</Label>
-              <Select defaultValue={user.fontSize}>
+              <Select value={selectedFontSize} onValueChange={setSelectedFontSize}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('profile.preferences.selectFontSize')} />
                 </SelectTrigger>
