@@ -267,12 +267,12 @@ export default function ProfilePage() {
         .profile-picture img {
           width: 100%;
           height: 100%;
-          object-fit: contain; /* Default state */
+          object-fit: cover;
+          transform: scale(1);
           transition: transform 0.3s ease;
         }
         
         .profile-picture img.scaled {
-           object-fit: cover; /* Scaled state */
            transform: scale(1.5);
         }
       `}</style>
