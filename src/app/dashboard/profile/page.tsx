@@ -50,8 +50,8 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [heroPreviewImage, setHeroPreviewImage] = useState<string | null>(null);
-  const [isScaled, setIsScaled] = useState(false);
-
+  const [isEnlarged, setIsEnlarged] = useState(false);
+  
   // State for preferences
   const [selectedLanguage, setSelectedLanguage] = useState(language);
   const [selectedTimezone, setSelectedTimezone] = useState<string | undefined>();
@@ -264,16 +264,17 @@ export default function ProfilePage() {
         }
 
         .profile-picture img {
-          max-width: none;
-          height: auto;
+          object-fit: cover;
+          width: 100%;
+          height: 100%;
           transition: transform 0.3s ease;
+        }
+
+        .profile-picture img.shrunk {
           transform: scale(0.7);
         }
         
-        .profile-picture img.scaled {
-           object-fit: cover;
-           width: 100%;
-           height: 100%;
+        .profile-picture img.enlarged {
            transform: scale(1.1);
         }
       `}</style>
@@ -290,11 +291,11 @@ export default function ProfilePage() {
                           id="preview"
                           src={previewImage || user.avatar} 
                           alt="Profile Picture" 
-                          className={cn(isScaled && "scaled")}
+                          className={cn(isEnlarged ? 'enlarged' : 'shrunk')}
                         />
                     </div>
-                     <Button variant="outline" onClick={() => setIsScaled(!isScaled)}>
-                        {isScaled ? "Shrink" : "Enlarge"}
+                     <Button variant="outline" onClick={() => setIsEnlarged(!isEnlarged)}>
+                        {isEnlarged ? "Shrink" : "Enlarge"}
                      </Button>
                     <Input id="picture" type="file" accept="image/*" onChange={handlePictureChange} className="max-w-xs" />
                 </CardContent>
@@ -442,5 +443,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
