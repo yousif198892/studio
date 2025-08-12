@@ -264,8 +264,8 @@ export default function ProfilePage() {
         }
 
         .profile-picture img {
-          max-width: 100%;
-          max-height: 100%;
+          max-width: none;
+          height: auto;
           transition: transform 0.3s ease;
           transform: scale(0.7);
         }
@@ -442,3 +442,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
