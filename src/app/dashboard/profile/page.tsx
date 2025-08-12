@@ -252,20 +252,20 @@ export default function ProfilePage() {
     <div className="space-y-6">
       <style jsx>{`
         .profile-picture {
-            width: 128px;
-            height: 128px;
-            border-radius: 50%;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            background-color: hsl(var(--muted));
+          width: 128px;
+          height: 128px;
+          border-radius: 50%;
+          overflow: hidden;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background-color: hsl(var(--muted));
         }
 
         .profile-picture img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
         }
       `}</style>
       <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
