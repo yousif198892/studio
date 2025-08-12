@@ -199,7 +199,7 @@ export default function StudentsPage() {
                                     <div className="flex items-center gap-4 py-2 flex-1">
                                         <Image
                                             alt="Student avatar"
-                                            className="aspect-square rounded-full object-cover"
+                                            className="aspect-square rounded-full object-contain"
                                             height="48"
                                             src={student.avatar}
                                             width="48"
@@ -318,3 +318,5 @@ export default function StudentsPage() {
     </div>
   )
 }
+
+    
