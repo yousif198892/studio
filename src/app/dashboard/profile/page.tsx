@@ -20,7 +20,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Upload } from "@/components/ui/upload";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -251,6 +250,24 @@ export default function ProfilePage() {
 
   return (
     <div className="space-y-6">
+      <style jsx>{`
+        .profile-picture {
+            width: 128px;
+            height: 128px;
+            border-radius: 50%;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: hsl(var(--muted));
+        }
+
+        .profile-picture img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+      `}</style>
       <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <div className="lg:col-span-1 space-y-6">
@@ -259,12 +276,11 @@ export default function ProfilePage() {
                     <CardTitle>{t('profile.personalInfo.picture')}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
-                    <div className="h-32 w-32 rounded-full overflow-hidden flex items-center justify-center bg-muted">
+                    <div className="profile-picture">
                         <img 
                           id="preview"
                           src={previewImage || user.avatar} 
                           alt="Profile Picture" 
-                          className="w-full h-full object-cover"
                         />
                     </div>
                     <Input id="picture" type="file" accept="image/*" onChange={handlePictureChange} className="max-w-xs" />
