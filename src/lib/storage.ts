@@ -16,32 +16,33 @@ export interface WordProgress {
 /**
  * Saves a student's progress for a single word to IndexedDB.
  * @param studentId The ID of the student.
- * @param wordProgress The progress object for a single word.
+ * @param wordId The ID of the word.
+ * @param newProgress An object containing the new strength and nextReview date.
  */
 export const updateStudentProgressInStorage = async (studentId: string, wordId: string, newProgress: { strength: number, nextReview: Date }) => {
   if (typeof window === 'undefined') return;
-  
-  const progress: WordProgress = {
-    id: `${studentId}-${wordId}`, // Create a unique key for the student-word pair
-    studentId: studentId,
-    ...newProgress,
-    // Add the wordId to the object itself if needed for querying, though the key is now unique
-  }
 
   const existingProgress = await getStudentProgressDB(studentId);
-  const progressToSave = existingProgress.find(p => p.id === wordId) || { id: wordId, studentId, strength: 0, nextReview: new Date() };
+  
+  // Find the existing progress for this specific word
+  const progressToUpdate = existingProgress.find(p => p.id === wordId);
 
+  // Create the final record to save. If it doesn't exist, create a new one.
   const updatedProgress: WordProgress = {
-      ...progressToSave,
-      ...newProgress,
+    id: wordId, // The key for the object store is the word's ID
+    studentId: studentId,
+    strength: newProgress.strength,
+    nextReview: newProgress.nextReview,
   };
-
+  
+  // Create a new list of all progress items for the student, with the current one updated/added.
+  const allProgressForStudent = existingProgress.filter(p => p.id !== wordId);
+  allProgressForStudent.push(updatedProgress);
 
   try {
-    // In IndexedDB, a simple "put" will either add or update the record.
-    // We are now saving the entire progress list for a student, not just one word.
-    // This function should be updated to only save a single item.
-    await saveStudentProgressDB([updatedProgress]);
+    // Save the entire updated list for the student.
+    // The DB function is designed to handle an array of progress items.
+    await saveStudentProgressDB(allProgressForStudent);
   } catch (e) {
     console.error("Failed to update student progress in IndexedDB", e);
   }
