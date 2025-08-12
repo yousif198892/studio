@@ -30,8 +30,8 @@ export function RescheduleWordDialog({ word, userId, onWordRescheduled }: Resche
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
 
-  const handleScheduleSelect = (option: ScheduleOption) => {
-    let newStrength = word.strength;
+  const handleScheduleSelect = async (option: ScheduleOption) => {
+    let newStrength = word.strength ?? 0;
     const nextReview = new Date();
 
     switch (option) {
@@ -55,7 +55,7 @@ export function RescheduleWordDialog({ word, userId, onWordRescheduled }: Resche
         break;
     }
 
-    updateStudentProgressInStorage(userId, { id: word.id, strength: newStrength, nextReview });
+    await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     
     toast({
         title: t('toasts.success'),
