@@ -259,10 +259,14 @@ export default function ProfilePage() {
                     <CardTitle>{t('profile.personalInfo.picture')}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
-                     <Avatar className="h-32 w-32">
-                        <AvatarImage src={previewImage || user.avatar} />
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
+                    <div className="h-32 w-32 rounded-full overflow-hidden flex items-center justify-center bg-muted">
+                        <img 
+                          id="preview"
+                          src={previewImage || user.avatar} 
+                          alt="Profile Picture" 
+                          className="w-full h-full object-cover"
+                        />
+                    </div>
                     <Input id="picture" type="file" accept="image/*" onChange={handlePictureChange} className="max-w-xs" />
                 </CardContent>
                 <CardFooter>
