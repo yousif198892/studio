@@ -215,8 +215,8 @@ export function DashboardSidebar({
         <SidebarFooter className="p-2 border-t">
             <div className="flex items-center gap-3 p-2 rounded-lg bg-secondary">
             <Avatar>
-                <AvatarImage src={user?.avatar} alt="User" />
-                <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarFallback>{user.name?.charAt(0) || "U"}</AvatarFallback>
             </Avatar>
             <div className="flex-1 overflow-hidden">
                 <p className={cn("font-semibold text-sm truncate", user.isMainAdmin && "text-red-500")}>{user?.name}</p>
