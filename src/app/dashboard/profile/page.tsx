@@ -232,7 +232,7 @@ export default function ProfilePage() {
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
                      <Avatar className="h-32 w-32">
-                        <AvatarImage src={previewImage || user.avatar} />
+                        <AvatarImage src={previewImage || user.avatar} className="object-cover" />
                         <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <Input id="picture" type="file" accept="image/*" onChange={handlePictureChange} className="max-w-xs" />
