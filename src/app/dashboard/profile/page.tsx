@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -275,7 +274,7 @@ export default function ProfilePage() {
            object-fit: cover;
            width: 100%;
            height: 100%;
-           transform: scale(1.3);
+           transform: scale(1.1);
         }
       `}</style>
       <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
