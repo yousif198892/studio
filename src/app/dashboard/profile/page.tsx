@@ -267,7 +267,7 @@ export default function ProfilePage() {
           max-width: 100%;
           max-height: 100%;
           transition: transform 0.3s ease;
-          transform: scale(0.6);
+          transform: scale(0.7);
         }
         
         .profile-picture img.scaled {
