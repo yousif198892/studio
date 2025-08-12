@@ -268,7 +268,7 @@ export default function ProfilePage() {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          transform: scale(1);
+          transform: scale(0.6);
           transition: transform 0.3s ease;
         }
         
