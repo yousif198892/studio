@@ -12,6 +12,7 @@ import {
   getUserById,
   markSupervisorMessagesAsRead,
   markPeerMessagesAsRead,
+  PeerMessage,
 } from "@/lib/data";
 import {
   Card,
@@ -109,9 +110,9 @@ export default function ChatPage() {
         }
     }
     
-    setConversations(partners);
+    setConversations(partners.sort((a,b) => (b.lastMessage?.createdAt || 0) > (a.lastMessage?.createdAt || 0) ? 1 : -1));
 
-    if (contactToSelect) {
+    if (contactToSelect && !selectedContact) {
       const contact = partners.find(p => p.id === contactToSelect);
       if (contact) handleSelectContact(contact);
     }
@@ -120,8 +121,9 @@ export default function ChatPage() {
 
   useEffect(() => {
     loadConversations();
-    // No storage event listener for IndexedDB, would need a more complex solution like BroadcastChannel
-    // For this app, re-fetching on focus or interval might be alternatives if needed.
+    const handleStorage = () => loadConversations();
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, [loadConversations]);
 
   useEffect(() => {
@@ -130,38 +132,35 @@ export default function ChatPage() {
 
 
   const handleSelectContact = async (contact: ConversationPartner) => {
-    if (!userId) return;
+    if (!userId || !currentUser) return;
     setSelectedContact(contact);
     
     const convos = await getConversationsForStudent(userId);
+    let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
+    let hadUnread = false;
+
     if (contact.type === 'supervisor') {
-        const contactId = currentUser?.role === 'supervisor' ? contact.id : currentUser?.supervisorId!;
-        setMessages(convos.supervisor[contactId] || []);
-        await markMessagesAsRead(contact.id, 'supervisor');
+        const contactId = currentUser.role === 'supervisor' ? contact.id : currentUser.supervisorId!;
+        messagesToSet = convos.supervisor[contactId] || [];
+        hadUnread = messagesToSet.some(m => !m.read && m.senderId !== userId);
+        if (hadUnread) await markSupervisorMessagesAsRead(userId, contactId);
     } else { // peer
-        setMessages(convos.peer[contact.id] || []);
-        await markMessagesAsRead(contact.id, 'peer');
+        messagesToSet = convos.peer[contact.id] || [];
+        hadUnread = messagesToSet.some(m => !m.read && m.senderId !== userId);
+        if (hadUnread) await markPeerMessagesAsRead(userId, contact.id);
     }
     
-    // Reload conversations to update unread counts
-    loadConversations(); 
+    setMessages(messagesToSet);
+    
+    if(hadUnread) {
+        // This triggers the layout to refetch counts
+        window.dispatchEvent(new Event('storage'));
+    }
+    
+    // Visually update the unread count on the selected contact without a full reload
+    setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
   };
 
-  const markMessagesAsRead = async (contactId: string, type: 'supervisor' | 'peer') => {
-    if (!userId || !currentUser) return;
-    try {
-        if (type === 'supervisor') {
-            const studentId = currentUser.role === 'student' ? userId : contactId;
-            const supervisorId = currentUser.role === 'supervisor' ? userId : contactId;
-            await markSupervisorMessagesAsRead(studentId, supervisorId);
-        } else { // peer
-            const conversationId = [userId, contactId].sort().join('-');
-            await markPeerMessagesAsRead(conversationId, userId);
-        }
-    } catch (e) {
-      console.error("Failed to update message read status in DB", e);
-    }
-  };
 
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !userId || !selectedContact) return;
@@ -193,14 +192,15 @@ export default function ChatPage() {
         await savePeerMessage(message);
     }
     
-    // This is a bit of a trick to force a re-render of messages after sending
-    // It's not ideal, but works for this demo.
-    setTimeout(() => {
-        handleSelectContact(selectedContact);
-        loadConversations();
-    }, 100);
-
     setNewMessage("");
+
+    // This triggers a re-render of messages after sending and updates other tabs
+    window.dispatchEvent(new Event('storage'));
+
+    setTimeout(() => {
+      handleSelectContact(selectedContact);
+      loadConversations();
+    }, 100);
   };
 
   if (!currentUser) {
@@ -237,8 +237,8 @@ export default function ChatPage() {
                             <AvatarImage src={convo.avatar} />
                             <AvatarFallback>{convo.name.charAt(0)}</AvatarFallback>
                         </Avatar>
-                        <div className="flex-1">
-                            <p className="font-semibold">{convo.name}</p>
+                        <div className="flex-1 overflow-hidden">
+                            <p className="font-semibold truncate">{convo.name}</p>
                             <p className="text-xs text-muted-foreground truncate">
                             {convo.lastMessage ? convo.lastMessage.content : "No messages yet"}
                             </p>
@@ -346,3 +346,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    

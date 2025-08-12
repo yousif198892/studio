@@ -76,7 +76,7 @@ export default function DashboardLayout({
 
              const classmates = (await getStudentsBySupervisorId(foundUser.supervisorId)).filter(s => s.id !== foundUser.id);
              setClassmatesCount(classmates.length);
-             setChatConversationsCount(classmates.length + 1); // classmates + supervisor
+             setChatConversationsCount(classmates.length + (foundUser.supervisorId ? 1 : 0));
         }
 
       } else {
@@ -89,6 +89,10 @@ export default function DashboardLayout({
 
   useEffect(() => {
     fetchUserAndCounts();
+    window.addEventListener('storage', fetchUserAndCounts);
+    return () => {
+      window.removeEventListener('storage', fetchUserAndCounts);
+    };
   }, [fetchUserAndCounts]);
 
   if (loading) {
@@ -129,3 +133,5 @@ export default function DashboardLayout({
       </SidebarProvider>
   );
 }
+
+    

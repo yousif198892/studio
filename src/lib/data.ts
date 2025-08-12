@@ -217,12 +217,14 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
         }
 
         // Get peer convos
-        const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId || '');
-        for (const student of allStudents) {
-            if (student.id === userId) continue;
-            const conversationId = [userId, student.id].sort().join('-');
-            const messages = await getPeerMessagesDB(conversationId);
-            peerConversations[student.id] = messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+        if (currentUser.supervisorId) {
+            const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId);
+            for (const student of allStudents) {
+                if (student.id === userId) continue;
+                const conversationId = [userId, student.id].sort().join('-');
+                const messages = await getPeerMessagesDB(conversationId);
+                peerConversations[student.id] = messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            }
         }
     }
 
@@ -250,18 +252,19 @@ export const savePeerMessage = async (message: PeerMessage) => {
 
 export const markSupervisorMessagesAsRead = async (studentId: string, supervisorId: string) => {
     const messages = await getSupervisorMessagesDB(studentId, supervisorId);
-    const unreadMessages = messages.filter(m => !m.read && m.senderId === supervisorId);
-    if (unreadMessages.length === 0) return;
-    const updatedMessages = messages.map(m => m.senderId === supervisorId ? { ...m, read: true } : m);
-    await updateSupervisorMessagesDB(updatedMessages);
+    const messagesToUpdate = messages.map(m => ({ ...m, read: true }));
+    if (messagesToUpdate.length > 0) {
+      await updateSupervisorMessagesDB(messagesToUpdate);
+    }
 };
 
-export const markPeerMessagesAsRead = async (conversationId: string, readerId: string) => {
+export const markPeerMessagesAsRead = async (studentId: string, peerId: string) => {
+    const conversationId = [studentId, peerId].sort().join('-');
     const messages = await getPeerMessagesDB(conversationId);
-    const unreadMessages = messages.filter(m => !m.read && m.senderId !== readerId);
-    if (unreadMessages.length === 0) return;
-    const updatedMessages = messages.map(m => m.senderId !== readerId ? { ...m, read: true } : m);
-    await updatePeerMessagesDB(updatedMessages);
+    const messagesToUpdate = messages.map(m => m.senderId === peerId ? { ...m, read: true } : m);
+    if (messagesToUpdate.length > 0) {
+      await updatePeerMessagesDB(messagesToUpdate);
+    }
 };
 
 
@@ -279,3 +282,5 @@ export {
     getUserByEmailDB, 
     getWordsBySupervisorDB 
 };
+
+    
