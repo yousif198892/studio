@@ -185,10 +185,15 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           <span>Spelling Practice</span>
-          <Button variant="ghost" size="icon" onClick={selectNewWord}>
-            <RefreshCw className="h-4 w-4" />
-            <span className="sr-only">New Word</span>
-          </Button>
+           <div className="flex items-center gap-2">
+            <span className="text-sm font-normal text-muted-foreground">
+              {spelledToday} / {DAILY_LIMIT} today
+            </span>
+            <Button variant="ghost" size="icon" onClick={selectNewWord} disabled={spelledToday >= DAILY_LIMIT}>
+              <RefreshCw className="h-4 w-4" />
+              <span className="sr-only">New Word</span>
+            </Button>
+          </div>
         </CardTitle>
         <CardDescription>
           Type the word that matches the definition and image below.
