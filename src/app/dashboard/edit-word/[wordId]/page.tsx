@@ -23,12 +23,15 @@ export default function EditWordPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (wordId) {
-      const allWords = getWordsBySupervisor(userId);
-      const foundWord = allWords.find(w => w.id === wordId);
-      setWord(foundWord || null);
-      setLoading(false);
-    }
+    const fetchWord = async () => {
+        if (wordId) {
+            const allWords = await getWordsBySupervisor(userId);
+            const foundWord = allWords.find(w => w.id === wordId);
+            setWord(foundWord || null);
+            setLoading(false);
+        }
+    };
+    fetchWord();
   }, [wordId, userId]);
 
   if (loading) {
