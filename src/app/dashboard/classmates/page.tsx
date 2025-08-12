@@ -23,16 +23,16 @@ export default function ClassmatesPage() {
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
     useEffect(() => {
-        const fetchData = () => {
+        const fetchData = async () => {
             if (userId) {
-                const currentUser = getUserById(userId);
+                const currentUser = await getUserById(userId);
                 if (currentUser && currentUser.supervisorId) {
-                    const allStudents = getStudentsBySupervisorId(currentUser.supervisorId);
+                    const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId);
                     
-                    const foundClassmates = allStudents
+                    const foundClassmatesPromises = allStudents
                         .filter(student => student.id !== userId)
-                        .map(student => {
-                             const words = getWordsForStudent(student.id);
+                        .map(async (student) => {
+                             const words = await getWordsForStudent(student.id);
                              const mastered = words.filter(w => w.strength === -1).length;
                              const learning = words.length - mastered;
                              return {
@@ -42,6 +42,7 @@ export default function ClassmatesPage() {
                              }
                         });
 
+                    const foundClassmates = await Promise.all(foundClassmatesPromises);
                     setClassmates(foundClassmates);
 
                     const { peer: peerConversations } = getConversationsForStudent(userId);
@@ -58,8 +59,10 @@ export default function ClassmatesPage() {
             }
         };
         fetchData();
-        window.addEventListener('storage', fetchData);
-        return () => window.removeEventListener('storage', fetchData);
+        
+        const handleStorageChange = () => fetchData();
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, [userId]);
     
     return (
