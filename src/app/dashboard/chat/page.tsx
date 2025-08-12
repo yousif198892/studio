@@ -7,12 +7,11 @@ import {
   User,
   getConversationsForStudent,
   saveSupervisorMessage,
-  deleteSupervisorMessage,
-  deleteConversation,
   savePeerMessage,
-  PeerMessage,
   getStudentsBySupervisorId,
   getUserById,
+  markSupervisorMessagesAsRead,
+  markPeerMessagesAsRead,
 } from "@/lib/data";
 import {
   Card,
@@ -32,17 +31,6 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send, Trash2 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 
 type ConversationPartner = User & {
@@ -64,44 +52,38 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const loadConversations = useCallback(() => {
+  const loadConversations = useCallback(async () => {
     if (!userId) return;
 
-    const user = getUserById(userId);
+    const user = await getUserById(userId);
     setCurrentUser(user);
+    if (!user) return;
 
-    if (user?.role === 'supervisor') {
-      const students = getStudentsBySupervisorId(userId);
-      const convos = getConversationsForStudent(userId); // Get all messages
-      const partners: ConversationPartner[] = students.map(student => {
+    const convos = await getConversationsForStudent(userId);
+    const partners: ConversationPartner[] = [];
+
+    if (user.role === 'supervisor') {
+      const students = await getStudentsBySupervisorId(userId);
+      for (const student of students) {
         const studentConvo = convos.supervisor[student.id] || [];
         const lastMessage = studentConvo.length > 0 ? studentConvo[studentConvo.length - 1] : null;
         const unreadCount = studentConvo.filter(m => m.senderId === student.id && !m.read).length;
-        return {
+        partners.push({
           ...student,
           lastMessage,
           unreadCount,
           type: 'supervisor'
-        };
-      });
-      setConversations(partners);
-      if (contactToSelect) {
-        const contact = partners.find(p => p.id === contactToSelect);
-        if (contact) handleSelectContact(contact);
+        });
       }
-
-    } else if (user?.role === 'student') {
-        const convos = getConversationsForStudent(userId);
-        const partners: ConversationPartner[] = [];
-        
+    } else if (user.role === 'student') {
         // Supervisor conversation
         if (user.supervisorId) {
-            const supervisor = getUserById(user.supervisorId);
+            const supervisor = await getUserById(user.supervisorId);
             if (supervisor) {
                 const supervisorConvo = convos.supervisor[supervisor.id] || [];
                 const lastMessage = supervisorConvo.length > 0 ? supervisorConvo[supervisorConvo.length - 1] : null;
                 const unreadCount = supervisorConvo.filter(m => m.senderId === supervisor.id && !m.read).length;
-                 partners.push({
+                partners.push({
                      ...supervisor,
                      lastMessage,
                      unreadCount,
@@ -112,7 +94,7 @@ export default function ChatPage() {
 
         // Peer conversations
         for (const peerId in convos.peer) {
-            const peer = getUserById(peerId);
+            const peer = await getUserById(peerId);
             if (peer) {
                 const peerConvo = convos.peer[peerId];
                 const lastMessage = peerConvo.length > 0 ? peerConvo[peerConvo.length - 1] : null;
@@ -125,104 +107,63 @@ export default function ChatPage() {
                 });
             }
         }
-        setConversations(partners);
-        if (contactToSelect) {
-            const contact = partners.find(p => p.id === contactToSelect);
-            if (contact) {
-              handleSelectContact(contact)
-            } else {
-              // Clear selection if contact not found (e.g. invalid URL)
-              setSelectedContact(null);
-              setMessages([]);
-            }
-        }
+    }
+    
+    setConversations(partners);
+
+    if (contactToSelect) {
+      const contact = partners.find(p => p.id === contactToSelect);
+      if (contact) handleSelectContact(contact);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId]);
+  }, [userId, contactToSelect]);
 
   useEffect(() => {
     loadConversations();
-     const handleStorageChange = () => loadConversations();
-    window.addEventListener("storage", handleStorageChange);
-    return () => {
-      window.removeEventListener("storage", handleStorageChange);
-    };
+    // No storage event listener for IndexedDB, would need a more complex solution like BroadcastChannel
+    // For this app, re-fetching on focus or interval might be alternatives if needed.
   }, [loadConversations]);
-  
-    useEffect(() => {
-    // Check if there is a contactId in the URL on initial load
-    if (contactToSelect) {
-      const contact = conversations.find(p => p.id === contactToSelect);
-      if (contact) {
-        handleSelectContact(contact);
-      }
-    } else {
-        setSelectedContact(null);
-        setMessages([]);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversations, contactToSelect]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
 
-  const handleSelectContact = (contact: ConversationPartner) => {
+  const handleSelectContact = async (contact: ConversationPartner) => {
+    if (!userId) return;
     setSelectedContact(contact);
     
-    // Fetch messages for this contact
-    const convos = getConversationsForStudent(userId!);
+    const convos = await getConversationsForStudent(userId);
     if (contact.type === 'supervisor') {
         const contactId = currentUser?.role === 'supervisor' ? contact.id : currentUser?.supervisorId!;
         setMessages(convos.supervisor[contactId] || []);
+        await markMessagesAsRead(contact.id, 'supervisor');
     } else { // peer
         setMessages(convos.peer[contact.id] || []);
+        await markMessagesAsRead(contact.id, 'peer');
     }
     
-    // Mark as read
-    markMessagesAsRead(contact.id, contact.type);
+    // Reload conversations to update unread counts
+    loadConversations(); 
   };
 
-  const markMessagesAsRead = (contactId: string, type: 'supervisor' | 'peer') => {
-    if (!userId) return;
+  const markMessagesAsRead = async (contactId: string, type: 'supervisor' | 'peer') => {
+    if (!userId || !currentUser) return;
     try {
-        let wasChanged = false;
         if (type === 'supervisor') {
-            let allStoredMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem("supervisorMessages") || "[]");
-            const updatedStoredMessages = allStoredMessages.map((m) => {
-                if (m.senderId === contactId && (m.studentId === userId || m.supervisorId === userId)) {
-                    if (!m.read) wasChanged = true;
-                    return { ...m, read: true };
-                }
-                return m;
-            });
-             if (wasChanged) {
-                localStorage.setItem("supervisorMessages", JSON.stringify(updatedStoredMessages));
-             }
+            const studentId = currentUser.role === 'student' ? userId : contactId;
+            const supervisorId = currentUser.role === 'supervisor' ? userId : contactId;
+            await markSupervisorMessagesAsRead(studentId, supervisorId);
         } else { // peer
-            let allStoredMessages: PeerMessage[] = JSON.parse(localStorage.getItem("peerMessages") || "[]");
-            const updatedStoredMessages = allStoredMessages.map((m) => {
-                if (m.senderId === contactId && m.receiverId === userId) {
-                     if (!m.read) wasChanged = true;
-                    return { ...m, read: true };
-                }
-                return m;
-            });
-            if (wasChanged) {
-                localStorage.setItem("peerMessages", JSON.stringify(updatedStoredMessages));
-            }
+            const conversationId = [userId, contactId].sort().join('-');
+            await markPeerMessagesAsRead(conversationId, userId);
         }
-      if (wasChanged) {
-        window.dispatchEvent(new Event('storage'));
-        loadConversations(); // Reload conversations to update unread counts
-      }
     } catch (e) {
-      console.error("Failed to update message read status in localStorage", e);
+      console.error("Failed to update message read status in DB", e);
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!newMessage.trim() || !userId || !selectedContact) return;
 
     if (currentUser?.role === 'supervisor' || selectedContact.type === 'supervisor') {
@@ -237,26 +178,28 @@ export default function ChatPage() {
           createdAt: new Date(),
           read: false,
         };
-        saveSupervisorMessage(message);
+        await saveSupervisorMessage(message);
     } else { // peer to peer
+        const conversationId = [userId, selectedContact.id].sort().join('-');
         const message: PeerMessage = {
             id: `peer_msg_${Date.now()}`,
             senderId: userId,
             receiverId: selectedContact.id,
+            conversationId,
             content: newMessage,
             createdAt: new Date(),
             read: false,
         };
-        savePeerMessage(message);
+        await savePeerMessage(message);
     }
     
     // This is a bit of a trick to force a re-render of messages after sending
-    // It's not ideal, but works for this localStorage-based demo.
+    // It's not ideal, but works for this demo.
     setTimeout(() => {
         handleSelectContact(selectedContact);
+        loadConversations();
     }, 100);
 
-    loadConversations();
     setNewMessage("");
   };
 

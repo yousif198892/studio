@@ -29,9 +29,8 @@ export default function DashboardLayout({
   const [learningWordsCount, setLearningWordsCount] = useState(0);
   const [masteredWordsCount, setMasteredWordsCount] = useState(0);
   const [chatConversationsCount, setChatConversationsCount] = useState(0);
-
-  useEffect(() => {
-    const fetchUserAndCounts = async () => {
+  
+  const fetchUserAndCounts = useCallback(async () => {
       if (!userId) {
         setLoading(false);
         redirect("/login");
@@ -43,7 +42,7 @@ export default function DashboardLayout({
       
       if (foundUser) {
         setUser(foundUser);
-        const allConversations = getConversationsForStudent(userId);
+        const allConversations = await getConversationsForStudent(userId);
         
         // Calculate counts based on role
         if (foundUser.role === 'supervisor') {
@@ -85,21 +84,12 @@ export default function DashboardLayout({
          redirect("/login");
       }
       setLoading(false);
-    };
+    }, [userId]);
 
+
+  useEffect(() => {
     fetchUserAndCounts();
-    
-    // Set up a listener for storage changes to re-fetch data
-    const handleStorageChange = () => {
-        fetchUserAndCounts();
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    
-    return () => {
-        window.removeEventListener('storage', handleStorageChange);
-    };
-  }, [userId]);
+  }, [fetchUserAndCounts]);
 
   if (loading) {
     return (

@@ -45,7 +45,7 @@ export default function ClassmatesPage() {
                     const foundClassmates = await Promise.all(foundClassmatesPromises);
                     setClassmates(foundClassmates);
 
-                    const { peer: peerConversations } = getConversationsForStudent(userId);
+                    const { peer: peerConversations } = await getConversationsForStudent(userId);
                     const counts: Record<string, number> = {};
                     for (const classmate of foundClassmates) {
                         const conversation = peerConversations[classmate.id] || [];
@@ -60,9 +60,6 @@ export default function ClassmatesPage() {
         };
         fetchData();
         
-        const handleStorageChange = () => fetchData();
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
     }, [userId]);
     
     return (

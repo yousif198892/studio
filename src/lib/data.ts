@@ -1,5 +1,4 @@
 
-
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
@@ -20,6 +19,12 @@ import {
     updateWordDB,
     getWordByIdDB,
     getUserByEmailDB,
+    getSupervisorMessagesDB,
+    getPeerMessagesDB,
+    savePeerMessageDB,
+    saveSupervisorMessageDB,
+    updatePeerMessagesDB,
+    updateSupervisorMessagesDB,
 } from './db';
 
 
@@ -75,6 +80,7 @@ export type PeerMessage = {
     id: string;
     senderId: string;
     receiverId: string;
+    conversationId: string; // e.g., "user1-user2" sorted alphabetically
     content: string;
     createdAt: Date;
     read: boolean;
@@ -193,69 +199,83 @@ export async function getStudentsBySupervisorId(supervisorId: string): Promise<U
 }
 
 
-// CHAT - Stays on localStorage for now to keep focus on word storage
-export const getConversationsForStudent = (userId: string): { supervisor: Record<string, SupervisorMessage[]>, peer: Record<string, PeerMessage[]> } => {
+// CHAT - Migrated to IndexedDB
+export async function getConversationsForStudent(userId: string): Promise<{ supervisor: Record<string, SupervisorMessage[]>, peer: Record<string, PeerMessage[]> }> {
     if (typeof window === 'undefined') return { supervisor: {}, peer: {} };
     
-    // This is a synchronous placeholder. Ideally, chat would also be async.
-    // For now, we are just reading from localStorage.
-    const allUsers = JSON.parse(localStorage.getItem('users') || '[]').concat(mockUsers);
-    const currentUser = allUsers.find((u:User) => u.id === userId);
+    const currentUser = await getUserById(userId);
+    if (!currentUser) return { supervisor: {}, peer: {} };
 
     const supervisorConversations: Record<string, SupervisorMessage[]> = {};
     const peerConversations: Record<string, PeerMessage[]> = {};
     
-    const supervisorMessages: SupervisorMessage[] = JSON.parse(localStorage.getItem("supervisorMessages") || "[]").map((m: any) => ({...m, createdAt: new Date(m.createdAt)}));
-    const peerMessages: PeerMessage[] = JSON.parse(localStorage.getItem("peerMessages") || "[]").map((m: any) => ({...m, createdAt: new Date(m.createdAt)}));
-
-
-    if (currentUser?.role === 'student') {
+    if (currentUser.role === 'student') {
+        // Get convo with supervisor
         if (currentUser.supervisorId) {
-            supervisorConversations[currentUser.supervisorId] = supervisorMessages
-                .filter(m => m.studentId === userId && m.supervisorId === currentUser.supervisorId)
-                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            const messages = await getSupervisorMessagesDB(userId, currentUser.supervisorId);
+            supervisorConversations[currentUser.supervisorId] = messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         }
 
-        const studentPeerMessages = peerMessages.filter(m => m.senderId === userId || m.receiverId === userId);
-        for (const msg of studentPeerMessages) {
-            const otherUserId = msg.senderId === userId ? msg.receiverId : msg.senderId;
-            if (!peerConversations[otherUserId]) {
-                peerConversations[otherUserId] = [];
-            }
-            peerConversations[otherUserId].push(msg);
+        // Get peer convos
+        const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId || '');
+        for (const student of allStudents) {
+            if (student.id === userId) continue;
+            const conversationId = [userId, student.id].sort().join('-');
+            const messages = await getPeerMessagesDB(conversationId);
+            peerConversations[student.id] = messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         }
     }
 
-    if (currentUser?.role === 'supervisor') {
-        const students = allUsers.filter((u: User) => u.role === 'student' && u.supervisorId === userId);
+    if (currentUser.role === 'supervisor') {
+        const students = await getStudentsBySupervisorId(userId);
         for (const student of students) {
-            supervisorConversations[student.id] = supervisorMessages
-                .filter(m => m.studentId === student.id && m.supervisorId === userId)
-                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            const messages = await getSupervisorMessagesDB(student.id, userId);
+            supervisorConversations[student.id] = messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         }
-    }
-    
-    for (const peerId in peerConversations) {
-        peerConversations[peerId].sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     }
 
     return { supervisor: supervisorConversations, peer: peerConversations };
 };
 
 
-export const saveSupervisorMessage = (message: SupervisorMessage) => {
+export const saveSupervisorMessage = async (message: SupervisorMessage) => {
     if (typeof window === 'undefined') return;
-    const allMessages = JSON.parse(localStorage.getItem('supervisorMessages') || '[]');
-    allMessages.push(message);
-    localStorage.setItem('supervisorMessages', JSON.stringify(allMessages));
+    await saveSupervisorMessageDB(message);
 }
 
-export const savePeerMessage = (message: PeerMessage) => {
+export const savePeerMessage = async (message: PeerMessage) => {
     if (typeof window === 'undefined') return;
-    const allMessages = JSON.parse(localStorage.getItem('peerMessages') || '[]');
-    allMessages.push(message);
-    localStorage.setItem('peerMessages', JSON.stringify(allMessages));
+    await savePeerMessageDB(message);
 };
 
+export const markSupervisorMessagesAsRead = async (studentId: string, supervisorId: string) => {
+    const messages = await getSupervisorMessagesDB(studentId, supervisorId);
+    const unreadMessages = messages.filter(m => !m.read && m.senderId === supervisorId);
+    if (unreadMessages.length === 0) return;
+    const updatedMessages = messages.map(m => m.senderId === supervisorId ? { ...m, read: true } : m);
+    await updateSupervisorMessagesDB(updatedMessages);
+};
+
+export const markPeerMessagesAsRead = async (conversationId: string, readerId: string) => {
+    const messages = await getPeerMessagesDB(conversationId);
+    const unreadMessages = messages.filter(m => !m.read && m.senderId !== readerId);
+    if (unreadMessages.length === 0) return;
+    const updatedMessages = messages.map(m => m.senderId !== readerId ? { ...m, read: true } : m);
+    await updatePeerMessagesDB(updatedMessages);
+};
+
+
 // Re-exporting write functions
-export { addUserDB, addWordDB, addMessageDB, deleteMessageDB, updateUserDB, deleteUserDB, deleteWordDB, updateWordDB, getWordByIdDB, getUserByEmailDB, getWordsBySupervisorDB };
+export { 
+    addUserDB, 
+    addWordDB, 
+    addMessageDB, 
+    deleteMessageDB, 
+    updateUserDB, 
+    deleteUserDB, 
+    deleteWordDB, 
+    updateWordDB, 
+    getWordByIdDB, 
+    getUserByEmailDB, 
+    getWordsBySupervisorDB 
+};
