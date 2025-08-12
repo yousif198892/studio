@@ -265,14 +265,16 @@ export default function ProfilePage() {
         }
 
         .profile-picture img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          transform: scale(0.6);
+          max-width: 100%;
+          max-height: 100%;
           transition: transform 0.3s ease;
+          transform: scale(0.6);
         }
         
         .profile-picture img.scaled {
+           object-fit: cover;
+           width: 100%;
+           height: 100%;
            transform: scale(1.5);
         }
       `}</style>
