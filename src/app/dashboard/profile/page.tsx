@@ -38,6 +38,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { setHeroImage } from "@/lib/db";
+import { cn } from "@/lib/utils";
 
 
 export default function ProfilePage() {
@@ -50,6 +51,7 @@ export default function ProfilePage() {
   const [name, setName] = useState('');
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [heroPreviewImage, setHeroPreviewImage] = useState<string | null>(null);
+  const [isScaled, setIsScaled] = useState(false);
 
   // State for preferences
   const [selectedLanguage, setSelectedLanguage] = useState(language);
@@ -265,7 +267,11 @@ export default function ProfilePage() {
         .profile-picture img {
           width: 100%;
           height: 100%;
-          object-fit: cover;
+          object-fit: contain; /* Default state */
+        }
+        
+        .profile-picture img.scaled {
+           object-fit: cover; /* Scaled state */
         }
       `}</style>
       <h1 className="text-3xl font-bold font-headline">{t('profile.title')}</h1>
@@ -281,8 +287,10 @@ export default function ProfilePage() {
                           id="preview"
                           src={previewImage || user.avatar} 
                           alt="Profile Picture" 
+                          className={cn(isScaled && "scaled")}
                         />
                     </div>
+                     <Button variant="outline" onClick={() => setIsScaled(!isScaled)}>Scale to fit</Button>
                     <Input id="picture" type="file" accept="image/*" onChange={handlePictureChange} className="max-w-xs" />
                 </CardContent>
                 <CardFooter>
