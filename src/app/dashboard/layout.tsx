@@ -53,8 +53,10 @@ export default function DashboardLayout({
                 const otherAdmins = allUsers.filter(u => u.role === 'supervisor' && !u.isMainAdmin).length;
                 setAdminsCount(otherAdmins);
             }
-            const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
-            setUnreadChatCount(supervisorUnread);
+            const unreadConversations = Object.values(allConversations.supervisor)
+                .filter(convo => convo.some(m => m.senderId !== userId && !m.read))
+                .length;
+            setUnreadChatCount(unreadConversations);
 
             const words = await getWordsBySupervisor(userId);
             setWordsCount(words.length);
@@ -64,9 +66,15 @@ export default function DashboardLayout({
             setChatConversationsCount(students.length);
 
         } else if (foundUser.role === 'student' && foundUser.supervisorId) {
-             const supervisorUnread = Object.values(allConversations.supervisor).flat().filter(m => m.senderId !== userId && !m.read).length;
-             const peerUnread = Object.values(allConversations.peer).flat().filter(m => m.senderId !== userId && !m.read).length;
-             setUnreadChatCount(supervisorUnread + peerUnread);
+             const supervisorUnreadConvos = Object.values(allConversations.supervisor)
+                .filter(convo => convo.some(m => m.senderId !== userId && !m.read))
+                .length;
+
+             const peerUnreadConvos = Object.values(allConversations.peer)
+                .filter(convo => convo.some(m => m.senderId !== userId && !m.read))
+                .length;
+
+             setUnreadChatCount(supervisorUnreadConvos + peerUnreadConvos);
              
              const studentWords = await getWordsForStudent(foundUser.id);
              const learning = studentWords.filter(w => w.strength >= 0).length;
