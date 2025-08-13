@@ -91,9 +91,9 @@ export default function DashboardLayout({
     fetchUserAndCounts();
     
     const handleStorageChange = (event: StorageEvent) => {
-        // Only refetch if a key that affects layout counts changes.
-        // This avoids refetching on every little change.
-        if (event.key === 'users' || event.key === 'userWords' || event.key === 'adminMessages' || event.key === 'messages') {
+        // This listener now handles a specific trigger from the chat page
+        // as well as general updates from other tabs.
+        if (event.key === 'layout-update-trigger' || event.key === 'users' || event.key === 'userWords' || event.key === 'adminMessages' || event.key?.startsWith('messages_')) {
             fetchUserAndCounts();
         }
     };
@@ -142,5 +142,3 @@ export default function DashboardLayout({
       </SidebarProvider>
   );
 }
-
-    

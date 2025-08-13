@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, Trash2 } from "lucide-react";
+import { Send } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 
@@ -53,7 +53,7 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (isInitialLoad = false) => {
     if (!userId) return;
     
     const user = await getUserById(userId);
@@ -119,85 +119,85 @@ export default function ChatPage() {
         }
     }
     
-    partners.sort((a,b) => (b.lastMessage?.createdAt || 0) > (a.lastMessage?.createdAt || 0) ? 1 : -1);
+    partners.sort((a,b) => (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0) - (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0));
     
-    setConversations(partners);
+    setConversations(partners.reverse());
 
-    // If a contact was selected, re-select them with the new data
-    if (selectedContact) {
+    if (isInitialLoad && contactToSelect) {
+        const contact = partners.find(p => p.id === contactToSelect);
+        if (contact) {
+            await handleSelectContact(contact, user, convos);
+        }
+    } else if (selectedContact) {
         const updatedContact = partners.find(p => p.id === selectedContact.id);
         if (updatedContact) {
             setSelectedContact(updatedContact);
-            const convos = await getConversationsForStudent(userId);
+            const contactId = user.role === 'supervisor' ? updatedContact.id : updatedContact.type === 'supervisor' ? updatedContact.id : user.id;
             let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
              if (updatedContact.type === 'supervisor') {
-                const contactId = user.role === 'supervisor' ? updatedContact.id : user.supervisorId!;
                 messagesToSet = convos.supervisor[contactId] || [];
             } else { // peer
                 messagesToSet = convos.peer[updatedContact.id] || [];
             }
-            setMessages(messagesToSet);
+            setMessages(messagesToSet.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
         }
     }
     
-    return { partners, user };
-  }, [userId, selectedContact]);
+  }, [userId, contactToSelect, selectedContact]);
 
 
   useEffect(() => {
     const init = async () => {
-        const result = await loadData();
-        if (contactToSelect && result?.partners) {
-            const contact = result.partners.find(p => p.id === contactToSelect);
-            if (contact) {
-                await handleSelectContact(contact);
-            }
-        }
+        await loadData(true);
     }
     init();
 
     const handleStorageChange = (event: StorageEvent) => {
-        if(event.key?.startsWith('messages_') || event.key === 'users' || event.key?.startsWith('wordProgress_') || event.key?.startsWith('learningStats_')) {
+        if(event.key?.startsWith('messages_') || event.key === 'users') {
            loadData();
         }
     };
     
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, contactToSelect]);
+  }, [userId, loadData]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
 
-  const handleSelectContact = async (contact: ConversationPartner) => {
-    if (!userId || !currentUser) return;
+  const handleSelectContact = async (contact: ConversationPartner, user?: User | null, allConvos?: { supervisor: Record<string, SupervisorMessage[]>, peer: Record<string, PeerMessage[]> }) => {
+    const aUser = user || currentUser;
+    if (!userId || !aUser) return;
     
     setSelectedContact(contact);
     
-    const convos = await getConversationsForStudent(userId);
+    const convos = allConvos || await getConversationsForStudent(userId);
     let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
     let hadUnread = false;
+    
+    const contactIdForConvo = aUser.role === 'supervisor' ? contact.id : contact.type === 'supervisor' ? contact.id : aUser.supervisorId!;
 
     if (contact.type === 'supervisor') {
-        const contactId = currentUser.role === 'supervisor' ? contact.id : currentUser.supervisorId!;
-        messagesToSet = convos.supervisor[contactId] || [];
+        messagesToSet = convos.supervisor[contactIdForConvo] || [];
         hadUnread = messagesToSet.some(m => !m.read && m.senderId !== userId);
-        if (hadUnread) await markSupervisorMessagesAsRead(userId, contactId);
+        if (hadUnread) await markSupervisorMessagesAsRead(userId, contactIdForConvo);
     } else { // peer
         messagesToSet = convos.peer[contact.id] || [];
         hadUnread = messagesToSet.some(m => !m.read && m.senderId !== userId);
         if (hadUnread) await markPeerMessagesAsRead(userId, contact.id);
     }
     
-    setMessages(messagesToSet);
+    setMessages(messagesToSet.sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
     
     if(hadUnread) {
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
-        // Also trigger sidebar update
-        localStorage.setItem('messages-global-update', Date.now().toString());
+        // Use a custom storage event to notify layout to update counts
+        window.dispatchEvent(new StorageEvent('storage', {
+            key: 'layout-update-trigger',
+            newValue: Date.now().toString(),
+        }));
     }
   };
 
@@ -245,13 +245,12 @@ export default function ChatPage() {
             return { ...c, lastMessage: sentMessage };
         }
         return c;
-    }).sort((a,b) => (b.lastMessage?.createdAt || 0) > (a.lastMessage?.createdAt || 0) ? 1 : -1));
+    }).sort((a,b) => (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0) - (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0)).reverse());
 
     setNewMessage("");
 
     // Notify other tabs
     localStorage.setItem(storageKey, Date.now().toString());
-    localStorage.setItem('messages-global-update', Date.now().toString());
   };
 
   if (!currentUser) {
@@ -399,5 +398,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
