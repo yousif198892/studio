@@ -99,9 +99,8 @@ export default function DashboardLayout({
     fetchUserAndCounts();
     
     const handleStorageChange = (event: StorageEvent) => {
-        // This listener now handles a specific trigger from the chat page
-        // as well as general updates from other tabs.
-        if (event.key === 'layout-update-trigger' || event.key === 'users' || event.key === 'userWords' || event.key === 'adminMessages' || event.key?.startsWith('messages_')) {
+        // This listener now handles specific update flags to avoid unnecessary re-fetches
+        if (event.key === 'unreadCountNeedsUpdate' || event.key === 'users' || event.key === 'userWords' || event.key === 'adminMessages' || event.key === 'messagesNeedsUpdate') {
             fetchUserAndCounts();
         }
     };

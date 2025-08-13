@@ -151,7 +151,9 @@ export default function ChatPage() {
         await loadData(true);
     }
     init();
+  }, [loadData]);
 
+  useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
         if(event.key?.startsWith('messages_') || event.key === 'users') {
            loadData();
@@ -161,6 +163,7 @@ export default function ChatPage() {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, [loadData]);
+
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -209,10 +212,9 @@ export default function ChatPage() {
     
     if(hadUnread) {
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
-        window.dispatchEvent(new StorageEvent('storage', {
-            key: 'layout-update-trigger',
-            newValue: Date.now().toString(),
-        }));
+        // Use local storage to trigger layout update reliably
+        localStorage.setItem('unreadCountNeedsUpdate', 'true');
+        localStorage.removeItem('unreadCountNeedsUpdate');
     }
   };
 
@@ -241,7 +243,8 @@ export default function ChatPage() {
         
         setAllConversations(prev => {
           const newConvos = { ...prev.supervisor };
-          newConvos[studentId] = [...(newConvos[studentId] || []), sentMessage as SupervisorMessage];
+          const studentIdKey = currentUser.role === 'student' ? selectedContact.id : studentId;
+          newConvos[studentIdKey] = [...(newConvos[studentIdKey] || []), sentMessage as SupervisorMessage];
           return { ...prev, supervisor: newConvos };
         });
 
@@ -280,10 +283,8 @@ export default function ChatPage() {
     }));
 
     // Notify other tabs
-    window.dispatchEvent(new StorageEvent('storage', {
-        key: 'layout-update-trigger',
-        newValue: Date.now().toString(),
-    }));
+    localStorage.setItem('messagesNeedsUpdate', 'true');
+    localStorage.removeItem('messagesNeedsUpdate');
   };
 
   if (!currentUser) {
@@ -431,5 +432,3 @@ export default function ChatPage() {
     </div>
   );
 }
-
-    
