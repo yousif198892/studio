@@ -53,13 +53,13 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const loadConversations = useCallback(async () => {
+  const loadData = useCallback(async () => {
     if (!userId) return;
-
+    
     const user = await getUserById(userId);
     setCurrentUser(user);
     if (!user) return;
-
+    
     const convos = await getConversationsForStudent(userId);
     const partners: ConversationPartner[] = [];
 
@@ -77,7 +77,6 @@ export default function ChatPage() {
         });
       }
     } else if (user.role === 'student') {
-        // Supervisor conversation
         if (user.supervisorId) {
             const supervisor = await getUserById(user.supervisorId);
             if (supervisor) {
@@ -93,55 +92,78 @@ export default function ChatPage() {
             }
         }
 
-        // Peer conversations
         if (user.supervisorId) {
             const classmates = await getStudentsBySupervisorId(user.supervisorId);
-            for (const peerId in convos.peer) {
-                const peer = classmates.find(c => c.id === peerId);
-                if (peer) {
-                    const peerConvo = convos.peer[peerId];
+            const peerIds = new Set(Object.keys(convos.peer));
+            classmates.forEach(c => peerIds.add(c.id));
+            
+            for (const peerId of peerIds) {
+                 if (peerId === userId) continue;
+                 const peer = classmates.find(c => c.id === peerId) || await getUserById(peerId);
+                 if (peer) {
+                    const peerConvo = convos.peer[peerId] || [];
                     const lastMessage = peerConvo.length > 0 ? peerConvo[peerConvo.length - 1] : null;
                     const unreadCount = peerConvo.filter(m => m.senderId === peerId && !m.read).length;
-                    partners.push({
-                        ...peer,
-                        lastMessage,
-                        unreadCount,
-                        type: 'peer'
-                    });
-                }
+                    
+                    const existingPartner = partners.find(p => p.id === peer.id);
+                    if (!existingPartner) {
+                        partners.push({
+                            ...peer,
+                            lastMessage,
+                            unreadCount,
+                            type: 'peer'
+                        });
+                    }
+                 }
             }
         }
     }
     
     partners.sort((a,b) => (b.lastMessage?.createdAt || 0) > (a.lastMessage?.createdAt || 0) ? 1 : -1);
+    
     setConversations(partners);
 
-    return partners;
-  }, [userId]);
+    // If a contact was selected, re-select them with the new data
+    if (selectedContact) {
+        const updatedContact = partners.find(p => p.id === selectedContact.id);
+        if (updatedContact) {
+            setSelectedContact(updatedContact);
+            const convos = await getConversationsForStudent(userId);
+            let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
+             if (updatedContact.type === 'supervisor') {
+                const contactId = user.role === 'supervisor' ? updatedContact.id : user.supervisorId!;
+                messagesToSet = convos.supervisor[contactId] || [];
+            } else { // peer
+                messagesToSet = convos.peer[updatedContact.id] || [];
+            }
+            setMessages(messagesToSet);
+        }
+    }
+    
+    return { partners, user };
+  }, [userId, selectedContact]);
+
 
   useEffect(() => {
     const init = async () => {
-        const partners = await loadConversations();
-        if (contactToSelect && partners) {
-            const contact = partners.find(p => p.id === contactToSelect);
+        const result = await loadData();
+        if (contactToSelect && result?.partners) {
+            const contact = result.partners.find(p => p.id === contactToSelect);
             if (contact) {
-                await handleSelectContact(contact, true);
+                await handleSelectContact(contact);
             }
         }
     }
     init();
 
-    const handleStorage = (event: StorageEvent) => {
-        if(event.key === 'messages' || event.key?.startsWith('wordProgress_') || event.key?.startsWith('learningStats_')) {
-            loadConversations();
-            if(selectedContact) {
-                // If a contact is selected, reload their messages too
-                handleSelectContact(selectedContact, true);
-            }
+    const handleStorageChange = (event: StorageEvent) => {
+        if(event.key?.startsWith('messages_') || event.key === 'users' || event.key?.startsWith('wordProgress_') || event.key?.startsWith('learningStats_')) {
+           loadData();
         }
     };
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, contactToSelect]);
 
@@ -150,18 +172,10 @@ export default function ChatPage() {
   }, [messages]);
 
 
-  const handleSelectContact = async (contact: ConversationPartner, isInitialLoad = false) => {
+  const handleSelectContact = async (contact: ConversationPartner) => {
     if (!userId || !currentUser) return;
     
-    if (!isInitialLoad) {
-      setSelectedContact(contact);
-    } else {
-      // Re-set selected contact from reloaded data to get fresh unread counts
-      setSelectedContact(prev => {
-        const newContact = conversations.find(c => c.id === prev?.id);
-        return newContact || null;
-      });
-    }
+    setSelectedContact(contact);
     
     const convos = await getConversationsForStudent(userId);
     let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
@@ -183,7 +197,7 @@ export default function ChatPage() {
     if(hadUnread) {
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
         // Also trigger sidebar update
-        localStorage.setItem('messages', Date.now().toString());
+        localStorage.setItem('messages-global-update', Date.now().toString());
     }
   };
 
@@ -191,8 +205,9 @@ export default function ChatPage() {
   const handleSendMessage = async () => {
     if (!newMessage.trim() || !userId || !selectedContact || !currentUser) return;
     
-    let sentMessage: SupervisorMessage | PeerMessage | null = null;
     const timestamp = new Date();
+    let sentMessage: SupervisorMessage | PeerMessage | null = null;
+    let storageKey = '';
 
     if (currentUser.role === 'supervisor' || selectedContact.type === 'supervisor') {
         const studentId = currentUser.role === 'student' ? userId : selectedContact.id;
@@ -207,6 +222,7 @@ export default function ChatPage() {
           read: false,
         };
         await saveSupervisorMessage(sentMessage);
+        storageKey = `messages_${studentId}_${supervisorId}`;
     } else { // peer to peer
         const conversationId = [userId, selectedContact.id].sort().join('-');
         sentMessage = {
@@ -219,8 +235,10 @@ export default function ChatPage() {
             read: false,
         };
         await savePeerMessage(sentMessage);
+        storageKey = `messages_${conversationId}`;
     }
     
+    // Optimistic UI updates
     setMessages(prev => [...prev, sentMessage!]);
     setConversations(prev => prev.map(c => {
         if (c.id === selectedContact.id) {
@@ -232,7 +250,8 @@ export default function ChatPage() {
     setNewMessage("");
 
     // Notify other tabs
-    localStorage.setItem('messages', Date.now().toString());
+    localStorage.setItem(storageKey, Date.now().toString());
+    localStorage.setItem('messages-global-update', Date.now().toString());
   };
 
   if (!currentUser) {
@@ -266,7 +285,7 @@ export default function ChatPage() {
                         onClick={() => handleSelectContact(convo)}
                         >
                         <Avatar className="h-10 w-10">
-                            <AvatarImage src={convo.avatar} />
+                            <AvatarImage src={convo.avatar} style={{ objectFit: 'contain' }} />
                             <AvatarFallback>{convo.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 overflow-hidden">
@@ -293,7 +312,7 @@ export default function ChatPage() {
               <CardHeader className="flex flex-row items-center justify-between gap-4 border-b">
                 <div className="flex items-center gap-4">
                     <Avatar>
-                        <AvatarImage src={selectedContact.avatar} />
+                        <AvatarImage src={selectedContact.avatar} style={{ objectFit: 'contain' }} />
                         <AvatarFallback>
                             {selectedContact.name.charAt(0)}
                         </AvatarFallback>
@@ -318,7 +337,7 @@ export default function ChatPage() {
                     >
                       {msg.senderId !== userId && (
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={selectedContact.avatar} />
+                          <AvatarImage src={selectedContact.avatar} style={{ objectFit: 'contain' }}/>
                           <AvatarFallback>
                             {selectedContact.name.charAt(0)}
                           </AvatarFallback>
@@ -341,7 +360,7 @@ export default function ChatPage() {
                       
                       {msg.senderId === userId && currentUser && (
                         <Avatar className="h-8 w-8">
-                          <AvatarImage src={currentUser.avatar} />
+                          <AvatarImage src={currentUser.avatar} style={{ objectFit: 'contain' }}/>
                           <AvatarFallback>
                             {currentUser.name.charAt(0)}
                           </AvatarFallback>
@@ -380,3 +399,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
