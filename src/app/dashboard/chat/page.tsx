@@ -131,7 +131,6 @@ export default function ChatPage() {
     } else if (selectedContact) {
         const updatedContact = partners.find(p => p.id === selectedContact.id);
         if (updatedContact) {
-            setSelectedContact(updatedContact);
             const contactId = user.role === 'supervisor' ? updatedContact.id : updatedContact.type === 'supervisor' ? updatedContact.id : user.id;
             let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
              if (updatedContact.type === 'supervisor') {
@@ -143,7 +142,7 @@ export default function ChatPage() {
         }
     }
     
-  }, [userId, contactToSelect, selectedContact]);
+  }, [userId, contactToSelect]);
 
 
   useEffect(() => {
@@ -250,7 +249,7 @@ export default function ChatPage() {
     setNewMessage("");
 
     // Notify other tabs
-    localStorage.setItem(storageKey, Date.now().toString());
+    localStorage.setItem('layout-update-trigger', Date.now().toString());
   };
 
   if (!currentUser) {
@@ -398,3 +397,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+    
