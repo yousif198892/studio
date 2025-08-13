@@ -178,41 +178,49 @@ export default function ChatPage() {
     let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
     let hadUnread = false;
     
-    const contactIdForConvo = currentUser.role === 'supervisor' ? contact.id : contact.type === 'supervisor' ? contact.id : currentUser.supervisorId!;
-
     if (contact.type === 'supervisor') {
-        messagesToSet = allConversations.supervisor[contactIdForConvo] || [];
-        hadUnread = messagesToSet.some(m => !m.read && m.senderId !== userId);
-        if (hadUnread) {
-          await markSupervisorMessagesAsRead(userId, contactIdForConvo);
-          setAllConversations(prev => ({
-            ...prev,
-            supervisor: {
-              ...prev.supervisor,
-              [contactIdForConvo]: prev.supervisor[contactIdForConvo].map(m => ({ ...m, read: true }))
-            }
-          }));
+        const conversationKey = currentUser.role === 'supervisor' ? contact.id : contact.id;
+        messagesToSet = allConversations.supervisor[conversationKey] || [];
+        
+        if (messagesToSet.some(m => !m.read && m.senderId !== userId)) {
+            hadUnread = true;
+            // 1. Update DB
+            await markSupervisorMessagesAsRead(userId, contact.id);
+
+            // 2. Update local state for immediate UI feedback
+            setAllConversations(prev => {
+                const newSupervisorConvos = { ...prev.supervisor };
+                newSupervisorConvos[conversationKey] = newSupervisorConvos[conversationKey].map(m => ({ ...m, read: true }));
+                return { ...prev, supervisor: newSupervisorConvos };
+            });
+            messagesToSet = messagesToSet.map(m => ({ ...m, read: true }));
         }
+
     } else { // peer
-        messagesToSet = allConversations.peer[contact.id] || [];
-        hadUnread = messagesToSet.some(m => !m.read && m.senderId !== userId);
-        if (hadUnread) {
-          await markPeerMessagesAsRead(userId, contact.id);
-          setAllConversations(prev => ({
-            ...prev,
-            peer: {
-              ...prev.peer,
-              [contact.id]: prev.peer[contact.id].map(m => ({ ...m, read: true }))
-            }
-          }));
+        const conversationKey = contact.id;
+        messagesToSet = allConversations.peer[conversationKey] || [];
+
+        if (messagesToSet.some(m => !m.read && m.senderId !== userId)) {
+            hadUnread = true;
+            // 1. Update DB
+            await markPeerMessagesAsRead(userId, contact.id);
+            
+            // 2. Update local state
+            setAllConversations(prev => {
+                const newPeerConvos = { ...prev.peer };
+                newPeerConvos[conversationKey] = newPeerConvos[conversationKey].map(m => ({ ...m, read: true }));
+                return { ...prev, peer: newPeerConvos };
+            });
+            messagesToSet = messagesToSet.map(m => ({ ...m, read: true }));
         }
     }
     
     setMessages(messagesToSet.sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
     
     if(hadUnread) {
+        // 3. Update conversation list UI state
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
-        // Use local storage to trigger layout update reliably
+        // 4. Notify layout to update its count
         localStorage.setItem('unreadCountNeedsUpdate', 'true');
         localStorage.removeItem('unreadCountNeedsUpdate');
     }

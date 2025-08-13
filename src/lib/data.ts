@@ -250,14 +250,16 @@ export const savePeerMessage = async (message: PeerMessage) => {
 };
 
 export const markSupervisorMessagesAsRead = async (studentId: string, supervisorId: string) => {
+    if (typeof window === 'undefined') return;
     const messages = await getSupervisorMessagesDB(studentId, supervisorId);
-    const messagesToUpdate = messages.map(m => ({ ...m, read: true }));
+    const messagesToUpdate = messages.map(m => m.senderId !== studentId ? { ...m, read: true } : m);
     if (messagesToUpdate.length > 0) {
       await updateSupervisorMessagesDB(messagesToUpdate);
     }
 };
 
 export const markPeerMessagesAsRead = async (studentId: string, peerId: string) => {
+    if (typeof window === 'undefined') return;
     const conversationId = [studentId, peerId].sort().join('-');
     const messages = await getPeerMessagesDB(conversationId);
     const messagesToUpdate = messages.map(m => m.senderId === peerId ? { ...m, read: true } : m);
