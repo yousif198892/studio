@@ -40,6 +40,11 @@ type ConversationPartner = User & {
   type: 'supervisor' | 'peer';
 };
 
+type AllConversations = { 
+  supervisor: Record<string, SupervisorMessage[]>, 
+  peer: Record<string, PeerMessage[]> 
+};
+
 export default function ChatPage() {
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
@@ -53,6 +58,8 @@ export default function ChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  const [allConversations, setAllConversations] = useState<AllConversations>({ supervisor: {}, peer: {} });
+
   const loadData = useCallback(async (isInitialLoad = false) => {
     if (!userId) return;
     
@@ -61,6 +68,8 @@ export default function ChatPage() {
     if (!user) return;
     
     const convos = await getConversationsForStudent(userId);
+    setAllConversations(convos);
+
     const partners: ConversationPartner[] = [];
 
     if (user.role === 'supervisor') {
@@ -119,26 +128,18 @@ export default function ChatPage() {
         }
     }
     
-    partners.sort((a,b) => (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0) - (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0));
+    const sortedPartners = partners.sort((a,b) => {
+        const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+        const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+        return timeB - timeA;
+    });
     
-    setConversations(partners.reverse());
+    setConversations(sortedPartners);
 
     if (isInitialLoad && contactToSelect) {
-        const contact = partners.find(p => p.id === contactToSelect);
+        const contact = sortedPartners.find(p => p.id === contactToSelect);
         if (contact) {
-            await handleSelectContact(contact, user, convos);
-        }
-    } else if (selectedContact) {
-        const updatedContact = partners.find(p => p.id === selectedContact.id);
-        if (updatedContact) {
-            const contactId = user.role === 'supervisor' ? updatedContact.id : updatedContact.type === 'supervisor' ? updatedContact.id : user.id;
-            let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
-             if (updatedContact.type === 'supervisor') {
-                messagesToSet = convos.supervisor[contactId] || [];
-            } else { // peer
-                messagesToSet = convos.peer[updatedContact.id] || [];
-            }
-            setMessages(messagesToSet.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
+            handleSelectContact(contact);
         }
     }
     
@@ -159,40 +160,55 @@ export default function ChatPage() {
     
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [userId, loadData]);
+  }, [loadData]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
 
-  const handleSelectContact = async (contact: ConversationPartner, user?: User | null, allConvos?: { supervisor: Record<string, SupervisorMessage[]>, peer: Record<string, PeerMessage[]> }) => {
-    const aUser = user || currentUser;
-    if (!userId || !aUser) return;
+  const handleSelectContact = async (contact: ConversationPartner) => {
+    if (!userId || !currentUser) return;
     
     setSelectedContact(contact);
     
-    const convos = allConvos || await getConversationsForStudent(userId);
     let messagesToSet: (SupervisorMessage | PeerMessage)[] = [];
     let hadUnread = false;
     
-    const contactIdForConvo = aUser.role === 'supervisor' ? contact.id : contact.type === 'supervisor' ? contact.id : aUser.supervisorId!;
+    const contactIdForConvo = currentUser.role === 'supervisor' ? contact.id : contact.type === 'supervisor' ? contact.id : currentUser.supervisorId!;
 
     if (contact.type === 'supervisor') {
-        messagesToSet = convos.supervisor[contactIdForConvo] || [];
+        messagesToSet = allConversations.supervisor[contactIdForConvo] || [];
         hadUnread = messagesToSet.some(m => !m.read && m.senderId !== userId);
-        if (hadUnread) await markSupervisorMessagesAsRead(userId, contactIdForConvo);
+        if (hadUnread) {
+          await markSupervisorMessagesAsRead(userId, contactIdForConvo);
+          setAllConversations(prev => ({
+            ...prev,
+            supervisor: {
+              ...prev.supervisor,
+              [contactIdForConvo]: prev.supervisor[contactIdForConvo].map(m => ({ ...m, read: true }))
+            }
+          }));
+        }
     } else { // peer
-        messagesToSet = convos.peer[contact.id] || [];
+        messagesToSet = allConversations.peer[contact.id] || [];
         hadUnread = messagesToSet.some(m => !m.read && m.senderId !== userId);
-        if (hadUnread) await markPeerMessagesAsRead(userId, contact.id);
+        if (hadUnread) {
+          await markPeerMessagesAsRead(userId, contact.id);
+          setAllConversations(prev => ({
+            ...prev,
+            peer: {
+              ...prev.peer,
+              [contact.id]: prev.peer[contact.id].map(m => ({ ...m, read: true }))
+            }
+          }));
+        }
     }
     
     setMessages(messagesToSet.sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
     
     if(hadUnread) {
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
-        // Use a custom storage event to notify layout to update counts
         window.dispatchEvent(new StorageEvent('storage', {
             key: 'layout-update-trigger',
             newValue: Date.now().toString(),
@@ -205,8 +221,10 @@ export default function ChatPage() {
     if (!newMessage.trim() || !userId || !selectedContact || !currentUser) return;
     
     const timestamp = new Date();
-    let sentMessage: SupervisorMessage | PeerMessage | null = null;
-    let storageKey = '';
+    let sentMessage: SupervisorMessage | PeerMessage;
+    
+    // Optimistic UI updates
+    setNewMessage("");
 
     if (currentUser.role === 'supervisor' || selectedContact.type === 'supervisor') {
         const studentId = currentUser.role === 'student' ? userId : selectedContact.id;
@@ -220,8 +238,14 @@ export default function ChatPage() {
           createdAt: timestamp,
           read: false,
         };
+        
+        setAllConversations(prev => {
+          const newConvos = { ...prev.supervisor };
+          newConvos[studentId] = [...(newConvos[studentId] || []), sentMessage as SupervisorMessage];
+          return { ...prev, supervisor: newConvos };
+        });
+
         await saveSupervisorMessage(sentMessage);
-        storageKey = `messages_${studentId}_${supervisorId}`;
     } else { // peer to peer
         const conversationId = [userId, selectedContact.id].sort().join('-');
         sentMessage = {
@@ -233,23 +257,33 @@ export default function ChatPage() {
             createdAt: timestamp,
             read: false,
         };
+        
+        setAllConversations(prev => {
+          const newConvos = { ...prev.peer };
+          newConvos[selectedContact.id] = [...(newConvos[selectedContact.id] || []), sentMessage as PeerMessage];
+          return { ...prev, peer: newConvos };
+        });
+
         await savePeerMessage(sentMessage);
-        storageKey = `messages_${conversationId}`;
     }
     
-    // Optimistic UI updates
-    setMessages(prev => [...prev, sentMessage!]);
+    setMessages(prev => [...prev, sentMessage]);
     setConversations(prev => prev.map(c => {
         if (c.id === selectedContact.id) {
             return { ...c, lastMessage: sentMessage };
         }
         return c;
-    }).sort((a,b) => (b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0) - (a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0)).reverse());
-
-    setNewMessage("");
+    }).sort((a,b) => {
+        const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
+        const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
+        return timeB - timeA;
+    }));
 
     // Notify other tabs
-    localStorage.setItem('layout-update-trigger', Date.now().toString());
+    window.dispatchEvent(new StorageEvent('storage', {
+        key: 'layout-update-trigger',
+        newValue: Date.now().toString(),
+    }));
   };
 
   if (!currentUser) {
