@@ -94,18 +94,21 @@ export default function ChatPage() {
         }
 
         // Peer conversations
-        for (const peerId in convos.peer) {
-            const peer = await getUserById(peerId);
-            if (peer) {
-                const peerConvo = convos.peer[peerId];
-                const lastMessage = peerConvo.length > 0 ? peerConvo[peerConvo.length - 1] : null;
-                const unreadCount = peerConvo.filter(m => m.senderId === peerId && !m.read).length;
-                partners.push({
-                    ...peer,
-                    lastMessage,
-                    unreadCount,
-                    type: 'peer'
-                });
+        if (user.supervisorId) {
+            const classmates = await getStudentsBySupervisorId(user.supervisorId);
+            for (const peerId in convos.peer) {
+                const peer = classmates.find(c => c.id === peerId);
+                if (peer) {
+                    const peerConvo = convos.peer[peerId];
+                    const lastMessage = peerConvo.length > 0 ? peerConvo[peerConvo.length - 1] : null;
+                    const unreadCount = peerConvo.filter(m => m.senderId === peerId && !m.read).length;
+                    partners.push({
+                        ...peer,
+                        lastMessage,
+                        unreadCount,
+                        type: 'peer'
+                    });
+                }
             }
         }
     }
@@ -122,17 +125,25 @@ export default function ChatPage() {
         if (contactToSelect && partners) {
             const contact = partners.find(p => p.id === contactToSelect);
             if (contact) {
-                handleSelectContact(contact, true);
+                await handleSelectContact(contact, true);
             }
         }
     }
     init();
 
-    const handleStorage = () => loadConversations();
+    const handleStorage = (event: StorageEvent) => {
+        if(event.key === 'messages' || event.key?.startsWith('wordProgress_') || event.key?.startsWith('learningStats_')) {
+            loadConversations();
+            if(selectedContact) {
+                // If a contact is selected, reload their messages too
+                handleSelectContact(selectedContact, true);
+            }
+        }
+    };
     window.addEventListener('storage', handleStorage);
     return () => window.removeEventListener('storage', handleStorage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadConversations]);
+  }, [userId, contactToSelect]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -144,6 +155,12 @@ export default function ChatPage() {
     
     if (!isInitialLoad) {
       setSelectedContact(contact);
+    } else {
+      // Re-set selected contact from reloaded data to get fresh unread counts
+      setSelectedContact(prev => {
+        const newContact = conversations.find(c => c.id === prev?.id);
+        return newContact || null;
+      });
     }
     
     const convos = await getConversationsForStudent(userId);
@@ -164,10 +181,9 @@ export default function ChatPage() {
     setMessages(messagesToSet);
     
     if(hadUnread) {
-        // Visually update the unread count on the selected contact without a full reload
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
         // Also trigger sidebar update
-        window.dispatchEvent(new Event('storage'));
+        localStorage.setItem('messages', Date.now().toString());
     }
   };
 
@@ -205,7 +221,6 @@ export default function ChatPage() {
         await savePeerMessage(sentMessage);
     }
     
-    // Optimistic UI updates
     setMessages(prev => [...prev, sentMessage!]);
     setConversations(prev => prev.map(c => {
         if (c.id === selectedContact.id) {
@@ -216,8 +231,8 @@ export default function ChatPage() {
 
     setNewMessage("");
 
-    // This triggers a re-render for other tabs, but not the current one.
-    window.dispatchEvent(new Event('storage'));
+    // Notify other tabs
+    localStorage.setItem('messages', Date.now().toString());
   };
 
   if (!currentUser) {

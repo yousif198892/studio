@@ -89,9 +89,18 @@ export default function DashboardLayout({
 
   useEffect(() => {
     fetchUserAndCounts();
-    window.addEventListener('storage', fetchUserAndCounts);
+    
+    const handleStorageChange = (event: StorageEvent) => {
+        // Only refetch if a key that affects layout counts changes.
+        // This avoids refetching on every little change.
+        if (event.key === 'users' || event.key === 'userWords' || event.key === 'adminMessages' || event.key === 'messages') {
+            fetchUserAndCounts();
+        }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-      window.removeEventListener('storage', fetchUserAndCounts);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, [fetchUserAndCounts]);
 
