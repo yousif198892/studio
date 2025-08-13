@@ -249,18 +249,30 @@ export const savePeerMessage = async (message: PeerMessage) => {
     await savePeerMessageDB(message);
 };
 
-export const markSupervisorMessagesAsRead = async (studentId: string, supervisorId: string) => {
+export const markSupervisorMessagesAsRead = async (currentUserId: string, otherUserId: string) => {
     if (typeof window === 'undefined') return;
+    const currentUser = await getUserById(currentUserId);
+    if (!currentUser) return;
+    
+    let studentId, supervisorId;
+    if (currentUser.role === 'student') {
+        studentId = currentUserId;
+        supervisorId = otherUserId;
+    } else {
+        studentId = otherUserId;
+        supervisorId = currentUserId;
+    }
+
     const messages = await getSupervisorMessagesDB(studentId, supervisorId);
-    const messagesToUpdate = messages.map(m => m.senderId !== studentId ? { ...m, read: true } : m);
+    const messagesToUpdate = messages.map(m => (m.senderId !== currentUserId ? { ...m, read: true } : m));
     if (messagesToUpdate.length > 0) {
       await updateSupervisorMessagesDB(messagesToUpdate);
     }
 };
 
-export const markPeerMessagesAsRead = async (studentId: string, peerId: string) => {
+export const markPeerMessagesAsRead = async (currentUserId: string, peerId: string) => {
     if (typeof window === 'undefined') return;
-    const conversationId = [studentId, peerId].sort().join('-');
+    const conversationId = [currentUserId, peerId].sort().join('-');
     const messages = await getPeerMessagesDB(conversationId);
     const messagesToUpdate = messages.map(m => m.senderId === peerId ? { ...m, read: true } : m);
     if (messagesToUpdate.length > 0) {

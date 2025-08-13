@@ -141,6 +141,12 @@ export default function ChatPage() {
         if (contact) {
             handleSelectContact(contact);
         }
+    } else if (selectedContact) {
+       // Reselect the contact to refresh messages if needed
+        const updatedContact = sortedPartners.find(p => p.id === selectedContact.id);
+        if (updatedContact) {
+            handleSelectContact(updatedContact, false); // Don't trigger another layout update
+        }
     }
     
   }, [userId, contactToSelect]);
@@ -155,7 +161,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
-        if(event.key?.startsWith('messages_') || event.key === 'users') {
+        if(event.key?.startsWith('supervisorMessages') || event.key?.startsWith('peerMessages') || event.key === 'users') {
            loadData();
         }
     };
@@ -170,7 +176,7 @@ export default function ChatPage() {
   }, [messages]);
 
 
-  const handleSelectContact = async (contact: ConversationPartner) => {
+  const handleSelectContact = async (contact: ConversationPartner, notifyLayout = true) => {
     if (!userId || !currentUser) return;
     
     setSelectedContact(contact);
@@ -179,8 +185,8 @@ export default function ChatPage() {
     let hadUnread = false;
     
     if (contact.type === 'supervisor') {
-        const conversationKey = currentUser.role === 'supervisor' ? contact.id : contact.id;
-        messagesToSet = allConversations.supervisor[conversationKey] || [];
+        const conversationKey = currentUser.role === 'supervisor' ? contact.id : userId;
+        messagesToSet = allConversations.supervisor[contact.id] || [];
         
         if (messagesToSet.some(m => !m.read && m.senderId !== userId)) {
             hadUnread = true;
@@ -190,7 +196,7 @@ export default function ChatPage() {
             // 2. Update local state for immediate UI feedback
             setAllConversations(prev => {
                 const newSupervisorConvos = { ...prev.supervisor };
-                newSupervisorConvos[conversationKey] = newSupervisorConvos[conversationKey].map(m => ({ ...m, read: true }));
+                newSupervisorConvos[contact.id] = newSupervisorConvos[contact.id].map(m => ({ ...m, read: true }));
                 return { ...prev, supervisor: newSupervisorConvos };
             });
             messagesToSet = messagesToSet.map(m => ({ ...m, read: true }));
@@ -221,8 +227,10 @@ export default function ChatPage() {
         // 3. Update conversation list UI state
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
         // 4. Notify layout to update its count
-        localStorage.setItem('unreadCountNeedsUpdate', 'true');
-        localStorage.removeItem('unreadCountNeedsUpdate');
+        if (notifyLayout) {
+             localStorage.setItem('unreadCountNeedsUpdate', 'true');
+             localStorage.removeItem('unreadCountNeedsUpdate');
+        }
     }
   };
 
@@ -251,8 +259,8 @@ export default function ChatPage() {
         
         setAllConversations(prev => {
           const newConvos = { ...prev.supervisor };
-          const studentIdKey = currentUser.role === 'student' ? selectedContact.id : studentId;
-          newConvos[studentIdKey] = [...(newConvos[studentIdKey] || []), sentMessage as SupervisorMessage];
+          const conversationKey = currentUser.role === 'supervisor' ? selectedContact.id : supervisorId;
+          newConvos[conversationKey] = [...(newConvos[conversationKey] || []), sentMessage as SupervisorMessage];
           return { ...prev, supervisor: newConvos };
         });
 
@@ -291,8 +299,9 @@ export default function ChatPage() {
     }));
 
     // Notify other tabs
-    localStorage.setItem('messagesNeedsUpdate', 'true');
-    localStorage.removeItem('messagesNeedsUpdate');
+    const storageKey = sentMessage.type === 'supervisor' ? `supervisorMessages-${sentMessage.studentId}-${sentMessage.supervisorId}` : `peerMessages-${sentMessage.conversationId}`;
+    localStorage.setItem(storageKey, 'updated');
+    localStorage.removeItem(storageKey);
   };
 
   if (!currentUser) {
