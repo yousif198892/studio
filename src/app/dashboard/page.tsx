@@ -392,7 +392,7 @@ export default function Dashboard() {
                                      <TableCell className="hidden sm:table-cell">
                                          <Image
                                          alt="Student avatar"
-                                         className="aspect-square rounded-full object-cover"
+                                         className="aspect-square rounded-full object-contain"
                                          height="64"
                                          src={student.avatar}
                                          width="64"
@@ -414,6 +414,8 @@ export default function Dashboard() {
  }
  
     
+    
+
     
 
     
