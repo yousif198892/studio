@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SpellingPracticeCard } from "@/components/spelling-practice-card";
-import { LearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats";
+import { LearningStats, updateXp, XP_AMOUNTS, getInitialStats } from "@/lib/stats";
 import { useToast } from "@/hooks/use-toast";
 import { XpToast } from "@/components/xp-toast";
 
@@ -99,15 +99,7 @@ export default function Dashboard() {
           if (storedStats) {
             currentStats = JSON.parse(storedStats);
           } else {
-             currentStats = {
-              timeSpentSeconds: 0,
-              totalWordsReviewed: 0,
-              reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
-              activityLog: [],
-              xp: 0,
-              lastLoginDate: '1970-01-01',
-              spellingPractice: { count: 0, date: today },
-            };
+             currentStats = getInitialStats(today);
           }
           
           if (!currentStats.reviewedToday || currentStats.reviewedToday.date !== today) {
@@ -171,7 +163,7 @@ export default function Dashboard() {
     return `${minutes}m`;
   };
   
-  if (!user || !stats) {
+  if (!user || (user.role === 'student' && !stats)) {
     return <div>{t('dashboard.loading')}</div>;
   }
 

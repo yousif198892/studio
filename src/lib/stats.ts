@@ -37,7 +37,7 @@ export const XP_AMOUNTS: Record<XpEvent, number> = {
     grammar_test: 20
 };
 
-const getInitialStats = (today: string): LearningStats => ({
+export const getInitialStats = (today: string): LearningStats => ({
     timeSpentSeconds: 0,
     totalWordsReviewed: 0,
     xp: 0,
