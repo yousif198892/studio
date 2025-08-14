@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { updateStudentProgressInStorage } from "@/lib/storage";
 import { WordProgress } from "@/lib/storage";
-import { updateLearningStats } from "@/lib/stats";
+import { updateLearningStats, updateXp } from "@/lib/stats";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 
@@ -115,10 +115,7 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
          strength: newStrength,
          nextReview: nextReview,
       });
-      toast({
-         title: "Correct!",
-         description: `"${currentWord.word}" feels a little stronger now.`,
-      });
+      updateXp(userId, 'spell_correct');
       setTimeout(selectNewWord, 1500);
     } else {
       setFeedback("incorrect");

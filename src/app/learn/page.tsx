@@ -11,7 +11,7 @@ import { ClientOnly } from "@/components/client-only";
 import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { updateLearningStats } from "@/lib/stats";
+import { updateLearningStats, updateXp } from "@/lib/stats";
 import { WordProgress } from "@/lib/storage";
 
 
@@ -97,11 +97,13 @@ export default function LearnPage() {
             break;
         case 'mastered':
             newStrength = -1; // Mark as mastered
+            updateXp(userId, 'master_word');
             break;
     }
     
     await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     handleUpdateStats(1, 0); // Only update review count, not time
+    if (userId) updateXp(userId, 'review_word');
     loadNextWord();
   };
 
@@ -114,6 +116,7 @@ export default function LearnPage() {
     
     await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     handleUpdateStats(1, 0); // Only update review count, not time
+    if (userId) updateXp(userId, 'review_word');
     loadNextWord();
   };
 

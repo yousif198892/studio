@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -39,6 +38,32 @@ import { Button } from "./ui/button";
 import { type User } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { cn } from "@/lib/utils";
+
+
+const ChampionIcon = ({ className }: { className?: string }) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("lucide lucide-trophy", className)}
+    >
+        <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+        <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+        <path d="M4 22h16"/>
+        <path d="M10 14.66V17c0 .55-.47.98-.97 1.21A2.5 2.5 0 0 1 8 22h8a2.5 2.5 0 0 1-1.03-4.79c-.5-.23-.97-.66-.97-1.21v-2.34"/>
+        <path d="M8 9H4v1h4"/>
+        <path d="M16 9h4v1h-4"/>
+        <path d="M12 6V2"/>
+        <path d="M12 15a4 4 0 0 0 4-4H8a4 4 0 0 0 4 4Z"/>
+    </svg>
+);
+
 
 type DashboardSidebarProps = {
   user: User;
@@ -102,6 +127,12 @@ export function DashboardSidebar({
         icon: <Trophy />,
         roles: ["student"],
         totalCount: masteredWordsCount,
+    },
+    {
+        href: `/dashboard/champion?userId=${user.id}`,
+        label: t('sidebar.champion'),
+        icon: <ChampionIcon />,
+        roles: ["student"],
     },
     {
         href: `/dashboard/chat?userId=${user.id}`,
@@ -242,7 +273,3 @@ export function DashboardSidebar({
     </Sidebar>
   );
 }
-
-    
-
-    

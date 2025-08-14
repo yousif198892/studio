@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { getWordsForStudent, getUserById, getStudentsBySupervisorId, Word } from "@/lib/data";
 import { User } from "@/lib/data";
-import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck, ChevronDown } from "lucide-react";
+import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck, ChevronDown, Star } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/use-language";
@@ -37,19 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SpellingPracticeCard } from "@/components/spelling-practice-card";
-
-
-type LearningStats = {
-  timeSpentSeconds: number; // total time
-  totalWordsReviewed: number;
-  reviewedToday: {
-    count: number;
-    date: string; // YYYY-MM-DD
-    timeSpentSeconds: number; // time spent today
-    completedTests: string[];
-  };
-  activityLog: string[]; // ['2024-07-21', '2024-07-22']
-};
+import { LearningStats, updateXp } from "@/lib/stats";
 
 const getLast7Days = () => {
   const days = [];
@@ -71,12 +59,7 @@ export default function Dashboard() {
   const { t } = useLanguage();
   const [user, setUser] = useState<User | null>(null);
   const [students, setStudents] = useState<User[]>([]);
-  const [stats, setStats] = useState<LearningStats>({
-    timeSpentSeconds: 0,
-    totalWordsReviewed: 0,
-    reviewedToday: { count: 0, date: new Date().toISOString().split('T')[0], timeSpentSeconds: 0, completedTests: [] },
-    activityLog: [],
-  });
+  const [stats, setStats] = useState<LearningStats | null>(null);
   const [wordsToReviewCount, setWordsToReviewCount] = useState(0);
   const [wordsLearningCount, setWordsLearningCount] = useState(0);
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
@@ -91,6 +74,9 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       if (userId) {
+        // Daily Login XP
+        updateXp(userId, 'daily_login');
+
         const foundUser = await getUserById(userId);
         setUser(foundUser || null);
         
@@ -118,6 +104,9 @@ export default function Dashboard() {
               totalWordsReviewed: 0,
               reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
               activityLog: [],
+              xp: 0,
+              lastLoginDate: today,
+              spellingPractice: { count: 0, date: today },
             };
           }
           
@@ -169,7 +158,7 @@ export default function Dashboard() {
     return `${minutes}m`;
   };
   
-  if (!user) {
+  if (!user || !stats) {
     return <div>{t('dashboard.loading')}</div>;
   }
 
@@ -181,7 +170,7 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.welcome', user.name)}</h1>
         <p className="text-muted-foreground">{t('dashboard.student.description')}</p>
         
-         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-sm font-medium">
@@ -225,6 +214,20 @@ export default function Dashboard() {
                             </Button>
                         )}
                     </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">
+                         Total XP
+                    </CardTitle>
+                    <Star className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-2xl font-bold text-yellow-500">{stats.xp.toLocaleString()}</div>
+                    <p className="text-xs text-muted-foreground">
+                        Keep it up!
+                    </p>
                 </CardContent>
             </Card>
             <Link href={`/dashboard/learning-words?userId=${user.id}`} className="hover:opacity-90 transition-opacity">
@@ -412,10 +415,3 @@ export default function Dashboard() {
 
    return <div>{t('dashboard.loading')}</div>
  }
- 
-    
-    
-
-    
-
-    

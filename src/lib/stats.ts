@@ -1,9 +1,13 @@
 
 'use client';
 
-type LearningStats = {
+import { toast } from "@/hooks/use-toast";
+import { XpToast } from "@/components/xp-toast";
+
+export type LearningStats = {
   timeSpentSeconds: number; 
   totalWordsReviewed: number;
+  xp: number; // New field for experience points
   reviewedToday: {
     count: number;
     date: string;
@@ -15,7 +19,82 @@ type LearningStats = {
     count: number;
     date: string;
   };
+  lastLoginDate: string; // New field for daily login XP
 };
+
+type XpEvent = 
+  | 'review_word'
+  | 'spell_correct'
+  | 'daily_login'
+  | 'master_word'
+  | 'grammar_test';
+
+const XP_AMOUNTS: Record<XpEvent, number> = {
+    review_word: 5,
+    spell_correct: 5,
+    daily_login: 10,
+    master_word: 10,
+    grammar_test: 20
+};
+
+const getInitialStats = (today: string): LearningStats => ({
+    timeSpentSeconds: 0,
+    totalWordsReviewed: 0,
+    xp: 0,
+    reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
+    activityLog: [],
+    spellingPractice: { count: 0, date: today },
+    lastLoginDate: '1970-01-01',
+});
+
+const getStatsForUser = (userId: string): LearningStats => {
+    if (typeof window === 'undefined') return getInitialStats(new Date().toISOString().split('T')[0]);
+    const storedStats = localStorage.getItem(`learningStats_${userId}`);
+    const today = new Date().toISOString().split('T')[0];
+
+    const stats: LearningStats = storedStats ? JSON.parse(storedStats) : getInitialStats(today);
+
+    // --- Data Migration & Defaults ---
+    if (typeof stats.xp !== 'number') stats.xp = 0;
+    if (!stats.lastLoginDate) stats.lastLoginDate = '1970-01-01';
+    if (!stats.reviewedToday || stats.reviewedToday.date !== today) {
+        stats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
+    }
+    if (!stats.spellingPractice || stats.spellingPractice.date !== today) {
+        stats.spellingPractice = { count: 0, date: today };
+    }
+    if (!Array.isArray(stats.activityLog)) stats.activityLog = [];
+    if (!Array.isArray(stats.reviewedToday.completedTests)) stats.reviewedToday.completedTests = [];
+    if (typeof stats.reviewedToday.timeSpentSeconds !== 'number') stats.reviewedToday.timeSpentSeconds = 0;
+    
+    return stats;
+}
+
+export const updateXp = (userId: string, event: XpEvent) => {
+    if (!userId) return;
+    
+    const stats = getStatsForUser(userId);
+    const amount = XP_AMOUNTS[event];
+
+    if (event === 'daily_login') {
+        const today = new Date().toISOString().split('T')[0];
+        if (stats.lastLoginDate === today) {
+            return; // Already awarded today
+        }
+        stats.lastLoginDate = today;
+    }
+    
+    stats.xp += amount;
+    
+    localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+
+    // Show toast notification
+    toast({
+      description: <XpToast event={event} amount={amount} />,
+      duration: 3000,
+    });
+};
+
 
 type UpdateStatsParams = {
   userId: string;
@@ -34,39 +113,8 @@ export const updateLearningStats = ({
 }: UpdateStatsParams) => {
   if (!userId) return;
   
-  const storedStats = localStorage.getItem(`learningStats_${userId}`);
+  const stats = getStatsForUser(userId);
   const today = new Date().toISOString().split('T')[0];
-
-  const stats: LearningStats = storedStats
-    ? JSON.parse(storedStats)
-    : {
-        timeSpentSeconds: 0,
-        totalWordsReviewed: 0,
-        reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
-        activityLog: [],
-        spellingPractice: { count: 0, date: today },
-      };
-
-  // Reset daily stats if the date has changed
-  if (stats.reviewedToday.date !== today) {
-    stats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
-  }
-  
-  if (!stats.spellingPractice || stats.spellingPractice.date !== today) {
-    stats.spellingPractice = { count: 0, date: today };
-  }
-
-
-  // Ensure properties exist
-  if (typeof stats.reviewedToday.timeSpentSeconds !== 'number') {
-    stats.reviewedToday.timeSpentSeconds = 0;
-  }
-  if (!Array.isArray(stats.reviewedToday.completedTests)) {
-    stats.reviewedToday.completedTests = [];
-  }
-   if (!Array.isArray(stats.activityLog)) {
-    stats.activityLog = [];
-  }
 
   // Update stats
   stats.totalWordsReviewed += reviewedCount;
@@ -83,6 +131,7 @@ export const updateLearningStats = ({
   // Log completed test
   if (testName && !stats.reviewedToday.completedTests.includes(testName)) {
       stats.reviewedToday.completedTests.push(testName);
+      updateXp(userId, 'grammar_test');
   }
 
   localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
