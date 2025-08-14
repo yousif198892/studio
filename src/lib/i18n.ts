@@ -365,8 +365,8 @@ export const translations = {
         getStarted: "ابدأ التعلم الآن",
         login: "تسجيل الدخول",
         features: {
-            title: "لماذا يعمل LinguaLeap",
-            description: "لقد صممنا المزيج المثالي من التكنولوجيا والتربية لتسريع اكتسابك للغة.",
+            title: "لماذا ينجح LinguaLeap",
+            description: "لقد صممنا المزيج المثالي من التكنولوجيا وطرق التدريس لتسريع اكتسابك للغة.",
             aiQuizzes: {
                 title: "اختبارات مدعومة بالذكاء الاصطناعي",
                 description: "تحدَّ نفسك بخيارات غير صحيحة تم إنشاؤها بواسطة الذكاء الاصطناعي، مما يجعل التعلم أكثر فعالية وجاذبية."
@@ -393,11 +393,11 @@ export const translations = {
             reviewTitle: "كلمات للمراجعة",
             reviewDescription: "الكلمات التي حان وقت مراجعتها.",
             startReview: "ابدأ جلسة المراجعة",
-            learningQueue: "{0} في قائمة الانتظار للتعلم",
+            learningQueue: "{0} كلمة قيد التعلم",
             greatWork: "استمر في العمل الرائع!",
             progressOverview: {
                 title: "نظرة عامة على التقدم",
-                description: "لقطة من نشاطك التعليمي.",
+                description: "لمحة سريعة عن نشاطك التعليمي.",
                 timeSpent: "الوقت المستغرق",
                 wordsReviewed: "الكلمات المراجعة",
                 reviewedToday: "تمت مراجعته اليوم",
@@ -503,10 +503,10 @@ export const translations = {
     },
     studentsPage: {
         title: "طلابي",
-        description: "مرحبًا، {0}. إليك طلابك.",
+        description: "مرحبًا، {0}. هؤلاء هم طلابك.",
         allStudents: {
-            title: "All Students",
-            description: "A list of students under your supervision.",
+            title: "كل الطلاب",
+            description: "قائمة الطلاب تحت إشرافك.",
         },
     },
     toasts: {
@@ -568,3 +568,5 @@ export type TranslationKey =
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+
+    
