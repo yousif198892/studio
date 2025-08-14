@@ -34,7 +34,11 @@ export default function ChampionPage() {
                 if (currentUser && currentUser.supervisorId) {
                     const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId);
                     
-                    const leaderboardDataPromises = allStudents.map(async (student) => {
+                    const userMap = new Map<string, User>();
+                    allStudents.forEach(student => userMap.set(student.id, student));
+                    userMap.set(currentUser.id, currentUser); // Ensure current user is in the map
+
+                    const leaderboardDataPromises = Array.from(userMap.values()).map(async (student) => {
                          const stats = getStatsForUser(student.id);
                          return {
                              ...student,
@@ -44,10 +48,6 @@ export default function ChampionPage() {
 
                     const leaderboardData = await Promise.all(leaderboardDataPromises);
                     
-                    // Add current user to the leaderboard as well
-                    const currentUserStats = getStatsForUser(currentUser.id);
-                    leaderboardData.push({ ...currentUser, xp: currentUserStats.xp || 0 });
-
                     leaderboardData.sort((a, b) => b.xp - a.xp);
                     setLeaderboard(leaderboardData);
                 }
