@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,6 +9,7 @@ import Image from "next/image";
 import { Trophy } from "lucide-react";
 import { LearningStats } from "@/lib/stats";
 import { cn } from "@/lib/utils";
+import { endOfWeek, formatDistanceToNow } from "date-fns";
 
 type ClassmateWithXp = User & {
     xp: number;
@@ -25,6 +27,8 @@ export default function ChampionPage() {
     const userId = searchParams.get("userId");
     const [leaderboard, setLeaderboard] = useState<ClassmateWithXp[]>([]);
     const [loading, setLoading] = useState(true);
+    const [weekEndsIn, setWeekEndsIn] = useState("");
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -35,7 +39,7 @@ export default function ChampionPage() {
                     
                     const userMap = new Map<string, User>();
                     allStudents.forEach(student => userMap.set(student.id, student));
-                    userMap.set(currentUser.id, currentUser); // Ensure current user is in the map
+                    userMap.set(currentUser.id, currentUser);
 
                     const leaderboardDataPromises = Array.from(userMap.values()).map(async (student) => {
                          const stats = getStatsForUser(student.id);
@@ -54,6 +58,15 @@ export default function ChampionPage() {
             }
         };
         fetchData();
+
+        const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 1 });
+        setWeekEndsIn(formatDistanceToNow(endOfThisWeek, { addSuffix: true }));
+
+        const timer = setInterval(() => {
+             setWeekEndsIn(formatDistanceToNow(endOfThisWeek, { addSuffix: true }));
+        }, 60000); // Update every minute
+
+        return () => clearInterval(timer);
         
     }, [userId]);
 
@@ -72,13 +85,13 @@ export default function ChampionPage() {
         <div className="space-y-6">
             <h1 className="text-3xl font-bold font-headline">Champion Leaderboard</h1>
             <p className="text-muted-foreground">
-                See who's at the top of the class! Keep learning to earn more XP.
+                See who's at the top of the class! The leaderboard resets every week.
             </p>
             <Card>
                 <CardHeader>
-                    <CardTitle>Class Rankings</CardTitle>
+                    <CardTitle>Weekly Rankings</CardTitle>
                     <CardDescription>
-                       Leaderboard of you and your classmates based on total XP gained.
+                       Leaderboard of you and your classmates. Resets {weekEndsIn}.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
