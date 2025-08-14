@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -109,7 +108,6 @@ export default function ChampionPage() {
                                     />
                                     <div className="flex-1">
                                         <p className="font-semibold text-lg">{classmate.name} {userId === classmate.id && "(You)"}</p>
-                                        <p className="text-sm text-muted-foreground">{classmate.email}</p>
                                     </div>
                                     <div className="flex items-center gap-2 text-yellow-500 font-bold text-lg">
                                         <span>{classmate.xp.toLocaleString()}</span>
