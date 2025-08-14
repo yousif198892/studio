@@ -122,6 +122,9 @@ export default function Dashboard() {
           if (!Array.isArray(currentStats.activityLog)) {
               currentStats.activityLog = [];
           }
+           if (typeof currentStats.xp !== 'number') {
+              currentStats.xp = 0;
+          }
 
           // Daily Login XP Check
           if (currentStats.lastLoginDate !== today) {
