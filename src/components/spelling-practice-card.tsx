@@ -18,8 +18,9 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { updateStudentProgressInStorage } from "@/lib/storage";
 import { WordProgress } from "@/lib/storage";
-import { updateLearningStats, updateXp } from "@/lib/stats";
+import { updateLearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { XpToast } from "./xp-toast";
 
 
 interface SpellingPracticeCardProps {
@@ -115,7 +116,13 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
          strength: newStrength,
          nextReview: nextReview,
       });
+      
       updateXp(userId, 'spell_correct');
+      toast({
+        description: <XpToast event="spell_correct" amount={XP_AMOUNTS.spell_correct} />,
+        duration: 3000,
+      });
+      
       setTimeout(selectNewWord, 1500);
     } else {
       setFeedback("incorrect");

@@ -1,9 +1,6 @@
 
 'use client';
 
-import { toast } from "@/hooks/use-toast";
-import { XpToast } from "@/components/xp-toast";
-
 export type LearningStats = {
   timeSpentSeconds: number; 
   totalWordsReviewed: number;
@@ -22,14 +19,14 @@ export type LearningStats = {
   lastLoginDate: string; // New field for daily login XP
 };
 
-type XpEvent = 
+export type XpEvent = 
   | 'review_word'
   | 'spell_correct'
   | 'daily_login'
   | 'master_word'
   | 'grammar_test';
 
-const XP_AMOUNTS: Record<XpEvent, number> = {
+export const XP_AMOUNTS: Record<XpEvent, number> = {
     review_word: 5,
     spell_correct: 5,
     daily_login: 10,
@@ -87,12 +84,6 @@ export const updateXp = (userId: string, event: XpEvent) => {
     stats.xp += amount;
     
     localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
-
-    // Show toast notification
-    toast({
-      description: <XpToast event={event} amount={amount} />,
-      duration: 3000,
-    });
 };
 
 

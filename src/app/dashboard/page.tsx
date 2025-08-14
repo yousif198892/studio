@@ -37,7 +37,9 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SpellingPracticeCard } from "@/components/spelling-practice-card";
-import { LearningStats, updateXp } from "@/lib/stats";
+import { LearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats";
+import { useToast } from "@/hooks/use-toast";
+import { XpToast } from "@/components/xp-toast";
 
 const getLast7Days = () => {
   const days = [];
@@ -57,6 +59,7 @@ export default function Dashboard() {
   const searchParams = useSearchParams();
   const userId = searchParams.get('userId');
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [students, setStudents] = useState<User[]>([]);
   const [stats, setStats] = useState<LearningStats | null>(null);
@@ -74,9 +77,6 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       if (userId) {
-        // Daily Login XP
-        updateXp(userId, 'daily_login');
-
         const foundUser = await getUserById(userId);
         setUser(foundUser || null);
         
@@ -105,7 +105,7 @@ export default function Dashboard() {
               reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
               activityLog: [],
               xp: 0,
-              lastLoginDate: today,
+              lastLoginDate: '1970-01-01',
               spellingPractice: { count: 0, date: today },
             };
           }
@@ -122,6 +122,16 @@ export default function Dashboard() {
           if (!Array.isArray(currentStats.activityLog)) {
               currentStats.activityLog = [];
           }
+
+          // Daily Login XP Check
+          if (currentStats.lastLoginDate !== today) {
+              updateXp(userId, 'daily_login');
+              toast({
+                  description: <XpToast event="daily_login" amount={XP_AMOUNTS.daily_login} />,
+                  duration: 3000,
+              });
+              currentStats.lastLoginDate = today;
+          }
           
           localStorage.setItem(`learningStats_${userId}`, JSON.stringify(currentStats));
           setStats(currentStats);
@@ -133,7 +143,7 @@ export default function Dashboard() {
       }
     };
     fetchData();
-  }, [userId]);
+  }, [userId, toast]);
 
   const availableUnits = useMemo(() => {
     return Array.from(new Set(allStudentWords.map(w => w.unit).filter(Boolean)));

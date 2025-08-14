@@ -11,8 +11,10 @@ import { ClientOnly } from "@/components/client-only";
 import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { updateLearningStats, updateXp } from "@/lib/stats";
+import { updateLearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats";
 import { WordProgress } from "@/lib/storage";
+import { useToast } from "@/hooks/use-toast";
+import { XpToast } from "@/components/xp-toast";
 
 
 export type ScheduleOption = 'tomorrow' | 'twoDays' | 'week' | 'twoWeeks' | 'month' | 'mastered';
@@ -23,6 +25,7 @@ export default function LearnPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const { t } = useLanguage();
+  const { toast } = useToast();
   const [word, setWord] = useState<ReviewWord | null>(null);
   const [sessionFinished, setSessionFinished] = useState(false);
   const startTimeRef = useRef<number | null>(null);
@@ -78,6 +81,7 @@ export default function LearnPage() {
 
     let newStrength = word.strength >= 0 ? word.strength + 1 : 1;
     const nextReview = new Date();
+    let xpEvent: 'master_word' | 'review_word' = 'review_word';
 
     switch (option) {
         case 'tomorrow':
@@ -97,13 +101,19 @@ export default function LearnPage() {
             break;
         case 'mastered':
             newStrength = -1; // Mark as mastered
-            updateXp(userId, 'master_word');
+            xpEvent = 'master_word';
             break;
     }
     
     await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     handleUpdateStats(1, 0); // Only update review count, not time
-    if (userId) updateXp(userId, 'review_word');
+    
+    updateXp(userId, xpEvent);
+    toast({
+      description: <XpToast event={xpEvent} amount={XP_AMOUNTS[xpEvent]} />,
+      duration: 3000,
+    });
+    
     loadNextWord();
   };
 
@@ -116,7 +126,13 @@ export default function LearnPage() {
     
     await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     handleUpdateStats(1, 0); // Only update review count, not time
-    if (userId) updateXp(userId, 'review_word');
+    
+    updateXp(userId, 'review_word');
+    toast({
+      description: <XpToast event="review_word" amount={XP_AMOUNTS["review_word"]} />,
+      duration: 3000,
+    });
+    
     loadNextWord();
   };
 

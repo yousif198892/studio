@@ -31,18 +31,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { format, subDays } from "date-fns";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
-
-type LearningStats = {
-  timeSpentSeconds: number;
-  totalWordsReviewed: number;
-  reviewedToday: {
-    count: number;
-    date: string; // YYYY-MM-DD
-    timeSpentSeconds: number;
-    completedTests: string[];
-  };
-  activityLog: string[]; // ['2024-07-21', '2024-07-22']
-};
+import { LearningStats } from "@/lib/stats";
 
 type StudentWithStats = User & {
     stats: LearningStats;
@@ -90,6 +79,9 @@ export default function StudentsPage() {
                     totalWordsReviewed: 0,
                     reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
                     activityLog: [],
+                    xp: 0,
+                    lastLoginDate: '1970-01-01',
+                    spellingPractice: { count: 0, date: today },
                 };
                 if (storedStats) {
                     const parsedStats: LearningStats = JSON.parse(storedStats);
@@ -162,7 +154,7 @@ export default function StudentsPage() {
         const today = new Date().toISOString().split('T')[0];
         const studentsWithStatsPromises = studentList.map(async (s) => ({
             ...s,
-            stats: JSON.parse(localStorage.getItem(`learningStats_${s.id}`) || 'null') || { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: []}, activityLog: [] },
+            stats: JSON.parse(localStorage.getItem(`learningStats_${s.id}`) || 'null') || { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: []}, activityLog: [], xp: 0, lastLoginDate: '1970-01-01', spellingPractice: { count: 0, date: today } },
             wordsLearningCount: (await getWordsForStudent(s.id)).filter(w => w.strength >=0).length,
             wordsMasteredCount: (await getWordsForStudent(s.id)).filter(w => w.strength === -1).length
         }));
@@ -318,5 +310,3 @@ export default function StudentsPage() {
     </div>
   )
 }
-
-    

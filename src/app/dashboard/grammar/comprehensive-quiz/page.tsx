@@ -12,7 +12,9 @@ import { Label } from '@/components/ui/label';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { updateLearningStats } from '@/lib/stats';
+import { updateLearningStats, updateXp, XP_AMOUNTS } from '@/lib/stats';
+import { useToast } from '@/hooks/use-toast';
+import { XpToast } from '@/components/xp-toast';
 
 export default function ComprehensiveQuizPage() {
     const searchParams = useSearchParams();
@@ -23,12 +25,19 @@ export default function ComprehensiveQuizPage() {
     const [answers, setAnswers] = useState<Record<number, string>>({});
     const [submitted, setSubmitted] = useState(false);
     const startTimeRef = useRef<number | null>(null);
+    const { toast } = useToast();
 
     const handleUpdateStats = useCallback((durationSeconds: number, testName?: string) => {
         if (userId) {
             updateLearningStats({ userId, durationSeconds, testName });
+            if (testName) {
+                 toast({
+                    description: <XpToast event="grammar_test" amount={XP_AMOUNTS.grammar_test} />,
+                    duration: 3000,
+                });
+            }
         }
-    }, [userId]);
+    }, [userId, toast]);
 
     useEffect(() => {
         startTimeRef.current = Date.now();
