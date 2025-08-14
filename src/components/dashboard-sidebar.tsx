@@ -31,6 +31,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuBadge,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Logo } from "./logo";
@@ -67,6 +68,13 @@ export function DashboardSidebar({
   const pathname = usePathname();
   const userRole = user.role;
   const { t } = useLanguage();
+  const { setOpenMobile, isMobile } = useSidebar();
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   const menuItems = [
     {
@@ -187,7 +195,7 @@ export function DashboardSidebar({
             <SidebarMenu>
             {filteredMenuItems.map((item) => (
                 <SidebarMenuItem key={item.href}>
-                <Link href={item.href} className="w-full">
+                <Link href={item.href} className="w-full" onClick={handleLinkClick}>
                     <SidebarMenuButton
                     isActive={pathname === item.href.split('?')[0]}
                     className="w-full justify-start"
