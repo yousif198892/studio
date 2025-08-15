@@ -66,6 +66,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
             avatar: "https://placehold.co/100x100.png",
             isSuspended: false,
             isMainAdmin: false,
+            timezone: "Asia/Baghdad",
             trialExpiresAt: isTrial ? add(new Date(), { months: 1 }).toISOString() : undefined,
         };
         

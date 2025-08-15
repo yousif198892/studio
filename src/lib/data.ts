@@ -105,7 +105,7 @@ export const mockUsers: User[] = [
     password: "password123",
     role: "supervisor",
     avatar: "https://placehold.co/100x100.png",
-    timezone: "America/New_York",
+    timezone: "Asia/Baghdad",
     isMainAdmin: true,
   },
 ];

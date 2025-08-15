@@ -88,6 +88,7 @@ export function RegisterForm() {
             role: 'student',
             avatar: "https://placehold.co/100x100.png",
             supervisorId,
+            timezone: "Asia/Baghdad",
         };
         
         await addUserDB(newUser);
