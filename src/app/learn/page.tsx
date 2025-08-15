@@ -11,7 +11,7 @@ import { ClientOnly } from "@/components/client-only";
 import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { updateLearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats";
+import { updateLearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats.tsx";
 import { WordProgress } from "@/lib/storage";
 import { useToast } from "@/hooks/use-toast";
 import { XpToast } from "@/components/xp-toast";
