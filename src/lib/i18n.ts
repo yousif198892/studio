@@ -286,6 +286,13 @@ export const translations = {
             presentContinuous: "Present Continuous",
         }
     },
+    xpEvents: {
+        review_word: "Word Reviewed",
+        spell_correct: "Spelling Correct",
+        daily_login: "Daily Login",
+        master_word: "Word Mastered",
+        grammar_test: "Grammar Test"
+    },
     toasts: {
         error: "Error",
         success: "Success!",
@@ -596,6 +603,13 @@ export const translations = {
             presentContinuous: "المضارع المستمر",
         }
     },
+    xpEvents: {
+        review_word: "تمت مراجعة الكلمة",
+        spell_correct: "إملاء صحيح",
+        daily_login: "تسجيل الدخول اليومي",
+        master_word: "تم إتقان الكلمة",
+        grammar_test: "اختبار القواعد"
+    },
     toasts: {
         error: "خطأ",
         success: "نجاح!",
@@ -660,4 +674,7 @@ export type TranslationKey =
     | 'grammar.hub.title' | 'grammar.hub.description' | 'grammar.hub.individualTenses.title' | 'grammar.hub.individualTenses.description' | 'grammar.hub.comprehensiveTest.title' | 'grammar.hub.comprehensiveTest.description' | 'grammar.hub.comprehensiveTest.button'
     | 'grammar.studentTest.title' | 'grammar.studentTest.description' | 'grammar.studentTest.button'
     | 'grammar.tenses.presentSimple' | 'grammar.tenses.pastSimple' | 'grammar.tenses.presentContinuous'
+    | `xpEvents.${'review_word' | 'spell_correct' | 'daily_login' | 'master_word' | 'grammar_test'}`
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+
+    
