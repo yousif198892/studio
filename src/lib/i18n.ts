@@ -36,6 +36,33 @@ export const translations = {
             supervisor: "Supervisor",
             peer: "Peer",
         },
+        edited: "(edited)",
+        messageActions: {
+            edit: "Edit",
+            delete: "Delete",
+            block: "Block User",
+        },
+        deleteDialog: {
+            title: "Delete Message",
+            descriptionForMe: "This will delete the message only for you. Other people in the conversation will still be able to see it.",
+            descriptionForEveryone: "This will permanently delete the message for everyone in this conversation.",
+            deleteForMe: "Delete for me",
+            deleteForEveryone: "Delete for everyone",
+            cancel: "Cancel",
+        },
+        blockDialog: {
+            title: "Block User?",
+            description: "Blocking {0} will prevent them from sending you messages, and you won't be able to message them. Are you sure?",
+            blockButton: "Block",
+            cancel: "Cancel",
+        },
+        unblockDialog: {
+            title: "Unblock User?",
+            description: "Unblocking {0} will allow you to send and receive messages again.",
+            unblockButton: "Unblock",
+        },
+        blockedContact: "This user is blocked.",
+        blockedMessage: "You cannot send messages to a blocked user.",
     },
     about: {
         title: "About LinguaLeap",
@@ -303,7 +330,7 @@ export const translations = {
             presentContinuous: "Present Continuous",
         }
     },
-    championPage: {
+     championPage: {
         title: "Champion Leaderboard",
         description: "See who's at the top of the class! The leaderboard resets every week.",
         weeklyRankings: "Weekly Rankings",
@@ -418,6 +445,33 @@ export const translations = {
             supervisor: "مشرف",
             peer: "زميل",
         },
+        edited: "(تم التعديل)",
+        messageActions: {
+            edit: "تعديل",
+            delete: "حذف",
+            block: "حظر المستخدم",
+        },
+        deleteDialog: {
+            title: "حذف الرسالة",
+            descriptionForMe: "سيؤدي هذا إلى حذف الرسالة لك فقط. سيظل بإمكان الآخرين في المحادثة رؤيتها.",
+            descriptionForEveryone: "سيؤدي هذا إلى حذف الرسالة بشكل دائم للجميع في هذه المحادثة.",
+            deleteForMe: "احذف لي",
+            deleteForEveryone: "احذف للجميع",
+            cancel: "إلغاء",
+        },
+        blockDialog: {
+            title: "حظر المستخدم؟",
+            description: "سيؤدي حظر {0} إلى منعه من إرسال رسائل إليك، ولن تتمكن من مراسلته. هل أنت متأكد؟",
+            blockButton: "حظر",
+            cancel: "إلغاء",
+        },
+        unblockDialog: {
+            title: "إلغاء حظر المستخدم؟",
+            description: "سيسمح لك إلغاء حظر {0} بإرسال واستقبال الرسائل مرة أخرى.",
+            unblockButton: "إلغاء الحظر",
+        },
+        blockedContact: "هذا المستخدم محظور.",
+        blockedMessage: "لا يمكنك إرسال رسائل إلى مستخدم محظور.",
     },
     about: {
         title: "حول LinguaLeap",
@@ -771,6 +825,11 @@ export type TranslationKey =
     | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile' | 'sidebar.learn'
     | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.champion' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins' | 'sidebar.about' | 'sidebar.spelling'
     | 'chatPage.supervisorTitle' | 'chatPage.studentTitle' | 'chatPage.supervisorDescription' | 'chatPage.studentDescription' | 'chatPage.conversations' | 'chatPage.noMessages' | 'chatPage.noConversations' | 'chatPage.selectConversation' | 'chatPage.typeMessage' | 'chatPage.send' | 'chatPage.loading' | 'chatPage.contactType.supervisor' | 'chatPage.contactType.peer'
+    | 'chatPage.edited' | 'chatPage.messageActions.edit' | 'chatPage.messageActions.delete' | 'chatPage.messageActions.block'
+    | 'chatPage.deleteDialog.title' | 'chatPage.deleteDialog.descriptionForMe' | 'chatPage.deleteDialog.descriptionForEveryone' | 'chatPage.deleteDialog.deleteForMe' | 'chatPage.deleteDialog.deleteForEveryone' | 'chatPage.deleteDialog.cancel'
+    | 'chatPage.blockDialog.title' | 'chatPage.blockDialog.description' | 'chatPage.blockDialog.blockButton' | 'chatPage.blockDialog.cancel'
+    | 'chatPage.unblockDialog.title' | 'chatPage.unblockDialog.description' | 'chatPage.unblockDialog.unblockButton'
+    | 'chatPage.blockedContact' | 'chatPage.blockedMessage'
     | 'about.title' | 'about.description' | 'about.greeting' | 'about.teacherIntro' | 'about.aiIntro' | 'about.signature' | 'about.version'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.personalInfo.grade' | 'profile.personalInfo.section' | 'profile.personalInfo.selectGrade' | 'profile.personalInfo.selectSection' | 'profile.personalInfo.supervisor'
@@ -810,4 +869,3 @@ export type TranslationKey =
     | 'masteredWordsPage.title' | 'masteredWordsPage.description' | 'masteredWordsPage.cardTitle' | 'masteredWordsPage.cardDescription' | 'masteredWordsPage.filterUnit' | 'masteredWordsPage.filterLesson' | 'masteredWordsPage.allUnits' | 'masteredWordsPage.allLessons' | 'masteredWordsPage.clearFilters' | 'masteredWordsPage.tableImage' | 'masteredWordsPage.tableWord' | 'masteredWordsPage.tableUnit' | 'masteredWordsPage.noWords' | 'masteredWordsPage.loading'
     | `xpEvents.${'review_word' | 'spell_correct' | 'daily_login' | 'master_word' | 'grammar_test'}`
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
-

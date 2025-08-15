@@ -26,6 +26,8 @@ import {
     saveSupervisorMessageDB,
     updatePeerMessagesDB,
     updateSupervisorMessagesDB,
+    deleteSupervisorMessageDB,
+    deletePeerMessageDB,
 } from './db';
 
 
@@ -43,6 +45,7 @@ export type User = {
   trialExpiresAt?: string; // ISO date string for trial accounts
   grade?: string;
   section?: string;
+  blockedUsers?: string[];
 };
 
 export type Word = {
@@ -76,6 +79,8 @@ export type SupervisorMessage = {
   content: string;
   createdAt: Date;
   read: boolean;
+  isEdited?: boolean;
+  deletedFor?: string[];
 };
 
 export type PeerMessage = {
@@ -86,6 +91,8 @@ export type PeerMessage = {
     content: string;
     createdAt: Date;
     read: boolean;
+    isEdited?: boolean;
+    deletedFor?: string[];
 };
 
 
@@ -214,7 +221,9 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
         // Get convo with supervisor
         if (currentUser.supervisorId) {
             const messages = await getSupervisorMessagesDB(userId, currentUser.supervisorId);
-            supervisorConversations[currentUser.supervisorId] = messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            supervisorConversations[currentUser.supervisorId] = messages
+                .filter(m => !(m.deletedFor?.includes(userId)))
+                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         }
 
         // Get peer convos
@@ -224,7 +233,9 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
                 if (student.id === userId) continue;
                 const conversationId = [userId, student.id].sort().join('-');
                 const messages = await getPeerMessagesDB(conversationId);
-                peerConversations[student.id] = messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                peerConversations[student.id] = messages
+                    .filter(m => !(m.deletedFor?.includes(userId)))
+                    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
             }
         }
     }
@@ -233,7 +244,9 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
         const students = await getStudentsBySupervisorId(userId);
         for (const student of students) {
             const messages = await getSupervisorMessagesDB(student.id, userId);
-            supervisorConversations[student.id] = messages.sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+            supervisorConversations[student.id] = messages
+                .filter(m => !(m.deletedFor?.includes(userId)))
+                .sort((a. b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         }
     }
 
@@ -295,7 +308,7 @@ export {
     updateWordDB, 
     getWordByIdDB, 
     getUserByEmailDB, 
-    getWordsBySupervisorDB 
+    getWordsBySupervisorDB,
+    deleteSupervisorMessageDB,
+    deletePeerMessageDB
 };
-
-    

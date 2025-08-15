@@ -14,6 +14,9 @@ import {
   markSupervisorMessagesAsRead,
   markPeerMessagesAsRead,
   PeerMessage,
+  deletePeerMessageDB,
+  deleteSupervisorMessageDB,
+  updateUserDB
 } from "@/lib/data";
 import {
   Card,
@@ -31,10 +34,13 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send } from "lucide-react";
+import { Send, MoreHorizontal, Pencil, Trash2, Ban } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/use-language";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+
 
 type ConversationPartner = User & {
   lastMessage: SupervisorMessage | PeerMessage | null;
@@ -46,6 +52,8 @@ type AllConversations = {
   supervisor: Record<string, SupervisorMessage[]>, 
   peer: Record<string, PeerMessage[]> 
 };
+
+type MessageType = 'supervisor' | 'peer';
 
 export default function ChatPage() {
   const searchParams = useSearchParams();
@@ -63,12 +71,20 @@ export default function ChatPage() {
 
   const [allConversations, setAllConversations] = useState<AllConversations>({ supervisor: {}, peer: {} });
 
+  const [editingMessage, setEditingMessage] = useState<(SupervisorMessage | PeerMessage | null)>(null);
+  const [editedContent, setEditedContent] = useState("");
+
+
   const loadData = useCallback(async (isInitialLoad = false) => {
     if (!userId) return;
     
     const user = await getUserById(userId);
     setCurrentUser(user);
     if (!user) return;
+
+    if(user.blockedUsers?.includes(selectedContact?.id || '')) {
+      setSelectedContact(null);
+    }
     
     const convos = await getConversationsForStudent(userId);
     setAllConversations(convos);
@@ -131,7 +147,9 @@ export default function ChatPage() {
         }
     }
     
-    const sortedPartners = partners.sort((a,b) => {
+    const sortedPartners = partners
+      .filter(p => !(user.blockedUsers?.includes(p.id)))
+      .sort((a,b) => {
         const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
         const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
         return timeB - timeA;
@@ -145,14 +163,16 @@ export default function ChatPage() {
             handleSelectContact(contact);
         }
     } else if (selectedContact) {
-       // Reselect the contact to refresh messages if needed
         const updatedContact = sortedPartners.find(p => p.id === selectedContact.id);
         if (updatedContact) {
-            handleSelectContact(updatedContact, false); // Don't trigger another layout update
+            handleSelectContact(updatedContact, false);
+        } else {
+            setSelectedContact(null);
+            setMessages([]);
         }
     }
     
-  }, [userId, contactToSelect]);
+  }, [userId, contactToSelect, selectedContact?.id]);
 
 
   useEffect(() => {
@@ -193,10 +213,8 @@ export default function ChatPage() {
         
         if (messagesToSet.some(m => !m.read && m.senderId !== userId)) {
             hadUnread = true;
-            // 1. Update DB
             await markSupervisorMessagesAsRead(userId, contact.id);
 
-            // 2. Update local state for immediate UI feedback
             setAllConversations(prev => {
                 const newSupervisorConvos = { ...prev.supervisor };
                 newSupervisorConvos[contact.id] = newSupervisorConvos[contact.id].map(m => ({ ...m, read: true }));
@@ -211,10 +229,8 @@ export default function ChatPage() {
 
         if (messagesToSet.some(m => !m.read && m.senderId !== userId)) {
             hadUnread = true;
-            // 1. Update DB
             await markPeerMessagesAsRead(userId, contact.id);
             
-            // 2. Update local state
             setAllConversations(prev => {
                 const newPeerConvos = { ...prev.peer };
                 newPeerConvos[conversationKey] = newPeerConvos[conversationKey].map(m => ({ ...m, read: true }));
@@ -227,9 +243,7 @@ export default function ChatPage() {
     setMessages(messagesToSet.sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()));
     
     if(hadUnread) {
-        // 3. Update conversation list UI state
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
-        // 4. Notify layout to update its count
         if (notifyLayout) {
              localStorage.setItem('unreadCountNeedsUpdate', 'true');
              localStorage.removeItem('unreadCountNeedsUpdate');
@@ -242,12 +256,12 @@ export default function ChatPage() {
     if (!newMessage.trim() || !userId || !selectedContact || !currentUser) return;
     
     const timestamp = new Date();
-    let sentMessage: SupervisorMessage | PeerMessage;
+    let sentMessage: SupervisorMessage | PeerMessage | undefined = undefined;
+    const messageType: MessageType = currentUser.role === 'supervisor' || selectedContact.type === 'supervisor' ? 'supervisor' : 'peer';
     
-    // Optimistic UI updates
     setNewMessage("");
 
-    if (currentUser.role === 'supervisor' || selectedContact.type === 'supervisor') {
+    if (messageType === 'supervisor') {
         const studentId = currentUser.role === 'student' ? userId : selectedContact.id;
         const supervisorId = currentUser.role === 'supervisor' ? userId : selectedContact.id;
         sentMessage = {
@@ -260,13 +274,6 @@ export default function ChatPage() {
           read: false,
         };
         
-        setAllConversations(prev => {
-          const newConvos = { ...prev.supervisor };
-          const conversationKey = currentUser.role === 'supervisor' ? selectedContact.id : supervisorId;
-          newConvos[conversationKey] = [...(newConvos[conversationKey] || []), sentMessage as SupervisorMessage];
-          return { ...prev, supervisor: newConvos };
-        });
-
         await saveSupervisorMessage(sentMessage);
     } else { // peer to peer
         const conversationId = [userId, selectedContact.id].sort().join('-');
@@ -279,20 +286,27 @@ export default function ChatPage() {
             createdAt: timestamp,
             read: false,
         };
-        
-        setAllConversations(prev => {
-          const newConvos = { ...prev.peer };
-          newConvos[selectedContact.id] = [...(newConvos[selectedContact.id] || []), sentMessage as PeerMessage];
-          return { ...prev, peer: newConvos };
-        });
-
         await savePeerMessage(sentMessage);
     }
-    
-    setMessages(prev => [...prev, sentMessage]);
+
+    setMessages(prev => [...prev, sentMessage!]);
+    setAllConversations(prev => {
+      const newAllConvos = { ...prev };
+      const otherUserId = selectedContact.id;
+
+      if(messageType === 'supervisor') {
+        if (!newAllConvos.supervisor[otherUserId]) newAllConvos.supervisor[otherUserId] = [];
+        newAllConvos.supervisor[otherUserId].push(sentMessage as SupervisorMessage);
+      } else {
+        if (!newAllConvos.peer[otherUserId]) newAllConvos.peer[otherUserId] = [];
+        newAllConvos.peer[otherUserId].push(sentMessage as PeerMessage);
+      }
+      return newAllConvos;
+    });
+
     setConversations(prev => prev.map(c => {
         if (c.id === selectedContact.id) {
-            return { ...c, lastMessage: sentMessage };
+            return { ...c, lastMessage: sentMessage! };
         }
         return c;
     }).sort((a,b) => {
@@ -300,12 +314,80 @@ export default function ChatPage() {
         const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
         return timeB - timeA;
     }));
-
-    // Notify other tabs
-    const storageKey = sentMessage.type === 'supervisor' ? `supervisorMessages-${sentMessage.studentId}-${sentMessage.supervisorId}` : `peerMessages-${sentMessage.conversationId}`;
-    localStorage.setItem(storageKey, 'updated');
-    localStorage.removeItem(storageKey);
   };
+
+  const handleStartEdit = (message: SupervisorMessage | PeerMessage) => {
+    setEditingMessage(message);
+    setEditedContent(message.content);
+  }
+
+  const handleCancelEdit = () => {
+    setEditingMessage(null);
+    setEditedContent("");
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingMessage || !editedContent.trim()) return;
+
+    const updatedMessage = { 
+        ...editingMessage, 
+        content: editedContent.trim(),
+        isEdited: true 
+    };
+
+    if ('supervisorId' in updatedMessage) {
+        await saveSupervisorMessage(updatedMessage);
+    } else {
+        await savePeerMessage(updatedMessage);
+    }
+    
+    setMessages(prev => prev.map(m => m.id === updatedMessage.id ? updatedMessage : m));
+    handleCancelEdit();
+  }
+
+  const handleDeleteMessage = async (message: SupervisorMessage | PeerMessage, scope: 'me' | 'everyone') => {
+    if (scope === 'everyone') {
+        if ('supervisorId' in message) {
+            await deleteSupervisorMessageDB(message.id);
+        } else {
+            await deletePeerMessageDB(message.id);
+        }
+    } else { // 'me'
+        const updatedMessage = {
+            ...message,
+            deletedFor: [...(message.deletedFor || []), userId!]
+        };
+        if ('supervisorId' in updatedMessage) {
+            await saveSupervisorMessage(updatedMessage);
+        } else {
+            await savePeerMessage(updatedMessage);
+        }
+    }
+    setMessages(prev => prev.filter(m => m.id !== message.id));
+  };
+
+  const handleToggleBlockUser = async () => {
+    if (!currentUser || !selectedContact) return;
+    const isBlocked = currentUser.blockedUsers?.includes(selectedContact.id);
+
+    const updatedBlockedUsers = isBlocked
+        ? (currentUser.blockedUsers || []).filter(id => id !== selectedContact.id)
+        : [...(currentUser.blockedUsers || []), selectedContact.id];
+
+    const updatedUser = { ...currentUser, blockedUsers: updatedBlockedUsers };
+    
+    await updateUserDB(updatedUser);
+    setCurrentUser(updatedUser);
+    toast({ title: t('toasts.success'), description: isBlocked ? 'User unblocked' : 'User blocked.' });
+
+    if (!isBlocked) {
+        setSelectedContact(null);
+        setMessages([]);
+    }
+
+    await loadData();
+  }
+
 
   if (!currentUser) {
     return <div>{t('chatPage.loading')}</div>
@@ -313,6 +395,8 @@ export default function ChatPage() {
   
   const title = currentUser.role === 'supervisor' ? t('chatPage.supervisorTitle') : t('chatPage.studentTitle');
   const description = currentUser.role === 'supervisor' ? t('chatPage.supervisorDescription') : t('chatPage.studentDescription');
+
+  const isContactBlocked = selectedContact ? currentUser?.blockedUsers?.includes(selectedContact.id) : false;
 
   return (
     <div className="flex flex-col h-full">
@@ -377,71 +461,132 @@ export default function ChatPage() {
                         </CardDescription>
                     </div>
                 </div>
+                 <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                            <Ban className={cn("h-5 w-5", isContactBlocked && "text-destructive")} />
+                        </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>
+                                {isContactBlocked ? t('chatPage.unblockDialog.title') : t('chatPage.blockDialog.title')}
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                                {isContactBlocked 
+                                    ? t('chatPage.unblockDialog.description', selectedContact.name)
+                                    : t('chatPage.blockDialog.description', selectedContact.name)
+                                }
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>{t('chatPage.blockDialog.cancel')}</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleToggleBlockUser}>
+                                {isContactBlocked ? t('chatPage.unblockDialog.unblockButton') : t('chatPage.blockDialog.blockButton')}
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
               </CardHeader>
               <ScrollArea className="flex-1">
                 <CardContent className="p-4 space-y-4">
                   {messages.map((msg) => (
-                    <div
-                      key={msg.id}
-                      className={cn(
-                        "flex items-end gap-2 group",
-                        msg.senderId === userId
-                          ? "justify-end"
-                          : "justify-start"
-                      )}
-                    >
-                      {msg.senderId !== userId && (
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={selectedContact.avatar} style={{ objectFit: 'contain' }}/>
-                          <AvatarFallback>
-                            {selectedContact.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                      
-                      <div
-                          className={cn(
-                            "rounded-lg px-4 py-2 max-w-sm",
-                            msg.senderId === userId
-                              ? "bg-primary text-primary-foreground"
-                              : "bg-muted"
-                          )}
-                        >
-                          <p className="text-sm">{msg.content}</p>
-                          <p className="text-xs opacity-75 mt-1 text-right">
-                            {format(new Date(msg.createdAt), "p")}
-                          </p>
-                        </div>
-                      
-                      {msg.senderId === userId && currentUser && (
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={currentUser.avatar} style={{ objectFit: 'contain' }}/>
-                          <AvatarFallback>
-                            {currentUser.name.charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                      )}
-                    </div>
+                    <DropdownMenu key={msg.id}>
+                        <DropdownMenuTrigger asChild>
+                            <div className={cn("flex items-end gap-2 group w-full", msg.senderId === userId ? "justify-end" : "justify-start")}>
+                                {msg.senderId !== userId && (
+                                <Avatar className="h-8 w-8 self-end mb-2">
+                                    <AvatarImage src={selectedContact.avatar} style={{ objectFit: 'contain' }}/>
+                                    <AvatarFallback>{selectedContact.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                )}
+                                
+                                {editingMessage?.id === msg.id ? (
+                                    <div className="w-full max-w-sm space-y-2">
+                                        <Input value={editedContent} onChange={(e) => setEditedContent(e.target.value)} autoFocus />
+                                        <div className="flex justify-end gap-2">
+                                            <Button variant="ghost" size="sm" onClick={handleCancelEdit}>Cancel</Button>
+                                            <Button size="sm" onClick={handleSaveEdit}>Save</Button>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className={cn("rounded-lg px-4 py-2 max-w-sm break-words", msg.senderId === userId ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                                    <p className="text-sm">{msg.content}</p>
+                                    <p className="text-xs opacity-75 mt-1 text-right">
+                                        {msg.isEdited && <span className="italic">{t('chatPage.edited')} </span>}
+                                        {format(new Date(msg.createdAt), "p")}
+                                    </p>
+                                    </div>
+                                )}
+                                
+                                {msg.senderId === userId && currentUser && (
+                                <Avatar className="h-8 w-8 self-end mb-2">
+                                    <AvatarImage src={currentUser.avatar} style={{ objectFit: 'contain' }}/>
+                                    <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                )}
+                            </div>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align={msg.senderId === userId ? 'end' : 'start'}>
+                            {msg.senderId === userId && (
+                                <>
+                                <DropdownMenuItem onClick={() => handleStartEdit(msg)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    <span>{t('chatPage.messageActions.edit')}</span>
+                                </DropdownMenuItem>
+                                
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            <span>{t('chatPage.messageActions.delete')}</span>
+                                        </DropdownMenuItem>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>{t('chatPage.deleteDialog.title')}</AlertDialogTitle>
+                                        </AlertDialogHeader>
+                                        <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForMe')}</AlertDialogDescription>
+                                        <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForEveryone')}</AlertDialogDescription>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel>{t('chatPage.deleteDialog.cancel')}</AlertDialogCancel>
+                                            <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'me')}>{t('chatPage.deleteDialog.deleteForMe')}</AlertDialogAction>
+                                            <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'everyone')} className="bg-destructive hover:bg-destructive/90">{t('chatPage.deleteDialog.deleteForEveryone')}</AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                                </>
+                            )}
+                             <DropdownMenuItem onClick={handleToggleBlockUser}>
+                                <Ban className="mr-2 h-4 w-4" />
+                                <span>{t('chatPage.messageActions.block')}</span>
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                   ))}
                   <div ref={messagesEndRef} />
                 </CardContent>
               </ScrollArea>
               <CardFooter className="pt-4 border-t">
-                <div className="flex w-full items-center space-x-2">
-                  <Input
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder={t('chatPage.typeMessage')}
-                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                  />
-                  <Button
-                    onClick={handleSendMessage}
-                    disabled={!newMessage.trim()}
-                  >
-                    <Send className="h-4 w-4" />
-                    <span className="sr-only">{t('chatPage.send')}</span>
-                  </Button>
-                </div>
+                {isContactBlocked ? (
+                    <div className="w-full text-center text-sm text-muted-foreground">{t('chatPage.blockedMessage')}</div>
+                ) : (
+                    <div className="flex w-full items-center space-x-2">
+                        <Input
+                            value={newMessage}
+                            onChange={(e) => setNewMessage(e.target.value)}
+                            placeholder={t('chatPage.typeMessage')}
+                            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                        />
+                        <Button
+                            onClick={handleSendMessage}
+                            disabled={!newMessage.trim()}
+                        >
+                            <Send className="h-4 w-4" />
+                            <span className="sr-only">{t('chatPage.send')}</span>
+                        </Button>
+                    </div>
+                )}
               </CardFooter>
             </>
           ) : (
@@ -454,4 +599,3 @@ export default function ChatPage() {
     </div>
   );
 }
-

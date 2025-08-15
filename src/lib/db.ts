@@ -49,52 +49,43 @@ const getDb = () => {
   }
   if (!dbPromise) {
     const dbName = 'lingua-leap-db';
-    const dbVersion = 5; // Incremented version to force upgrade
+    const dbVersion = 6; // Incremented version to force upgrade
 
     dbPromise = openDB<LinguaLeapDB>(dbName, dbVersion, {
       upgrade(db, oldVersion, newVersion, tx) {
         console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
         
-        if (oldVersion < 4) {
-            // Logic from previous upgrades if needed
+        if (oldVersion < 6) {
+            // Re-check all stores in case of a fresh install
             if (!db.objectStoreNames.contains('users')) {
-              console.log("Creating 'users' object store...");
               const userStore = db.createObjectStore('users', { keyPath: 'id' });
               userStore.createIndex('by-email', 'email', { unique: true });
               mockUsers.forEach(user => tx.objectStore('users').add(user));
             }
             if (!db.objectStoreNames.contains('words')) {
-              console.log("Creating 'words' object store...");
               const wordStore = db.createObjectStore('words', { keyPath: 'id' });
               wordStore.createIndex('by-supervisorId', 'supervisorId');
               mockWords.forEach(word => tx.objectStore('words').add(word));
             }
             if (!db.objectStoreNames.contains('adminMessages')) {
-              console.log("Creating 'adminMessages' object store...");
               const messageStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
               mockMessages.forEach(message => tx.objectStore('adminMessages').add(message));
             }
             if (!db.objectStoreNames.contains('wordProgress')) {
-              console.log("Creating 'wordProgress' object store...");
               const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
               progressStore.createIndex('by-studentId', 'studentId');
             }
             if (!db.objectStoreNames.contains('landingPage')) {
-              console.log("Creating 'landingPage' object store...");
               db.createObjectStore('landingPage', { keyPath: 'id' });
             }
-        }
-        
-        // New stores for version 5
-        if (!db.objectStoreNames.contains('supervisorMessages')) {
-          console.log("Creating 'supervisorMessages' object store...");
-          const store = db.createObjectStore('supervisorMessages', { keyPath: 'id' });
-          store.createIndex('by-conversation', ['studentId', 'supervisorId']);
-        }
-        if (!db.objectStoreNames.contains('peerMessages')) {
-          console.log("Creating 'peerMessages' object store...");
-          const store = db.createObjectStore('peerMessages', { keyPath: 'id' });
-          store.createIndex('by-conversation', 'conversationId');
+             if (!db.objectStoreNames.contains('supervisorMessages')) {
+              const store = db.createObjectStore('supervisorMessages', { keyPath: 'id' });
+              store.createIndex('by-conversation', ['studentId', 'supervisorId']);
+            }
+            if (!db.objectStoreNames.contains('peerMessages')) {
+              const store = db.createObjectStore('peerMessages', { keyPath: 'id' });
+              store.createIndex('by-conversation', 'conversationId');
+            }
         }
 
         console.log("Database upgrade complete.");
@@ -230,7 +221,7 @@ export async function deleteMessageDB(id: string): Promise<void> {
 export async function getSupervisorMessagesDB(studentId: string, supervisorId: string): Promise<SupervisorMessage[]> {
     const db = getDb();
     if (!db) return [];
-    return (await db).getAllFromIndex('supervisorMessages', 'by-conversation', [studentId, supervisorId]);
+    return (await db).getAllFromIndex('supervisorMessages', 'by-conversation', IDBKeyRange.only([studentId, supervisorId]));
 }
 
 export async function getPeerMessagesDB(conversationId: string): Promise<PeerMessage[]> {
@@ -261,6 +252,16 @@ export async function updatePeerMessagesDB(messages: PeerMessage[]): Promise<voi
     if (!db) return;
     const tx = (await db).transaction('peerMessages', 'readwrite');
     await Promise.all([...messages.map(m => tx.store.put(m)), tx.done]);
+}
+
+export async function deleteSupervisorMessageDB(id: string): Promise<void> {
+    const db = getDb();
+    if(db) await (await db).delete('supervisorMessages', id);
+}
+
+export async function deletePeerMessageDB(id: string): Promise<void> {
+    const db = getDb();
+    if(db) await (await db).delete('peerMessages', id);
 }
 
 
