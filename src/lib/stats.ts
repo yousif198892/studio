@@ -138,11 +138,10 @@ export const updateLearningStats = ({
     stats.activityLog.push(today);
   }
   
-  // Log completed test
+  // Log completed test and award XP
   if (testName && !stats.reviewedToday.completedTests.includes(testName)) {
       stats.reviewedToday.completedTests.push(testName);
-      // Award XP for completing a test for the first time today
-      updateXp(userId, 'grammar_test');
+      stats.xp += XP_AMOUNTS.grammar_test;
   }
 
   localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
