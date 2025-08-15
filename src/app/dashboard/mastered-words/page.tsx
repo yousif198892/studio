@@ -30,6 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { WordAudioPlayer } from "@/components/word-audio-player";
 import { WordProgress } from "@/lib/storage";
+import { useLanguage } from "@/hooks/use-language";
 
 type MasteredWord = Word & WordProgress;
 
@@ -41,6 +42,7 @@ export default function MasteredWordsPage() {
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
   const userId = searchParams.get("userId");
+  const { translateContent } = useLanguage();
   
   const fetchWords = useCallback(async () => {
     if (userId) {
@@ -126,7 +128,7 @@ export default function MasteredWordsPage() {
                 <SelectItem value="all">All Units</SelectItem>
                 {uniqueUnits.map((unit) => (
                   <SelectItem key={unit} value={unit}>
-                    {unit}
+                    {translateContent(unit)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -139,7 +141,7 @@ export default function MasteredWordsPage() {
                 <SelectItem value="all">All Lessons</SelectItem>
                 {lessonsForSelectedUnit.map((lesson) => (
                   <SelectItem key={lesson} value={lesson}>
-                    {lesson}
+                    {translateContent(lesson)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -177,8 +179,8 @@ export default function MasteredWordsPage() {
                         <div className="text-xs text-muted-foreground max-w-sm">{word.definition}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{word.unit}</div>
-                      <div className="text-xs text-muted-foreground">{word.lesson}</div>
+                      <div className="font-medium">{translateContent(word.unit)}</div>
+                      <div className="text-xs text-muted-foreground">{translateContent(word.lesson)}</div>
                     </TableCell>
                   </TableRow>
                 ))

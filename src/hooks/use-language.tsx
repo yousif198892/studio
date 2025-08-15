@@ -10,6 +10,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (language: Language) => void;
   t: (key: TranslationKey, ...args: any[]) => string;
+  translateContent: (text: string) => string;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -38,8 +39,18 @@ export const LanguageProvider = ({ children }: { children: ReactNode }) => {
     return key;
   };
 
+  const translateContent = (text: string): string => {
+    if (language !== 'ar' || !text) {
+        return text;
+    }
+    return text
+        .replace(/^Unit\s*/i, 'الوحدة ')
+        .replace(/^Lesson\s*/i, 'الدرس ');
+  };
+
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, translateContent }}>
       {children}
     </LanguageContext.Provider>
   );

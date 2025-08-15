@@ -38,7 +38,7 @@ import {
 import { WordAudioPlayer } from "@/components/word-audio-player";
 
 export default function WordsPage() {
-  const { t } = useLanguage();
+  const { t, translateContent } = useLanguage();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId") || "sup2";
   const [words, setWords] = useState<Word[]>([]);
@@ -151,7 +151,7 @@ export default function WordsPage() {
                 <SelectItem value="all">All Units</SelectItem>
                 {uniqueUnits.map((unit) => (
                   <SelectItem key={unit} value={unit}>
-                    {unit}
+                    {translateContent(unit)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -164,7 +164,7 @@ export default function WordsPage() {
                 <SelectItem value="all">All Lessons</SelectItem>
                 {lessonsForSelectedUnit.map((lesson) => (
                   <SelectItem key={lesson} value={lesson}>
-                    {lesson}
+                    {translateContent(lesson)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -203,8 +203,8 @@ export default function WordsPage() {
                       <div className="text-xs text-muted-foreground max-w-sm">{word.definition}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{word.unit}</div>
-                      <div className="text-xs text-muted-foreground">{word.lesson}</div>
+                      <div className="font-medium">{translateContent(word.unit)}</div>
+                      <div className="text-xs text-muted-foreground">{translateContent(word.lesson)}</div>
                     </TableCell>
                     <TableCell className="text-right space-x-2">
                         <Button asChild variant="outline" size="icon">

@@ -46,7 +46,7 @@ export default function LearningWordsPage() {
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
   const userId = searchParams.get("userId");
-  const { t, language } = useLanguage();
+  const { t, language, translateContent } = useLanguage();
 
   const fetchWords = useCallback(async () => {
     if (userId) {
@@ -158,7 +158,7 @@ export default function LearningWordsPage() {
                 <SelectItem value="all">{t('learningWordsPage.allUnits')}</SelectItem>
                 {uniqueUnits.map((unit) => (
                   <SelectItem key={unit} value={unit}>
-                    {unit}
+                    {translateContent(unit)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -171,7 +171,7 @@ export default function LearningWordsPage() {
                 <SelectItem value="all">{t('learningWordsPage.allLessons')}</SelectItem>
                 {lessonsForSelectedUnit.map((lesson) => (
                   <SelectItem key={lesson} value={lesson}>
-                    {lesson}
+                    {translateContent(lesson)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -211,8 +211,8 @@ export default function LearningWordsPage() {
                         <div className="text-xs text-muted-foreground max-w-sm">{word.definition}</div>
                     </TableCell>
                     <TableCell>
-                      <div className="font-medium">{word.unit}</div>
-                      <div className="text-xs text-muted-foreground">{word.lesson}</div>
+                      <div className="font-medium">{translateContent(word.unit)}</div>
+                      <div className="text-xs text-muted-foreground">{translateContent(word.lesson)}</div>
                     </TableCell>
                     <TableCell>
                         <div className="text-sm">{formatTimeLeft(new Date(word.nextReview))}</div>
