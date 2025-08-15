@@ -318,6 +318,22 @@ export const translations = {
         loading: "Loading your words...",
         noWords: "No words found for the selected filters.",
     },
+    masteredWordsPage: {
+        title: "Mastered Words",
+        description: "Congratulations! Here are all the words you've successfully learned.",
+        cardTitle: "Your Word Collection",
+        cardDescription: "A list of all the words you have mastered. Filter by unit and lesson below.",
+        filterUnit: "Filter by Unit",
+        filterLesson: "Filter by Lesson",
+        allUnits: "All Units",
+        allLessons: "All Lessons",
+        clearFilters: "Clear",
+        tableImage: "Image",
+        tableWord: "Word",
+        tableUnit: "Unit",
+        noWords: "No words found for the selected filters.",
+        loading: "Loading mastered words...",
+    },
     xpEvents: {
         review_word: "Word Reviewed",
         spell_correct: "Spelling Correct",
@@ -667,6 +683,22 @@ export const translations = {
         loading: "جار تحميل كلماتك...",
         noWords: "لم يتم العثور على كلمات للفلاتر المحددة.",
     },
+    masteredWordsPage: {
+        title: "الكلمات المتقنة",
+        description: "تهانينا! إليك جميع الكلمات التي تعلمتها بنجاح.",
+        cardTitle: "مجموعتك من الكلمات",
+        cardDescription: "قائمة بجميع الكلمات التي أتقنتها. قم بالتصفية حسب الوحدة والدرس أدناه.",
+        filterUnit: "تصفية حسب الوحدة",
+        filterLesson: "تصفية حسب الدرس",
+        allUnits: "جميع الوحدات",
+        allLessons: "جميع الدروس",
+        clearFilters: "مسح الفلاتر",
+        tableImage: "الصورة",
+        tableWord: "الكلمة",
+        tableUnit: "الوحدة",
+        noWords: "لم يتم العثور على كلمات للفلاتر المحددة.",
+        loading: "جار تحميل الكلمات المتقنة...",
+    },
     xpEvents: {
         review_word: "تمت مراجعة الكلمة",
         spell_correct: "إملاء صحيح",
@@ -740,5 +772,6 @@ export type TranslationKey =
     | 'grammar.tenses.presentSimple' | 'grammar.tenses.pastSimple' | 'grammar.tenses.presentContinuous'
     | 'championPage.title' | 'championPage.description' | 'championPage.weeklyRankings' | 'championPage.leaderboardDescription' | 'championPage.you' | 'championPage.xp' | 'championPage.loading' | 'championPage.noClassmates'
     | 'learningWordsPage.title' | 'learningWordsPage.description' | 'learningWordsPage.cardTitle' | 'learningWordsPage.cardDescription' | 'learningWordsPage.filterUnit' | 'learningWordsPage.filterLesson' | 'learningWordsPage.allUnits' | 'learningWordsPage.allLessons' | 'learningWordsPage.clearFilters' | 'learningWordsPage.tableImage' | 'learningWordsPage.tableWord' | 'learningWordsPage.tableUnit' | 'learningWordsPage.tableNextReview' | 'learningWordsPage.tableActions' | 'learningWordsPage.dueNow' | 'learningWordsPage.timeLeft' | 'learningWordsPage.days' | 'learningWordsPage.hours' | 'learningWordsPage.loading' | 'learningWordsPage.noWords'
+    | 'masteredWordsPage.title' | 'masteredWordsPage.description' | 'masteredWordsPage.cardTitle' | 'masteredWordsPage.cardDescription' | 'masteredWordsPage.filterUnit' | 'masteredWordsPage.filterLesson' | 'masteredWordsPage.allUnits' | 'masteredWordsPage.allLessons' | 'masteredWordsPage.clearFilters' | 'masteredWordsPage.tableImage' | 'masteredWordsPage.tableWord' | 'masteredWordsPage.tableUnit' | 'masteredWordsPage.noWords' | 'masteredWordsPage.loading'
     | `xpEvents.${'review_word' | 'spell_correct' | 'daily_login' | 'master_word' | 'grammar_test'}`
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';

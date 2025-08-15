@@ -42,7 +42,7 @@ export default function MasteredWordsPage() {
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
   const userId = searchParams.get("userId");
-  const { translateContent } = useLanguage();
+  const { t, translateContent } = useLanguage();
   
   const fetchWords = useCallback(async () => {
     if (userId) {
@@ -103,29 +103,28 @@ export default function MasteredWordsPage() {
   }
 
   if (loading) {
-    return <div>Loading mastered words...</div>;
+    return <div>{t('masteredWordsPage.loading')}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Mastered Words</h1>
+      <h1 className="text-3xl font-bold font-headline">{t('masteredWordsPage.title')}</h1>
       <p className="text-muted-foreground">
-        Congratulations! Here are all the words you've successfully learned.
+        {t('masteredWordsPage.description')}
       </p>
       <Card>
         <CardHeader>
-          <CardTitle>Your Word Collection</CardTitle>
+          <CardTitle>{t('masteredWordsPage.cardTitle')}</CardTitle>
           <CardDescription>
-            A list of all the words you have mastered. Filter by unit
-            and lesson below.
+            {t('masteredWordsPage.cardDescription')}
           </CardDescription>
            <div className="flex items-center space-x-2 pt-4">
             <Select onValueChange={handleUnitChange} value={selectedUnit || "all"}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Unit" />
+                <SelectValue placeholder={t('masteredWordsPage.filterUnit')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Units</SelectItem>
+                <SelectItem value="all">{t('masteredWordsPage.allUnits')}</SelectItem>
                 {uniqueUnits.map((unit) => (
                   <SelectItem key={unit} value={unit}>
                     {translateContent(unit)}
@@ -135,10 +134,10 @@ export default function MasteredWordsPage() {
             </Select>
             <Select onValueChange={handleLessonChange} value={selectedLesson || "all"} disabled={!selectedUnit}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Lesson" />
+                <SelectValue placeholder={t('masteredWordsPage.filterLesson')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Lessons</SelectItem>
+                <SelectItem value="all">{t('masteredWordsPage.allLessons')}</SelectItem>
                 {lessonsForSelectedUnit.map((lesson) => (
                   <SelectItem key={lesson} value={lesson}>
                     {translateContent(lesson)}
@@ -146,16 +145,16 @@ export default function MasteredWordsPage() {
                 ))}
               </SelectContent>
             </Select>
-             {(selectedUnit || selectedLesson) && <Button variant="ghost" onClick={clearFilters}>Clear</Button>}
+             {(selectedUnit || selectedLesson) && <Button variant="ghost" onClick={clearFilters}>{t('masteredWordsPage.clearFilters')}</Button>}
           </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Image</TableHead>
-                <TableHead>Word</TableHead>
-                <TableHead>Unit</TableHead>
+                <TableHead className="w-[100px]">{t('masteredWordsPage.tableImage')}</TableHead>
+                <TableHead>{t('masteredWordsPage.tableWord')}</TableHead>
+                <TableHead>{t('masteredWordsPage.tableUnit')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -187,7 +186,7 @@ export default function MasteredWordsPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={3} className="h-24 text-center">
-                    No words found for the selected filters.
+                    {t('masteredWordsPage.noWords')}
                   </TableCell>
                 </TableRow>
               )}
