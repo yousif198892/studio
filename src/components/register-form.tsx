@@ -148,7 +148,7 @@ export function RegisterForm() {
                             <SelectValue placeholder="Select Grade" />
                           </SelectTrigger>
                           <SelectContent>
-                            {Array.from({ length: 10 }, (_, i) => i + 1).map(grade => (
+                            {Array.from({ length: 6 }, (_, i) => i + 1).map(grade => (
                                 <SelectItem key={grade} value={String(grade)}>{grade}</SelectItem>
                             ))}
                           </SelectContent>
