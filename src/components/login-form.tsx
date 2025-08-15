@@ -155,15 +155,6 @@ export function LoginForm() {
                 t('login.loginButton')
             )}
             </Button>
-            <Button variant="outline" type="button" onClick={() => {
-                const reset = async () => {
-                    await (await import('@/lib/db')).resetDatabase();
-                    window.location.reload();
-                }
-                reset();
-            }}>
-                Reset Database
-            </Button>
         </form>
         <div className="mt-4 text-center text-sm">
           {t('login.noAccount')}{" "}
