@@ -491,78 +491,78 @@ export default function ChatPage() {
               <ScrollArea className="flex-1">
                 <CardContent className="p-4 space-y-4">
                   {messages.map((msg) => (
-                    <DropdownMenu key={msg.id}>
-                        <DropdownMenuTrigger asChild>
-                            <div className={cn("flex items-end gap-2 group w-full", msg.senderId === userId ? "justify-end" : "justify-start")}>
-                                {msg.senderId !== userId && (
-                                <Avatar className="h-8 w-8 self-end mb-2">
-                                    <AvatarImage src={selectedContact.avatar} style={{ objectFit: 'contain' }}/>
-                                    <AvatarFallback>{selectedContact.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                )}
-                                
-                                {editingMessage?.id === msg.id ? (
-                                    <div className="w-full max-w-sm space-y-2">
-                                        <Input value={editedContent} onChange={(e) => setEditedContent(e.target.value)} autoFocus />
-                                        <div className="flex justify-end gap-2">
-                                            <Button variant="ghost" size="sm" onClick={handleCancelEdit}>Cancel</Button>
-                                            <Button size="sm" onClick={handleSaveEdit}>Save</Button>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <div className={cn("rounded-lg px-4 py-2 max-w-sm break-words", msg.senderId === userId ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                    <div key={msg.id} className={cn("flex items-end gap-2 group w-full", msg.senderId === userId ? "justify-end" : "justify-start")}>
+                        {msg.senderId !== userId && (
+                        <Avatar className="h-8 w-8 self-end mb-2">
+                            <AvatarImage src={selectedContact.avatar} style={{ objectFit: 'contain' }}/>
+                            <AvatarFallback>{selectedContact.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        )}
+                        
+                        {editingMessage?.id === msg.id ? (
+                            <div className="w-full max-w-sm space-y-2">
+                                <Input value={editedContent} onChange={(e) => setEditedContent(e.target.value)} autoFocus />
+                                <div className="flex justify-end gap-2">
+                                    <Button variant="ghost" size="sm" onClick={handleCancelEdit}>{t('chatPage.deleteDialog.cancel')}</Button>
+                                    <Button size="sm" onClick={handleSaveEdit}>{t('profile.personalInfo.save')}</Button>
+                                </div>
+                            </div>
+                        ) : (
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <div className={cn("rounded-lg px-4 py-2 max-w-sm break-words cursor-pointer", msg.senderId === userId ? "bg-primary text-primary-foreground" : "bg-muted")}>
                                     <p className="text-sm">{msg.content}</p>
                                     <p className="text-xs opacity-75 mt-1 text-right">
                                         {msg.isEdited && <span className="italic">{t('chatPage.edited')} </span>}
                                         {format(new Date(msg.createdAt), "p")}
                                     </p>
                                     </div>
-                                )}
-                                
-                                {msg.senderId === userId && currentUser && (
-                                <Avatar className="h-8 w-8 self-end mb-2">
-                                    <AvatarImage src={currentUser.avatar} style={{ objectFit: 'contain' }}/>
-                                    <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-                                </Avatar>
-                                )}
-                            </div>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align={msg.senderId === userId ? 'end' : 'start'}>
-                            {msg.senderId === userId && (
-                                <>
-                                <DropdownMenuItem onClick={() => handleStartEdit(msg)}>
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    <span>{t('chatPage.messageActions.edit')}</span>
-                                </DropdownMenuItem>
-                                
-                                <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                            <Trash2 className="mr-2 h-4 w-4" />
-                                            <span>{t('chatPage.messageActions.delete')}</span>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align={msg.senderId === userId ? 'end' : 'start'}>
+                                    {msg.senderId === userId && (
+                                        <>
+                                        <DropdownMenuItem onClick={() => handleStartEdit(msg)}>
+                                            <Pencil className="mr-2 h-4 w-4" />
+                                            <span>{t('chatPage.messageActions.edit')}</span>
                                         </DropdownMenuItem>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                        <AlertDialogHeader>
-                                            <AlertDialogTitle>{t('chatPage.deleteDialog.title')}</AlertDialogTitle>
-                                        </AlertDialogHeader>
-                                        <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForMe')}</AlertDialogDescription>
-                                        <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForEveryone')}</AlertDialogDescription>
-                                        <AlertDialogFooter>
-                                            <AlertDialogCancel>{t('chatPage.deleteDialog.cancel')}</AlertDialogCancel>
-                                            <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'me')}>{t('chatPage.deleteDialog.deleteForMe')}</AlertDialogAction>
-                                            <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'everyone')} className="bg-destructive hover:bg-destructive/90">{t('chatPage.deleteDialog.deleteForEveryone')}</AlertDialogAction>
-                                        </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                </AlertDialog>
-                                </>
-                            )}
-                             <DropdownMenuItem onClick={handleToggleBlockUser}>
-                                <Ban className="mr-2 h-4 w-4" />
-                                <span>{t('chatPage.messageActions.block')}</span>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                                        
+                                        <AlertDialog>
+                                            <AlertDialogTrigger asChild>
+                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    <span>{t('chatPage.messageActions.delete')}</span>
+                                                </DropdownMenuItem>
+                                            </AlertDialogTrigger>
+                                            <AlertDialogContent>
+                                                <AlertDialogHeader>
+                                                    <AlertDialogTitle>{t('chatPage.deleteDialog.title')}</AlertDialogTitle>
+                                                </AlertDialogHeader>
+                                                <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForMe')}</AlertDialogDescription>
+                                                <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForEveryone')}</AlertDialogDescription>
+                                                <AlertDialogFooter>
+                                                    <AlertDialogCancel>{t('chatPage.deleteDialog.cancel')}</AlertDialogCancel>
+                                                    <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'me')}>{t('chatPage.deleteDialog.deleteForMe')}</AlertDialogAction>
+                                                    <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'everyone')} className="bg-destructive hover:bg-destructive/90">{t('chatPage.deleteDialog.deleteForEveryone')}</AlertDialogAction>
+                                                </AlertDialogFooter>
+                                            </AlertDialogContent>
+                                        </AlertDialog>
+                                        </>
+                                    )}
+                                    <DropdownMenuItem onClick={handleToggleBlockUser}>
+                                        <Ban className="mr-2 h-4 w-4" />
+                                        <span>{t('chatPage.messageActions.block')}</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
+                        
+                        {msg.senderId === userId && currentUser && (
+                        <Avatar className="h-8 w-8 self-end mb-2">
+                            <AvatarImage src={currentUser.avatar} style={{ objectFit: 'contain' }}/>
+                            <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        )}
+                    </div>
                   ))}
                   <div ref={messagesEndRef} />
                 </CardContent>
