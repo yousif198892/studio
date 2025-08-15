@@ -246,7 +246,7 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
             const messages = await getSupervisorMessagesDB(student.id, userId);
             supervisorConversations[student.id] = messages
                 .filter(m => !(m.deletedFor?.includes(userId)))
-                .sort((a. b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         }
     }
 
