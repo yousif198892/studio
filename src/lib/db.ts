@@ -49,26 +49,23 @@ const getDb = () => {
   }
   if (!dbPromise) {
     const dbName = 'lingua-leap-db';
-    const dbVersion = 7; // Incremented version to force upgrade
+    const dbVersion = 7; // Version remains the same unless schema changes
 
     dbPromise = openDB<LinguaLeapDB>(dbName, dbVersion, {
       upgrade(db, oldVersion, newVersion, tx) {
         console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
         
-        // Re-check all stores in case of a fresh install or version upgrade
+        // Create stores if they don't exist
         if (!db.objectStoreNames.contains('users')) {
           const userStore = db.createObjectStore('users', { keyPath: 'id' });
           userStore.createIndex('by-email', 'email', { unique: true });
-          mockUsers.forEach(user => tx.objectStore('users').add(user));
         }
         if (!db.objectStoreNames.contains('words')) {
           const wordStore = db.createObjectStore('words', { keyPath: 'id' });
           wordStore.createIndex('by-supervisorId', 'supervisorId');
-          mockWords.forEach(word => tx.objectStore('words').add(word));
         }
         if (!db.objectStoreNames.contains('adminMessages')) {
-          const messageStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
-          mockMessages.forEach(message => tx.objectStore('adminMessages').add(message));
+          db.createObjectStore('adminMessages', { keyPath: 'id' });
         }
         if (!db.objectStoreNames.contains('wordProgress')) {
           const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
@@ -87,14 +84,28 @@ const getDb = () => {
         }
         
         // Populate mock data on upgrade if stores are empty
-        tx.objectStore('users').count().then(count => {
-          if (count === 0) mockUsers.forEach(user => tx.objectStore('users').add(user));
+        const usersStore = tx.objectStore('users');
+        usersStore.count().then(count => {
+          if (count === 0) {
+              mockUsers.forEach(user => usersStore.add(user));
+              console.log('Populated users store with mock data.');
+          }
         });
-        tx.objectStore('words').count().then(count => {
-          if (count === 0) mockWords.forEach(word => tx.objectStore('words').add(word));
+
+        const wordsStore = tx.objectStore('words');
+        wordsStore.count().then(count => {
+            if (count === 0) {
+                mockWords.forEach(word => wordsStore.add(word));
+                console.log('Populated words store with mock data.');
+            }
         });
-        tx.objectStore('adminMessages').count().then(count => {
-          if (count === 0) mockMessages.forEach(message => tx.objectStore('adminMessages').add(message));
+
+        const messagesStore = tx.objectStore('adminMessages');
+        messagesStore.count().then(count => {
+            if (count === 0) {
+                mockMessages.forEach(message => messagesStore.add(message));
+                console.log('Populated messages store with mock data.');
+            }
         });
 
         console.log("Database upgrade complete.");
