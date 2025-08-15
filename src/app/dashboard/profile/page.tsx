@@ -59,6 +59,7 @@ export default function ProfilePage() {
   const { theme, setTheme } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState(language);
   const [selectedTimezone, setSelectedTimezone] = useState<string | undefined>();
+  const [currentTime, setCurrentTime] = useState("");
 
 
   useEffect(() => {
@@ -84,6 +85,24 @@ export default function ProfilePage() {
     setSelectedLanguage(language);
   }, [language]);
   
+  useEffect(() => {
+    if (selectedTimezone) {
+      const timer = setInterval(() => {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('en-US', {
+          timeZone: selectedTimezone,
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true,
+        });
+        setCurrentTime(timeString);
+      }, 1000);
+      return () => clearInterval(timer);
+    } else {
+        setCurrentTime("");
+    }
+  }, [selectedTimezone]);
 
   const timezones = [
     "America/New_York",
@@ -397,6 +416,11 @@ export default function ProfilePage() {
                   ))}
                 </SelectContent>
               </Select>
+              {currentTime && (
+                <p className="text-sm text-muted-foreground pt-1">
+                  Current time: {currentTime}
+                </p>
+              )}
             </div>
              <div className="flex items-center space-x-2">
                 <Switch
@@ -458,3 +482,5 @@ export default function ProfilePage() {
     </div>
   );
 }
+
+    
