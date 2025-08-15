@@ -17,7 +17,7 @@ export default function PresentContinuousPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">{TENSE_NAME} Tense</h1>
+            <h1 className="text-3xl font-bold font-headline">{t('grammar.tenses.presentContinuous')}</h1>
             <p className="text-muted-foreground">
                 Preview the test for your students.
             </p>

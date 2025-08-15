@@ -34,10 +34,25 @@ export const translations = {
         personalInfo: {
             title: "Personal Information",
             description: "Update your personal details here.",
-            picture: "Profile Picture",
             fullName: "Full Name",
             email: "Email",
             save: "Save Changes",
+            grade: "Grade",
+            section: "Section",
+            selectGrade: "Select Grade",
+            selectSection: "Select Section",
+            supervisor: "Supervisor",
+        },
+        picture: {
+            title: "Profile Picture",
+            upload: "Upload Picture",
+            enlarge: "Enlarge",
+            shrink: "Shrink",
+        },
+        landingPage: {
+            title: "Landing Page",
+            description: "Update the main hero image.",
+            uploadButton: "Upload Hero Image",
         },
         preferences: {
             title: "Preferences",
@@ -47,6 +62,8 @@ export const translations = {
             timezone: "Timezone",
             selectTimezone: "Select timezone",
             save: "Save Preferences",
+            currentTime: "Current time: {0}",
+            darkMode: "Dark Mode",
         },
         account: {
             title: "Account Management",
@@ -249,6 +266,11 @@ export const translations = {
             title: "Student Test",
             description: "Students can test their knowledge with this quiz. The questions are generated dynamically by AI.",
             button: "Preview Test"
+        },
+        tenses: {
+            presentSimple: "Present Simple",
+            pastSimple: "Past Simple",
+            presentContinuous: "Present Continuous",
         }
     },
     toasts: {
@@ -309,10 +331,25 @@ export const translations = {
         personalInfo: {
             title: "المعلومات الشخصية",
             description: "قم بتحديث تفاصيلك الشخصية هنا.",
-            picture: "الصورة الشخصية",
             fullName: "الاسم الكامل",
             email: "البريد الإلكتروني",
             save: "حفظ التغييرات",
+            grade: "المرحلة",
+            section: "الشعبة",
+            selectGrade: "اختر المرحلة",
+            selectSection: "اختر الشعبة",
+            supervisor: "المشرف",
+        },
+        picture: {
+            title: "الصورة الشخصية",
+            upload: "رفع الصورة",
+            enlarge: "تكبير",
+            shrink: "تصغير",
+        },
+        landingPage: {
+            title: "الصفحة الرئيسية",
+            description: "تحديث الصورة الرئيسية.",
+            uploadButton: "رفع صورة رئيسية",
         },
         preferences: {
             title: "التفضيلات",
@@ -322,6 +359,8 @@ export const translations = {
             timezone: "المنطقة الزمنية",
             selectTimezone: "اختر المنطقة الزمنية",
             save: "حفظ التفضيلات",
+            currentTime: "الوقت الحالي: {0}",
+            darkMode: "الوضع الداكن",
         },
         account: {
             title: "إدارة الحساب",
@@ -524,6 +563,11 @@ export const translations = {
             title: "اختبار الطالب",
             description: "يمكن للطلاب اختبار معرفتهم بهذا الاختبار. يتم إنشاء الأسئلة ديناميكيًا بواسطة الذكاء الاصطناعي.",
             button: "معاينة الاختبار"
+        },
+        tenses: {
+            presentSimple: "المضارع البسيط",
+            pastSimple: "الماضي البسيط",
+            presentContinuous: "المضارع المستمر",
         }
     },
     toasts: {
@@ -557,8 +601,11 @@ export type TranslationKey =
     | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile' | 'sidebar.learn'
     | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.champion' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins' | 'sidebar.about' | 'sidebar.spelling'
     | 'about.title' | 'about.description' | 'about.greeting' | 'about.teacherIntro' | 'about.aiIntro' | 'about.signature' | 'about.version'
-    | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.picture' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
-    | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.save'
+    | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
+    | 'profile.personalInfo.grade' | 'profile.personalInfo.section' | 'profile.personalInfo.selectGrade' | 'profile.personalInfo.selectSection' | 'profile.personalInfo.supervisor'
+    | 'profile.picture.title' | 'profile.picture.upload' | 'profile.picture.enlarge' | 'profile.picture.shrink'
+    | 'profile.landingPage.title' | 'profile.landingPage.description' | 'profile.landingPage.uploadButton'
+    | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.save' | 'profile.preferences.currentTime' | 'profile.preferences.darkMode'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
     | 'login.welcome' | 'login.description' | 'login.emailLabel' | 'login.passwordLabel' | 'login.forgotPassword' | 'login.loginButton' | 'login.loginWithGoogle' | 'login.noAccount' | 'login.signUp'
     | 'register.title' | 'register.description' | 'register.studentTab' | 'register.supervisorTab' | 'register.fullNameLabel' | 'register.fullNamePlaceholder' | 'register.emailLabel' | 'register.emailPlaceholder' | 'register.passwordLabel' | 'register.supervisorIdLabel' | 'register.supervisorIdPlaceholder' | 'register.createAccountButton' | 'register.createSupervisorAccountButton' | 'register.orContinueWith' | 'register.registerWithGoogle' | 'register.haveAccount' | 'register.login'
@@ -585,6 +632,5 @@ export type TranslationKey =
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'grammar.studentTest.title' | 'grammar.studentTest.description' | 'grammar.studentTest.button'
+    | 'grammar.tenses.presentSimple' | 'grammar.tenses.pastSimple' | 'grammar.tenses.presentContinuous'
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
-
-    

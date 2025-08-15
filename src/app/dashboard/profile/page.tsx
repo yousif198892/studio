@@ -331,20 +331,20 @@ export default function ProfilePage() {
                         />
                     </div>
                      <Button variant="outline" onClick={() => setIsEnlarged(!isEnlarged)}>
-                        {isEnlarged ? "Shrink" : "Enlarge"}
+                        {isEnlarged ? t('profile.picture.shrink') : t('profile.picture.enlarge')}
                      </Button>
                     <Input id="picture" type="file" accept="image/*" onChange={handlePictureChange} className="max-w-xs" />
                 </CardContent>
                 <CardFooter>
-                    <Button onClick={handlePictureUpload} disabled={!previewImage} className="w-full">Upload Picture</Button>
+                    <Button onClick={handlePictureUpload} disabled={!previewImage} className="w-full">{t('profile.picture.upload')}</Button>
                 </CardFooter>
             </Card>
 
             {user.isMainAdmin && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Landing Page</CardTitle>
-                  <CardDescription>Update the main hero image.</CardDescription>
+                  <CardTitle>{t('profile.landingPage.title')}</CardTitle>
+                  <CardDescription>{t('profile.landingPage.description')}</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
                   {heroPreviewImage ? (
@@ -357,7 +357,7 @@ export default function ProfilePage() {
                   <Input id="hero-picture" type="file" accept="image/*" onChange={handleHeroPictureChange} className="max-w-xs" />
                 </CardContent>
                 <CardFooter>
-                    <Button onClick={handleHeroPictureUpload} disabled={!heroPreviewImage} className="w-full">Upload Hero Image</Button>
+                    <Button onClick={handleHeroPictureUpload} disabled={!heroPreviewImage} className="w-full">{t('profile.landingPage.uploadButton')}</Button>
                 </CardFooter>
               </Card>
             )}
@@ -384,10 +384,10 @@ export default function ProfilePage() {
                     <>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label htmlFor="grade">Grade</Label>
+                                <Label htmlFor="grade">{t('profile.personalInfo.grade')}</Label>
                                 <Select value={grade} onValueChange={setGrade}>
                                     <SelectTrigger id="grade">
-                                        <SelectValue placeholder="Select Grade" />
+                                        <SelectValue placeholder={t('profile.personalInfo.selectGrade')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {Array.from({ length: 6 }, (_, i) => i + 1).map(g => (
@@ -397,10 +397,10 @@ export default function ProfilePage() {
                                 </Select>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="section">Section</Label>
+                                <Label htmlFor="section">{t('profile.personalInfo.section')}</Label>
                                 <Select value={section} onValueChange={setSection}>
                                     <SelectTrigger id="section">
-                                        <SelectValue placeholder="Select Section" />
+                                        <SelectValue placeholder={t('profile.personalInfo.selectSection')} />
                                     </SelectTrigger>
                                     <SelectContent>
                                         {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(s => (
@@ -412,7 +412,7 @@ export default function ProfilePage() {
                         </div>
                         {supervisor && (
                             <div className="space-y-2">
-                                <Label htmlFor="supervisor">Supervisor</Label>
+                                <Label htmlFor="supervisor">{t('profile.personalInfo.supervisor')}</Label>
                                 <Input id="supervisor" value={supervisor.name} disabled />
                             </div>
                         )}
@@ -460,7 +460,7 @@ export default function ProfilePage() {
               </Select>
               {currentTime && (
                 <p className="text-sm text-muted-foreground pt-1">
-                  Current time: {currentTime}
+                  {t('profile.preferences.currentTime', currentTime)}
                 </p>
               )}
             </div>
@@ -470,7 +470,7 @@ export default function ProfilePage() {
                     checked={theme === 'dark'}
                     onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
                 />
-                <Label htmlFor="dark-mode">Dark Mode</Label>
+                <Label htmlFor="dark-mode">{t('profile.preferences.darkMode')}</Label>
             </div>
           </CardContent>
           <CardFooter>
