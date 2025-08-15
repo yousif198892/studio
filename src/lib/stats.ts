@@ -32,7 +32,7 @@ export type XpEvent =
 export const XP_AMOUNTS: Record<XpEvent, number> = {
     review_word: 5,
     spell_correct: 5,
-    daily_login: 10,
+    daily_login: 20,
     master_word: 10,
     grammar_test: 20
 };
