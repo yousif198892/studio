@@ -110,6 +110,7 @@ export default function ProfilePage() {
     "Europe/London",
     "Europe/Madrid",
     "Asia/Tokyo",
+    "Asia/Baghdad",
   ];
 
   const handleLanguageChange = (value: "en" | "ar") => {
