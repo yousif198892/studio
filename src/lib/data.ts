@@ -41,6 +41,8 @@ export type User = {
   isMainAdmin?: boolean;
   isSuspended?: boolean;
   trialExpiresAt?: string; // ISO date string for trial accounts
+  grade?: string;
+  section?: string;
 };
 
 export type Word = {

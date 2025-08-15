@@ -21,12 +21,15 @@ import { useLanguage } from "@/hooks/use-language";
 import { User, addUserDB, getAllUsers, getUserByEmailDB, getUserById } from "@/lib/data";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 const registerSchema = z.object({
     name: z.string().min(1, 'Name is required.'),
     email: z.string().email('Invalid email address.'),
     password: z.string().min(6, 'Password must be at least 6 characters.'),
     supervisorId: z.string().min(1, 'Supervisor ID is required.'),
+    grade: z.string().min(1, 'Grade is required.'),
+    section: z.string().min(1, 'Section is required.'),
   });
 
 export function RegisterForm() {
@@ -46,6 +49,8 @@ export function RegisterForm() {
         email: formData.get("email"),
         password: formData.get("password"),
         supervisorId: formData.get("supervisorId"),
+        grade: formData.get("grade"),
+        section: formData.get("section"),
     });
 
     if (!validatedFields.success) {
@@ -55,7 +60,7 @@ export function RegisterForm() {
         return;
     }
 
-    const { name, email, password, supervisorId } = validatedFields.data;
+    const { name, email, password, supervisorId, grade, section } = validatedFields.data;
 
     try {
         const existingUser = await getUserByEmailDB(email);
@@ -89,6 +94,8 @@ export function RegisterForm() {
             avatar: "https://placehold.co/100x100.png",
             supervisorId,
             timezone: "Asia/Baghdad",
+            grade,
+            section
         };
         
         await addUserDB(newUser);
@@ -132,6 +139,34 @@ export function RegisterForm() {
                     placeholder={t('register.emailPlaceholder')}
                     required
                   />
+                </div>
+                 <div className="grid grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                        <Label htmlFor="grade">Grade</Label>
+                        <Select name="grade">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Grade" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Array.from({ length: 10 }, (_, i) => i + 1).map(grade => (
+                                <SelectItem key={grade} value={String(grade)}>{grade}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                    </div>
+                     <div className="grid gap-2">
+                        <Label htmlFor="section">Section</Label>
+                        <Select name="section">
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Section" />
+                          </SelectTrigger>
+                          <SelectContent>
+                             {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(letter => (
+                                <SelectItem key={letter} value={letter}>{letter}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                    </div>
                 </div>
                 <div className="grid gap-2">
                   <Label htmlFor="student-password">{t('register.passwordLabel')}</Label>
