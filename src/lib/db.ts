@@ -49,44 +49,53 @@ const getDb = () => {
   }
   if (!dbPromise) {
     const dbName = 'lingua-leap-db';
-    const dbVersion = 6; // Incremented version to force upgrade
+    const dbVersion = 7; // Incremented version to force upgrade
 
     dbPromise = openDB<LinguaLeapDB>(dbName, dbVersion, {
       upgrade(db, oldVersion, newVersion, tx) {
         console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
         
-        if (oldVersion < 6) {
-            // Re-check all stores in case of a fresh install
-            if (!db.objectStoreNames.contains('users')) {
-              const userStore = db.createObjectStore('users', { keyPath: 'id' });
-              userStore.createIndex('by-email', 'email', { unique: true });
-              mockUsers.forEach(user => tx.objectStore('users').add(user));
-            }
-            if (!db.objectStoreNames.contains('words')) {
-              const wordStore = db.createObjectStore('words', { keyPath: 'id' });
-              wordStore.createIndex('by-supervisorId', 'supervisorId');
-              mockWords.forEach(word => tx.objectStore('words').add(word));
-            }
-            if (!db.objectStoreNames.contains('adminMessages')) {
-              const messageStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
-              mockMessages.forEach(message => tx.objectStore('adminMessages').add(message));
-            }
-            if (!db.objectStoreNames.contains('wordProgress')) {
-              const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
-              progressStore.createIndex('by-studentId', 'studentId');
-            }
-            if (!db.objectStoreNames.contains('landingPage')) {
-              db.createObjectStore('landingPage', { keyPath: 'id' });
-            }
-             if (!db.objectStoreNames.contains('supervisorMessages')) {
-              const store = db.createObjectStore('supervisorMessages', { keyPath: 'id' });
-              store.createIndex('by-conversation', ['studentId', 'supervisorId']);
-            }
-            if (!db.objectStoreNames.contains('peerMessages')) {
-              const store = db.createObjectStore('peerMessages', { keyPath: 'id' });
-              store.createIndex('by-conversation', 'conversationId');
-            }
+        // Re-check all stores in case of a fresh install or version upgrade
+        if (!db.objectStoreNames.contains('users')) {
+          const userStore = db.createObjectStore('users', { keyPath: 'id' });
+          userStore.createIndex('by-email', 'email', { unique: true });
+          mockUsers.forEach(user => tx.objectStore('users').add(user));
         }
+        if (!db.objectStoreNames.contains('words')) {
+          const wordStore = db.createObjectStore('words', { keyPath: 'id' });
+          wordStore.createIndex('by-supervisorId', 'supervisorId');
+          mockWords.forEach(word => tx.objectStore('words').add(word));
+        }
+        if (!db.objectStoreNames.contains('adminMessages')) {
+          const messageStore = db.createObjectStore('adminMessages', { keyPath: 'id' });
+          mockMessages.forEach(message => tx.objectStore('adminMessages').add(message));
+        }
+        if (!db.objectStoreNames.contains('wordProgress')) {
+          const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
+          progressStore.createIndex('by-studentId', 'studentId');
+        }
+        if (!db.objectStoreNames.contains('landingPage')) {
+          db.createObjectStore('landingPage', { keyPath: 'id' });
+        }
+        if (!db.objectStoreNames.contains('supervisorMessages')) {
+          const store = db.createObjectStore('supervisorMessages', { keyPath: 'id' });
+          store.createIndex('by-conversation', ['studentId', 'supervisorId']);
+        }
+        if (!db.objectStoreNames.contains('peerMessages')) {
+          const store = db.createObjectStore('peerMessages', { keyPath: 'id' });
+          store.createIndex('by-conversation', 'conversationId');
+        }
+        
+        // Populate mock data on upgrade if stores are empty
+        tx.objectStore('users').count().then(count => {
+          if (count === 0) mockUsers.forEach(user => tx.objectStore('users').add(user));
+        });
+        tx.objectStore('words').count().then(count => {
+          if (count === 0) mockWords.forEach(word => tx.objectStore('words').add(word));
+        });
+        tx.objectStore('adminMessages').count().then(count => {
+          if (count === 0) mockMessages.forEach(message => tx.objectStore('adminMessages').add(message));
+        });
 
         console.log("Database upgrade complete.");
       },

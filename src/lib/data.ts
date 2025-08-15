@@ -108,18 +108,94 @@ export const mockMessages: Message[] = [
 
 export const mockUsers: User[] = [
   {
+    id: "sup1",
+    name: "Ali Hassan",
+    email: "ali.hassan@example.com",
+    password: "password123",
+    role: "supervisor",
+    avatar: "https://placehold.co/100x100.png?text=AH",
+    timezone: "Asia/Baghdad",
+  },
+  {
     id: "sup2",
     name: "Yousif",
     email: "warriorwithinyousif@gmail.com",
     password: "password123",
     role: "supervisor",
-    avatar: "https://placehold.co/100x100.png",
+    avatar: "https://placehold.co/100x100.png?text=Y",
     timezone: "Asia/Baghdad",
     isMainAdmin: true,
   },
+  {
+    id: "user1",
+    name: "Fatima Ahmed",
+    email: "fatima.ahmed@example.com",
+    password: "password123",
+    role: "student",
+    supervisorId: "sup1",
+    avatar: "https://placehold.co/100x100.png?text=FA",
+    grade: '5',
+    section: 'A',
+  },
+  {
+    id: "user2",
+    name: "Mohammed Khan",
+    email: "mohammed.khan@example.com",
+    password: "password123",
+    role: "student",
+    supervisorId: "sup1",
+    avatar: "https://placehold.co/100x100.png?text=MK",
+    grade: '5',
+    section: 'A',
+  },
+  {
+    id: "user3",
+    name: "Aisha Ibrahim",
+    email: "aisha.ibrahim@example.com",
+    password: "password123",
+    role: "student",
+    supervisorId: "sup1",
+    avatar: "https://placehold.co/100x100.png?text=AI",
+    grade: '6',
+    section: 'B',
+  }
 ];
 
-export const mockWords: Word[] = [];
+export const mockWords: Word[] = [
+    {
+        id: "word1",
+        word: "Apple",
+        definition: "A round fruit with red or green skin and a whitish inside.",
+        unit: "Unit 1",
+        lesson: "Lesson 1",
+        imageUrl: "https://placehold.co/600x400.png?text=Apple",
+        options: ["Apple", "Banana", "Orange", "Grape"],
+        correctOption: "Apple",
+        supervisorId: "sup1",
+    },
+    {
+        id: "word2",
+        word: "Book",
+        definition: "A written or printed work consisting of pages glued or sewn together along one side and bound in covers.",
+        unit: "Unit 1",
+        lesson: "Lesson 1",
+        imageUrl: "https://placehold.co/600x400.png?text=Book",
+        options: ["Book", "Pen", "Table", "Chair"],
+        correctOption: "Book",
+        supervisorId: "sup1",
+    },
+    {
+        id: "word3",
+        word: "Cat",
+        definition: "A small domesticated carnivorous mammal with soft fur, a short snout, and retractable claws.",
+        unit: "Unit 1",
+        lesson: "Lesson 2",
+        imageUrl: "https://placehold.co/600x400.png?text=Cat",
+        options: ["Cat", "Dog", "Bird", "Fish"],
+        correctOption: "Cat",
+        supervisorId: "sup1",
+    },
+];
 
 
 // --- NEW ASYNC FUNCTIONS ---
