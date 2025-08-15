@@ -148,7 +148,6 @@ export default function ChatPage() {
     }
     
     const sortedPartners = partners
-      .filter(p => !(user.blockedUsers?.includes(p.id)))
       .sort((a,b) => {
         const timeA = a.lastMessage?.createdAt ? new Date(a.lastMessage.createdAt).getTime() : 0;
         const timeB = b.lastMessage?.createdAt ? new Date(b.lastMessage.createdAt).getTime() : 0;
@@ -380,11 +379,6 @@ export default function ChatPage() {
     setCurrentUser(updatedUser);
     toast({ title: t('toasts.success'), description: isBlocked ? 'User unblocked' : 'User blocked.' });
 
-    if (!isBlocked) {
-        setSelectedContact(null);
-        setMessages([]);
-    }
-
     await loadData();
   }
 
@@ -410,31 +404,37 @@ export default function ChatPage() {
           <ScrollArea className="flex-1">
             <CardContent className="p-2">
               {conversations.length > 0 ? (
-                conversations.map((convo) => (
-                    <div key={convo.id} className="flex items-center gap-1 group">
-                        <button
-                        className={cn(
-                            "flex items-center gap-3 text-left p-2 rounded-lg w-full transition-colors",
-                            selectedContact?.id === convo.id
-                            ? "bg-secondary"
-                            : "hover:bg-muted/50"
-                        )}
-                        onClick={() => handleSelectContact(convo)}
-                        >
-                        <Avatar className="h-10 w-10">
-                            <AvatarImage src={convo.avatar} style={{ objectFit: 'contain' }} />
-                            <AvatarFallback>{convo.name.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="font-semibold truncate">{convo.name}</p>
-                            <p className="text-xs text-muted-foreground truncate">
-                            {convo.lastMessage ? convo.lastMessage.content : t('chatPage.noMessages')}
-                            </p>
+                conversations.map((convo) => {
+                    const isBlockedByCurrentUser = currentUser?.blockedUsers?.includes(convo.id);
+                    return (
+                        <div key={convo.id} className="flex items-center gap-1 group">
+                            <button
+                            className={cn(
+                                "flex items-center gap-3 text-left p-2 rounded-lg w-full transition-colors",
+                                selectedContact?.id === convo.id
+                                ? "bg-secondary"
+                                : "hover:bg-muted/50"
+                            )}
+                            onClick={() => handleSelectContact(convo)}
+                            >
+                            <Avatar className="h-10 w-10">
+                                <AvatarImage src={convo.avatar} style={{ objectFit: 'contain' }} />
+                                <AvatarFallback>{convo.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 overflow-hidden">
+                                <p className="font-semibold truncate flex items-center gap-2">
+                                    <span>{convo.name}</span>
+                                    {isBlockedByCurrentUser && <Ban className="h-4 w-4 text-destructive" />}
+                                </p>
+                                <p className="text-xs text-muted-foreground truncate">
+                                {convo.lastMessage ? convo.lastMessage.content : t('chatPage.noMessages')}
+                                </p>
+                            </div>
+                            {convo.unreadCount > 0 && <Badge>{convo.unreadCount}</Badge>}
+                            </button>
                         </div>
-                        {convo.unreadCount > 0 && <Badge>{convo.unreadCount}</Badge>}
-                        </button>
-                    </div>
-                  ))
+                    );
+                })
               ) : (
                 <div className="text-center text-muted-foreground py-12 px-4">
                   {t('chatPage.noConversations')}
