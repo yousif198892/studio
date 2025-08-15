@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import {
@@ -93,15 +92,6 @@ export default function Dashboard() {
           setWordsMasteredCount(mastered);
           setWordsLearningCount(learning);
           
-          // Daily Login XP Check
-          const { updated, amount } = updateXp(userId, 'daily_login');
-          if (updated) {
-              toast({
-                  description: <XpToast event="daily_login" amount={amount} />,
-                  duration: 3000,
-              });
-          }
-
           // Use local date for daily check
           const today = new Date().toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
           const storedStats = localStorage.getItem(`learningStats_${userId}`);
@@ -127,6 +117,20 @@ export default function Dashboard() {
           }
            if (typeof currentStats.xp !== 'number') {
               currentStats.xp = 0;
+          }
+          
+          // Daily Login XP Check
+          const { updated, amount } = updateXp(userId, 'daily_login');
+          if (updated) {
+              toast({
+                  description: <XpToast event="daily_login" amount={amount} />,
+                  duration: 3000,
+              });
+              // Refetch stats to include the new XP from daily login
+              const updatedStats = localStorage.getItem(`learningStats_${userId}`);
+              if(updatedStats) {
+                currentStats = JSON.parse(updatedStats);
+              }
           }
           
           setStats(currentStats);
@@ -231,7 +235,7 @@ export default function Dashboard() {
                 <CardContent>
                     <div className="text-2xl font-bold text-yellow-500">{stats.xp.toLocaleString()}</div>
                     <p className="text-xs text-muted-foreground">
-                        Keep it up!
+                        Earn XP from reviews, tests, spelling & daily logins.
                     </p>
                 </CardContent>
             </Card>
