@@ -128,6 +128,7 @@ export const translations = {
             startReview: "Start Review Session",
             learningQueue: "{0} in learning queue",
             greatWork: "Keep up the great work!",
+            xpDescription: "Earn XP from reviews, tests, spelling & daily logins.",
             progressOverview: {
                 title: "Progress Overview",
                 description: "A snapshot of your learning activity.",
@@ -395,6 +396,7 @@ export const translations = {
             startReview: "ابدأ جلسة المراجعة",
             learningQueue: "{0} كلمة قيد التعلم",
             greatWork: "استمر في العمل الرائع!",
+            xpDescription: "اكسب نقاط الخبرة من المراجعات والاختبارات والإملاء وتسجيل الدخول اليومي.",
             progressOverview: {
                 title: "نظرة عامة على التقدم",
                 description: "لمحة سريعة عن نشاطك التعليمي.",
@@ -551,7 +553,7 @@ export type TranslationKey =
     | 'landing.features.supervisorTools.title' | 'landing.features.supervisorTools.description'
     | 'landing.features.srs.title' | 'landing.features.srs.description'
     | 'landing.footer.copyright' | 'landing.footer.terms' | 'landing.footer.privacy'
-    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.startReview' | 'dashboard.student.learningQueue' | 'dashboard.student.greatWork'
+    | 'dashboard.student.welcome' | 'dashboard.student.description' | 'dashboard.student.reviewTitle' | 'dashboard.student.reviewDescription' | 'dashboard.student.startReview' | 'dashboard.student.learningQueue' | 'dashboard.student.greatWork' | 'dashboard.student.xpDescription'
     | 'dashboard.student.progressOverview.title' | 'dashboard.student.progressOverview.description' | 'dashboard.student.progressOverview.timeSpent' | 'dashboard.student.progressOverview.wordsReviewed' | 'dashboard.student.progressOverview.reviewedToday' | 'dashboard.student.progressOverview.masteredWords' | 'dashboard.student.progressOverview.timeSpentToday' | 'dashboard.student.progressOverview.totalWordsReviewed'
     | 'dashboard.student.activity.title' | 'dashboard.student.tests.title'
     | 'dashboard.supervisor.title' | 'dashboard.supervisor.welcome' | 'dashboard.supervisor.supervisorId.title' | 'dashboard.supervisor.supervisorId.description' | 'dashboard.supervisor.myStudents.title' | 'dashboard.supervisor.myStudents.description' | 'dashboard.supervisor.myStudents.name' | 'dashboard.supervisor.myStudents.email'

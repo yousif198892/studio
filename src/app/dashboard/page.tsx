@@ -92,32 +92,7 @@ export default function Dashboard() {
           setWordsMasteredCount(mastered);
           setWordsLearningCount(learning);
           
-          // Use local date for daily check
-          const today = new Date().toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
-          const storedStats = localStorage.getItem(`learningStats_${userId}`);
-          let currentStats: LearningStats;
-
-          if (storedStats) {
-            currentStats = JSON.parse(storedStats);
-          } else {
-             currentStats = getInitialStats(today);
-          }
-
-          if (!currentStats.reviewedToday || currentStats.reviewedToday.date !== today) {
-              currentStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
-          }
-          if (typeof currentStats.reviewedToday.timeSpentSeconds !== 'number') {
-              currentStats.reviewedToday.timeSpentSeconds = 0;
-          }
-          if (!Array.isArray(currentStats.reviewedToday.completedTests)) {
-              currentStats.reviewedToday.completedTests = [];
-          }
-          if (!Array.isArray(currentStats.activityLog)) {
-              currentStats.activityLog = [];
-          }
-           if (typeof currentStats.xp !== 'number') {
-              currentStats.xp = 0;
-          }
+          let currentStats = getStatsForUser(userId);
           
           // Daily Login XP Check
           const { updated, amount } = updateXp(userId, 'daily_login');
@@ -127,10 +102,7 @@ export default function Dashboard() {
                   duration: 3000,
               });
               // Refetch stats to include the new XP from daily login
-              const updatedStats = localStorage.getItem(`learningStats_${userId}`);
-              if(updatedStats) {
-                currentStats = JSON.parse(updatedStats);
-              }
+              currentStats = getStatsForUser(userId);
           }
           
           setStats(currentStats);
@@ -235,7 +207,7 @@ export default function Dashboard() {
                 <CardContent>
                     <div className="text-2xl font-bold text-yellow-500">{stats.xp.toLocaleString()}</div>
                     <p className="text-xs text-muted-foreground">
-                        Earn XP from reviews, tests, spelling & daily logins.
+                        {t('dashboard.student.xpDescription')}
                     </p>
                 </CardContent>
             </Card>
@@ -424,3 +396,5 @@ export default function Dashboard() {
 
    return <div>{t('dashboard.loading')}</div>
  }
+
+    
