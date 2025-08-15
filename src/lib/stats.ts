@@ -1,7 +1,8 @@
 
+
 'use client';
 
-import { getWeek, startOfWeek, endOfWeek, format } from 'date-fns';
+import { getWeek, startOfWeek } from 'date-fns';
 
 export type LearningStats = {
   timeSpentSeconds: number; 
@@ -85,16 +86,15 @@ const getStatsForUser = (userId: string): LearningStats => {
 }
 
 export const updateXp = (userId: string, event: XpEvent) => {
-    if (!userId) return;
+    if (!userId) return { updated: false, amount: 0 };
     
-    // Get stats, which also handles the weekly reset check
     const stats = getStatsForUser(userId);
     const amount = XP_AMOUNTS[event];
-    const today = new Date().toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
+    const today = new Date().toLocaleDateString('en-CA');
 
     if (event === 'daily_login') {
         if (stats.lastLoginDate === today) {
-            return; // Already awarded today
+            return { updated: false, amount: 0 }; // Already awarded today
         }
         stats.lastLoginDate = today;
     }
@@ -102,6 +102,7 @@ export const updateXp = (userId: string, event: XpEvent) => {
     stats.xp += amount;
     
     localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+    return { updated: true, amount };
 };
 
 
@@ -140,6 +141,8 @@ export const updateLearningStats = ({
   // Log completed test
   if (testName && !stats.reviewedToday.completedTests.includes(testName)) {
       stats.reviewedToday.completedTests.push(testName);
+      // Award XP for completing a test for the first time today
+      updateXp(userId, 'grammar_test');
   }
 
   localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));

@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import {
@@ -92,9 +93,18 @@ export default function Dashboard() {
           setWordsMasteredCount(mastered);
           setWordsLearningCount(learning);
           
-          const storedStats = localStorage.getItem(`learningStats_${userId}`);
+          // Daily Login XP Check
+          const { updated, amount } = updateXp(userId, 'daily_login');
+          if (updated) {
+              toast({
+                  description: <XpToast event="daily_login" amount={amount} />,
+                  duration: 3000,
+              });
+          }
+
           // Use local date for daily check
           const today = new Date().toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
+          const storedStats = localStorage.getItem(`learningStats_${userId}`);
           let currentStats: LearningStats;
 
           if (storedStats) {
@@ -102,7 +112,7 @@ export default function Dashboard() {
           } else {
              currentStats = getInitialStats(today);
           }
-          
+
           if (!currentStats.reviewedToday || currentStats.reviewedToday.date !== today) {
               currentStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
           }
@@ -118,18 +128,7 @@ export default function Dashboard() {
            if (typeof currentStats.xp !== 'number') {
               currentStats.xp = 0;
           }
-
-          // Daily Login XP Check
-          if (currentStats.lastLoginDate !== today) {
-              updateXp(userId, 'daily_login');
-              toast({
-                  description: <XpToast event="daily_login" amount={XP_AMOUNTS.daily_login} />,
-                  duration: 3000,
-              });
-              currentStats.lastLoginDate = today;
-          }
           
-          localStorage.setItem(`learningStats_${userId}`, JSON.stringify(currentStats));
           setStats(currentStats);
 
         } else if (foundUser?.role === 'supervisor') {
