@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +31,9 @@ export default function AboutPage() {
                     </p>
                     <p>
                        {t('about.aiIntro')}
+                    </p>
+                     <p className="text-sm text-muted-foreground pt-4 border-t">
+                       {t('about.contactHint')}
                     </p>
                     <div className="pt-4 border-t">
                         <p className="text-muted-foreground">{t('about.signature')}</p>

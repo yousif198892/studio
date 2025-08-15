@@ -1,5 +1,4 @@
 
-
 export const translations = {
   en: {
     sidebar: {
@@ -70,6 +69,7 @@ export const translations = {
         greeting: "Hello!",
         teacherIntro: "I am Yousif, an English teacher passionate about leveraging technology to make language learning more accessible and effective. This application is a product of that passion, designed to be a tool I can use with my own students.",
         aiIntro: "To bring this vision to life, I collaborated with Gemini, a large-scale AI from Google. Gemini handled the application development, from coding the interface to integrating the smart features that power the quizzes and learning systems.",
+        contactHint: "Remember you can always message us if you have any suggestions or reporting a bug from the sign-up page.",
         signature: "With regards,",
         version: "App Version: {0}"
     },
@@ -479,6 +479,7 @@ export const translations = {
         greeting: "مرحباً!",
         teacherIntro: "أنا يوسف، مدرس لغة إنجليزية شغوف بالاستفادة من التكنولوجيا لجعل تعلم اللغة أكثر سهولة وفعالية. هذا التطبيق هو نتاج هذا الشغف، وهو مصمم ليكون أداة يمكنني استخدامها مع طلابي.",
         aiIntro: "لتحقيق هذه الرؤية، تعاونت مع Gemini، وهو ذكاء اصطناعي واسع النطاق من Google. تولى Gemini تطوير التطبيق، من برمجة الواجهة إلى دمج الميزات الذكية التي تشغل الاختبارات وأنظمة التعلم.",
+        contactHint: "تذكر أنه يمكنك دائمًا مراسلتنا إذا كانت لديك أي اقتراحات أو للإبلاغ عن خطأ من صفحة التسجيل.",
         signature: "مع تحياتي،",
         version: "إصدار التطبيق: {0}"
     },
@@ -830,7 +831,7 @@ export type TranslationKey =
     | 'chatPage.blockDialog.title' | 'chatPage.blockDialog.description' | 'chatPage.blockDialog.blockButton' | 'chatPage.blockDialog.cancel'
     | 'chatPage.unblockDialog.title' | 'chatPage.unblockDialog.description' | 'chatPage.unblockDialog.unblockButton'
     | 'chatPage.blockedContact' | 'chatPage.blockedMessage'
-    | 'about.title' | 'about.description' | 'about.greeting' | 'about.teacherIntro' | 'about.aiIntro' | 'about.signature' | 'about.version'
+    | 'about.title' | 'about.description' | 'about.greeting' | 'about.teacherIntro' | 'about.aiIntro' | 'about.contactHint' | 'about.signature' | 'about.version'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.personalInfo.grade' | 'profile.personalInfo.section' | 'profile.personalInfo.selectGrade' | 'profile.personalInfo.selectSection' | 'profile.personalInfo.supervisor'
     | 'profile.picture.title' | 'profile.picture.upload' | 'profile.picture.enlarge' | 'profile.picture.shrink'
