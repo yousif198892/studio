@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { setHeroImage } from "@/lib/db";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/hooks/use-theme";
+import { Switch } from "@/components/ui/switch";
 
 
 export default function ProfilePage() {
@@ -53,6 +56,7 @@ export default function ProfilePage() {
   const [isEnlarged, setIsEnlarged] = useState(false);
   
   // State for preferences
+  const { theme, setTheme } = useTheme();
   const [selectedLanguage, setSelectedLanguage] = useState(language);
   const [selectedTimezone, setSelectedTimezone] = useState<string | undefined>();
 
@@ -393,6 +397,14 @@ export default function ProfilePage() {
                   ))}
                 </SelectContent>
               </Select>
+            </div>
+             <div className="flex items-center space-x-2">
+                <Switch
+                    id="dark-mode"
+                    checked={theme === 'dark'}
+                    onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+                />
+                <Label htmlFor="dark-mode">Dark Mode</Label>
             </div>
           </CardContent>
           <CardFooter>

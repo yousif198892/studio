@@ -7,6 +7,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import { LanguageProvider } from "@/hooks/use-language.tsx";
+import { ThemeProvider } from "@/hooks/use-theme";
 import { LanguageSetter } from "@/components/language-setter";
 
 const ptSans = PT_Sans({
@@ -43,14 +44,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" dir="ltr">
-        <LanguageProvider>
-            <LanguageSetter />
-            <AppBody>
-              {children}
-              <Toaster />
-            </AppBody>
-        </LanguageProvider>
+    <html lang="en" dir="ltr" suppressHydrationWarning>
+        <ThemeProvider>
+            <LanguageProvider>
+                <LanguageSetter />
+                <AppBody>
+                  {children}
+                  <Toaster />
+                </AppBody>
+            </LanguageProvider>
+        </ThemeProvider>
     </html>
   );
 }
