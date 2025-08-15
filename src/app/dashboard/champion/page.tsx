@@ -7,9 +7,10 @@ import { User, getUserById, getStudentsBySupervisorId } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Trophy } from "lucide-react";
-import { LearningStats } from "@/lib/stats";
+import { LearningStats } from "@/lib/stats.tsx";
 import { cn } from "@/lib/utils";
 import { endOfWeek, formatDistanceToNow } from "date-fns";
+import { useLanguage } from "@/hooks/use-language";
 
 type ClassmateWithXp = User & {
     xp: number;
@@ -28,6 +29,7 @@ export default function ChampionPage() {
     const [leaderboard, setLeaderboard] = useState<ClassmateWithXp[]>([]);
     const [loading, setLoading] = useState(true);
     const [weekEndsIn, setWeekEndsIn] = useState("");
+    const { t } = useLanguage();
 
 
     useEffect(() => {
@@ -78,20 +80,20 @@ export default function ChampionPage() {
     }
     
     if (loading) {
-        return <div>Loading leaderboard...</div>;
+        return <div>{t('championPage.loading')}</div>;
     }
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">Champion Leaderboard</h1>
+            <h1 className="text-3xl font-bold font-headline">{t('championPage.title')}</h1>
             <p className="text-muted-foreground">
-                See who's at the top of the class! The leaderboard resets every week.
+                {t('championPage.description')}
             </p>
             <Card>
                 <CardHeader>
-                    <CardTitle>Weekly Rankings</CardTitle>
+                    <CardTitle>{t('championPage.weeklyRankings')}</CardTitle>
                     <CardDescription>
-                       Leaderboard of you and your classmates. Resets {weekEndsIn}.
+                       {t('championPage.leaderboardDescription', weekEndsIn)}
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -120,18 +122,18 @@ export default function ChampionPage() {
                                         className="rounded-full"
                                     />
                                     <div className="flex-1">
-                                        <p className="font-semibold text-lg">{classmate.name} {userId === classmate.id && "(You)"}</p>
+                                        <p className="font-semibold text-lg">{classmate.name} {userId === classmate.id && t('championPage.you')}</p>
                                     </div>
                                     <div className="flex items-center gap-2 text-yellow-500 font-bold text-lg">
                                         <span>{classmate.xp.toLocaleString()}</span>
-                                        <span>XP</span>
+                                        <span>{t('championPage.xp')}</span>
                                     </div>
                                 </li>
                             ))}
                         </ol>
                     ) : (
                          <div className="text-center text-muted-foreground py-12">
-                            No classmates found to create a leaderboard.
+                            {t('championPage.noClassmates')}
                         </div>
                     )}
                 </CardContent>

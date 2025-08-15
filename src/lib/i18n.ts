@@ -286,6 +286,16 @@ export const translations = {
             presentContinuous: "Present Continuous",
         }
     },
+    championPage: {
+        title: "Champion Leaderboard",
+        description: "See who's at the top of the class! The leaderboard resets every week.",
+        weeklyRankings: "Weekly Rankings",
+        leaderboardDescription: "Leaderboard of you and your classmates. Resets {0}.",
+        you: "(You)",
+        xp: "XP",
+        loading: "Loading leaderboard...",
+        noClassmates: "No classmates found to create a leaderboard."
+    },
     xpEvents: {
         review_word: "Word Reviewed",
         spell_correct: "Spelling Correct",
@@ -603,6 +613,16 @@ export const translations = {
             presentContinuous: "المضارع المستمر",
         }
     },
+     championPage: {
+        title: "لوحة المتصدرين",
+        description: "شاهد من هو في قمة الفصل! يتم إعادة تعيين لوحة المتصدرين كل أسبوع.",
+        weeklyRankings: "التصنيفات الأسبوعية",
+        leaderboardDescription: "لوحة المتصدرين لك ولزملائك في الفصل. تتم إعادة التعيين {0}.",
+        you: "(أنت)",
+        xp: "نقطة خبرة",
+        loading: "جار تحميل لوحة المتصدرين...",
+        noClassmates: "لم يتم العثور على زملاء في الفصل لإنشاء لوحة متصدرين."
+    },
     xpEvents: {
         review_word: "تمت مراجعة الكلمة",
         spell_correct: "إملاء صحيح",
@@ -674,7 +694,6 @@ export type TranslationKey =
     | 'grammar.hub.title' | 'grammar.hub.description' | 'grammar.hub.individualTenses.title' | 'grammar.hub.individualTenses.description' | 'grammar.hub.comprehensiveTest.title' | 'grammar.hub.comprehensiveTest.description' | 'grammar.hub.comprehensiveTest.button'
     | 'grammar.studentTest.title' | 'grammar.studentTest.description' | 'grammar.studentTest.button'
     | 'grammar.tenses.presentSimple' | 'grammar.tenses.pastSimple' | 'grammar.tenses.presentContinuous'
+    | 'championPage.title' | 'championPage.description' | 'championPage.weeklyRankings' | 'championPage.leaderboardDescription' | 'championPage.you' | 'championPage.xp' | 'championPage.loading' | 'championPage.noClassmates'
     | `xpEvents.${'review_word' | 'spell_correct' | 'daily_login' | 'master_word' | 'grammar_test'}`
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
-
-    
