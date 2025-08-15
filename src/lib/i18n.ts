@@ -296,6 +296,28 @@ export const translations = {
         loading: "Loading leaderboard...",
         noClassmates: "No classmates found to create a leaderboard."
     },
+    learningWordsPage: {
+        title: "Words in Learning",
+        description: "This is your active queue. Keep reviewing these words to master them!",
+        cardTitle: "Your Learning Queue",
+        cardDescription: "A list of all the words you are currently learning. Filter by unit and lesson below.",
+        filterUnit: "Filter by Unit",
+        filterLesson: "Filter by Lesson",
+        allUnits: "All Units",
+        allLessons: "All Lessons",
+        clearFilters: "Clear",
+        tableImage: "Image",
+        tableWord: "Word",
+        tableUnit: "Unit",
+        tableNextReview: "Next Review",
+        tableActions: "Actions",
+        dueNow: "Due now",
+        timeLeft: "{0} left",
+        days: "d",
+        hours: "h",
+        loading: "Loading your words...",
+        noWords: "No words found for the selected filters.",
+    },
     xpEvents: {
         review_word: "Word Reviewed",
         spell_correct: "Spelling Correct",
@@ -623,6 +645,28 @@ export const translations = {
         loading: "جار تحميل لوحة المتصدرين...",
         noClassmates: "لم يتم العثور على زملاء في الفصل لإنشاء لوحة متصدرين."
     },
+    learningWordsPage: {
+        title: "كلمات قيد التعلم",
+        description: "هذه هي قائمة الانتظار النشطة الخاصة بك. استمر في مراجعة هذه الكلمات لإتقانها!",
+        cardTitle: "قائمة التعلم الخاصة بك",
+        cardDescription: "قائمة بجميع الكلمات التي تتعلمها حاليًا. قم بالتصفية حسب الوحدة والدرس أدناه.",
+        filterUnit: "التصفية حسب الوحدة",
+        filterLesson: "التصفية حسب الدرس",
+        allUnits: "كل الوحدات",
+        allLessons: "كل الدروس",
+        clearFilters: "مسح الفلاتر",
+        tableImage: "الصورة",
+        tableWord: "الكلمة",
+        tableUnit: "الوحدة",
+        tableNextReview: "المراجعة التالية",
+        tableActions: "الإجراءات",
+        dueNow: "حان الآن",
+        timeLeft: "بقي {0}",
+        days: "ي",
+        hours: "س",
+        loading: "جار تحميل كلماتك...",
+        noWords: "لم يتم العثور على كلمات للفلاتر المحددة.",
+    },
     xpEvents: {
         review_word: "تمت مراجعة الكلمة",
         spell_correct: "إملاء صحيح",
@@ -695,5 +739,6 @@ export type TranslationKey =
     | 'grammar.studentTest.title' | 'grammar.studentTest.description' | 'grammar.studentTest.button'
     | 'grammar.tenses.presentSimple' | 'grammar.tenses.pastSimple' | 'grammar.tenses.presentContinuous'
     | 'championPage.title' | 'championPage.description' | 'championPage.weeklyRankings' | 'championPage.leaderboardDescription' | 'championPage.you' | 'championPage.xp' | 'championPage.loading' | 'championPage.noClassmates'
+    | 'learningWordsPage.title' | 'learningWordsPage.description' | 'learningWordsPage.cardTitle' | 'learningWordsPage.cardDescription' | 'learningWordsPage.filterUnit' | 'learningWordsPage.filterLesson' | 'learningWordsPage.allUnits' | 'learningWordsPage.allLessons' | 'learningWordsPage.clearFilters' | 'learningWordsPage.tableImage' | 'learningWordsPage.tableWord' | 'learningWordsPage.tableUnit' | 'learningWordsPage.tableNextReview' | 'learningWordsPage.tableActions' | 'learningWordsPage.dueNow' | 'learningWordsPage.timeLeft' | 'learningWordsPage.days' | 'learningWordsPage.hours' | 'learningWordsPage.loading' | 'learningWordsPage.noWords'
     | `xpEvents.${'review_word' | 'spell_correct' | 'daily_login' | 'master_word' | 'grammar_test'}`
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';

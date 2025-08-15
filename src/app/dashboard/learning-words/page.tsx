@@ -31,7 +31,9 @@ import { Button } from "@/components/ui/button";
 import { WordAudioPlayer } from "@/components/word-audio-player";
 import { RescheduleWordDialog } from "@/components/reschedule-word-dialog";
 import { formatDistanceToNowStrict, isPast, differenceInHours, differenceInDays } from "date-fns";
+import { ar } from "date-fns/locale";
 import { WordProgress } from "@/lib/storage";
+import { useLanguage } from "@/hooks/use-language";
 
 type LearningWord = Word & WordProgress;
 
@@ -44,6 +46,7 @@ export default function LearningWordsPage() {
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
   const userId = searchParams.get("userId");
+  const { t, language } = useLanguage();
 
   const fetchWords = useCallback(async () => {
     if (userId) {
@@ -99,20 +102,21 @@ export default function LearningWordsPage() {
   }, [allLearningWords, selectedUnit, selectedLesson]);
   
   const formatTimeLeft = (date: Date) => {
+    const locale = language === 'ar' ? { locale: ar } : {};
     if (isPast(date)) {
-        return <span className="text-destructive font-semibold">Due now</span>;
+        return <span className="text-destructive font-semibold">{t('learningWordsPage.dueNow')}</span>;
     }
     const totalHours = differenceInHours(date, new Date());
     const days = Math.floor(totalHours / 24);
     const hours = totalHours % 24;
 
     if (days > 0) {
-        return `${days}d ${hours}h left`;
+        return t('learningWordsPage.timeLeft', `${days}${t('learningWordsPage.days')} ${hours}${t('learningWordsPage.hours')}`);
     }
     if (totalHours > 0) {
-        return `${hours}h left`;
+        return t('learningWordsPage.timeLeft', `${hours}${t('learningWordsPage.hours')}`);
     }
-    return formatDistanceToNowStrict(date, { addSuffix: true });
+    return formatDistanceToNowStrict(date, { addSuffix: true, ...locale });
   }
 
   const handleUnitChange = (unit: string) => {
@@ -130,29 +134,28 @@ export default function LearningWordsPage() {
   }
 
   if (loading) {
-    return <div>Loading your words...</div>;
+    return <div>{t('learningWordsPage.loading')}</div>;
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold font-headline">Words in Learning</h1>
+      <h1 className="text-3xl font-bold font-headline">{t('learningWordsPage.title')}</h1>
       <p className="text-muted-foreground">
-        This is your active queue. Keep reviewing these words to master them!
+        {t('learningWordsPage.description')}
       </p>
       <Card>
         <CardHeader>
-          <CardTitle>Your Learning Queue</CardTitle>
+          <CardTitle>{t('learningWordsPage.cardTitle')}</CardTitle>
           <CardDescription>
-            A list of all the words you are currently learning. Filter by unit
-            and lesson below.
+            {t('learningWordsPage.cardDescription')}
           </CardDescription>
           <div className="flex items-center space-x-2 pt-4">
             <Select onValueChange={handleUnitChange} value={selectedUnit || "all"}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Unit" />
+                <SelectValue placeholder={t('learningWordsPage.filterUnit')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Units</SelectItem>
+                <SelectItem value="all">{t('learningWordsPage.allUnits')}</SelectItem>
                 {uniqueUnits.map((unit) => (
                   <SelectItem key={unit} value={unit}>
                     {unit}
@@ -162,10 +165,10 @@ export default function LearningWordsPage() {
             </Select>
             <Select onValueChange={handleLessonChange} value={selectedLesson || "all"} disabled={!selectedUnit}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Lesson" />
+                <SelectValue placeholder={t('learningWordsPage.filterLesson')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Lessons</SelectItem>
+                <SelectItem value="all">{t('learningWordsPage.allLessons')}</SelectItem>
                 {lessonsForSelectedUnit.map((lesson) => (
                   <SelectItem key={lesson} value={lesson}>
                     {lesson}
@@ -173,18 +176,18 @@ export default function LearningWordsPage() {
                 ))}
               </SelectContent>
             </Select>
-             {(selectedUnit || selectedLesson) && <Button variant="ghost" onClick={clearFilters}>Clear</Button>}
+             {(selectedUnit || selectedLesson) && <Button variant="ghost" onClick={clearFilters}>{t('learningWordsPage.clearFilters')}</Button>}
           </div>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[100px]">Image</TableHead>
-                <TableHead>Word</TableHead>
-                <TableHead>Unit</TableHead>
-                <TableHead>Next Review</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="w-[100px]">{t('learningWordsPage.tableImage')}</TableHead>
+                <TableHead>{t('learningWordsPage.tableWord')}</TableHead>
+                <TableHead>{t('learningWordsPage.tableUnit')}</TableHead>
+                <TableHead>{t('learningWordsPage.tableNextReview')}</TableHead>
+                <TableHead className="text-right">{t('learningWordsPage.tableActions')}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -228,7 +231,7 @@ export default function LearningWordsPage() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center">
-                    No words found for the selected filters.
+                    {t('learningWordsPage.noWords')}
                   </TableCell>
                 </TableRow>
               )}
