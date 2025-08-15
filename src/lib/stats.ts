@@ -49,7 +49,7 @@ export const getInitialStats = (today: string): LearningStats => ({
     weekStartDate: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString(), // Monday
 });
 
-const getStatsForUser = (userId: string): LearningStats => {
+export const getStatsForUser = (userId: string): LearningStats => {
     if (typeof window === 'undefined') return getInitialStats(new Date().toLocaleDateString('en-CA'));
     const storedStats = localStorage.getItem(`learningStats_${userId}`);
     const today = new Date();
