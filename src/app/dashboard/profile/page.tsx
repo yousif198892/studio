@@ -51,6 +51,8 @@ export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null);
   const [supervisor, setSupervisor] = useState<User | null>(null);
   const [name, setName] = useState('');
+  const [grade, setGrade] = useState<string | undefined>();
+  const [section, setSection] = useState<string | undefined>();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [heroPreviewImage, setHeroPreviewImage] = useState<string | null>(null);
   const [isEnlarged, setIsEnlarged] = useState(false);
@@ -70,6 +72,8 @@ export default function ProfilePage() {
         setUser(foundUser || null);
         if (foundUser) {
             setName(foundUser.name);
+            setGrade(foundUser.grade);
+            setSection(foundUser.section);
             setSelectedTimezone(foundUser.timezone);
             if (foundUser.role === 'student' && foundUser.supervisorId) {
               const foundSupervisor = await getUserById(foundUser.supervisorId);
@@ -121,7 +125,12 @@ export default function ProfilePage() {
   const handleSaveChanges = async () => {
       if (!user) return;
       
-      const updatedUser: User = { ...user, name };
+      const updatedUser: User = { 
+        ...user, 
+        name,
+        grade,
+        section,
+      };
       await updateUserDB(updatedUser);
       setUser(updatedUser);
 
@@ -371,11 +380,43 @@ export default function ProfilePage() {
                 <Label htmlFor="email">{t('profile.personalInfo.email')}</Label>
                 <Input id="email" type="email" defaultValue={user.email} disabled />
                 </div>
-                {user.role === 'student' && supervisor && (
-                  <div className="space-y-2">
-                    <Label htmlFor="supervisor">Supervisor</Label>
-                    <Input id="supervisor" value={supervisor.name} disabled />
-                  </div>
+                {user.role === 'student' && (
+                    <>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="grade">Grade</Label>
+                                <Select value={grade} onValueChange={setGrade}>
+                                    <SelectTrigger id="grade">
+                                        <SelectValue placeholder="Select Grade" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: 6 }, (_, i) => i + 1).map(g => (
+                                            <SelectItem key={g} value={String(g)}>{g}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="section">Section</Label>
+                                <Select value={section} onValueChange={setSection}>
+                                    <SelectTrigger id="section">
+                                        <SelectValue placeholder="Select Section" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(s => (
+                                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                        {supervisor && (
+                            <div className="space-y-2">
+                                <Label htmlFor="supervisor">Supervisor</Label>
+                                <Input id="supervisor" value={supervisor.name} disabled />
+                            </div>
+                        )}
+                    </>
                 )}
             </CardContent>
             <CardFooter>
@@ -483,5 +524,3 @@ export default function ProfilePage() {
     </div>
   );
 }
-
-    
