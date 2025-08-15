@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { TestTube2 } from 'lucide-react';
 import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/use-language';
 
 const TENSE_NAME = "Present Simple";
 
@@ -14,6 +15,7 @@ export default function PresentSimplePage() {
     const searchParams = useSearchParams();
     const userId = searchParams.get('userId');
     const { toast } = useToast();
+    const { t } = useLanguage();
 
     return (
         <div className="space-y-6">
@@ -24,16 +26,16 @@ export default function PresentSimplePage() {
             <div className="flex justify-center">
                 <Card className="w-full max-w-md">
                     <CardHeader>
-                        <CardTitle>Student Test</CardTitle>
+                        <CardTitle>{t('grammar.studentTest.title')}</CardTitle>
                         <CardDescription>
-                            Students can test their knowledge with this quiz. The questions are generated dynamically by AI.
+                            {t('grammar.studentTest.description')}
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Button asChild className="w-full">
                             <Link href={`/dashboard/grammar/present-simple/quiz?userId=${userId}`}>
                                 <TestTube2 className="mr-2 h-4 w-4" />
-                                Preview Test
+                                {t('grammar.studentTest.button')}
                             </Link>
                         </Button>
                     </CardContent>
