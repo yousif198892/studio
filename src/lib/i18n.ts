@@ -262,6 +262,19 @@ export const translations = {
         },
     },
     grammar: {
+        hub: {
+            title: "Grammar Hub",
+            description: "Manage and create grammar lessons for your students.",
+            individualTenses: {
+                title: "Individual Tenses",
+                description: "Select a tense to preview its specific test.",
+            },
+            comprehensiveTest: {
+                title: "Comprehensive Test",
+                description: "A mixed quiz covering all available tenses.",
+                button: "Start Comprehensive Test",
+            },
+        },
         studentTest: {
             title: "Student Test",
             description: "Students can test their knowledge with this quiz. The questions are generated dynamically by AI.",
@@ -559,6 +572,19 @@ export const translations = {
         },
     },
     grammar: {
+        hub: {
+            title: "مركز القواعد",
+            description: "إدارة وإنشاء دروس القواعد لطلابك.",
+            individualTenses: {
+                title: "الأزمنة الفردية",
+                description: "اختر زمنًا لمعاينة اختباره المحدد.",
+            },
+            comprehensiveTest: {
+                title: "الاختبار الشامل",
+                description: "اختبار مختلط يغطي جميع الأزمنة المتاحة.",
+                button: "بدء الاختبار الشامل",
+            },
+        },
         studentTest: {
             title: "اختبار الطالب",
             description: "يمكن للطلاب اختبار معرفتهم بهذا الاختبار. يتم إنشاء الأسئلة ديناميكيًا بواسطة الذكاء الاصطناعي.",
@@ -631,6 +657,7 @@ export type TranslationKey =
     | 'wordsPage.deleteDialog.title' | 'wordsPage.deleteDialog.description' | 'wordsPage.deleteDialog.cancel' | 'wordsPage.deleteDialog.continue'
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
+    | 'grammar.hub.title' | 'grammar.hub.description' | 'grammar.hub.individualTenses.title' | 'grammar.hub.individualTenses.description' | 'grammar.hub.comprehensiveTest.title' | 'grammar.hub.comprehensiveTest.description' | 'grammar.hub.comprehensiveTest.button'
     | 'grammar.studentTest.title' | 'grammar.studentTest.description' | 'grammar.studentTest.button'
     | 'grammar.tenses.presentSimple' | 'grammar.tenses.pastSimple' | 'grammar.tenses.presentContinuous'
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';

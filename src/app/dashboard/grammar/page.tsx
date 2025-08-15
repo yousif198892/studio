@@ -5,29 +5,31 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useLanguage } from "@/hooks/use-language";
 
 export default function GrammarPage() {
     const searchParams = useSearchParams();
     const userId = searchParams.get('userId');
+    const { t } = useLanguage();
 
     const tenses = [
-        { name: "Present Simple", href: `/dashboard/grammar/present-simple?userId=${userId}` },
-        { name: "Past Simple", href: `/dashboard/grammar/past-simple?userId=${userId}` },
-        { name: "Present Continuous", href: `/dashboard/grammar/present-continuous?userId=${userId}` }
+        { name: t('grammar.tenses.presentSimple'), href: `/dashboard/grammar/present-simple?userId=${userId}` },
+        { name: t('grammar.tenses.pastSimple'), href: `/dashboard/grammar/past-simple?userId=${userId}` },
+        { name: t('grammar.tenses.presentContinuous'), href: `/dashboard/grammar/present-continuous?userId=${userId}` }
     ];
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">Grammar Hub</h1>
+            <h1 className="text-3xl font-bold font-headline">{t('grammar.hub.title')}</h1>
             <p className="text-muted-foreground">
-                Manage and create grammar lessons for your students.
+                {t('grammar.hub.description')}
             </p>
 
             <div className="grid md:grid-cols-2 gap-6">
                  <Card>
                     <CardHeader>
-                        <CardTitle>Individual Tenses</CardTitle>
-                        <CardDescription>Select a tense to preview its specific test.</CardDescription>
+                        <CardTitle>{t('grammar.hub.individualTenses.title')}</CardTitle>
+                        <CardDescription>{t('grammar.hub.individualTenses.description')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <div className="space-y-2">
@@ -44,13 +46,13 @@ export default function GrammarPage() {
                 </Card>
                  <Card>
                     <CardHeader>
-                        <CardTitle>Comprehensive Test</CardTitle>
-                        <CardDescription>A mixed quiz covering all available tenses.</CardDescription>
+                        <CardTitle>{t('grammar.hub.comprehensiveTest.title')}</CardTitle>
+                        <CardDescription>{t('grammar.hub.comprehensiveTest.description')}</CardDescription>
                     </CardHeader>
                     <CardContent>
                         <Link href={`/dashboard/grammar/comprehensive-quiz?userId=${userId}`}>
                             <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
-                                <span className="font-medium">Start Comprehensive Test</span>
+                                <span className="font-medium">{t('grammar.hub.comprehensiveTest.button')}</span>
                                 <ChevronRight className="h-5 w-5 text-muted-foreground"/>
                             </div>
                         </Link>
