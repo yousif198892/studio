@@ -3,6 +3,7 @@
 'use client';
 
 import { getWeek, startOfWeek } from 'date-fns';
+import { XpToast } from '@/components/xp-toast';
 
 export type LearningStats = {
   timeSpentSeconds: number; 
@@ -112,6 +113,7 @@ type UpdateStatsParams = {
   durationSeconds?: number;
   testName?: string;
   spelledCount?: number;
+  toast?: (props: any) => void;
 };
 
 export const updateLearningStats = ({
@@ -120,6 +122,7 @@ export const updateLearningStats = ({
   durationSeconds = 0,
   testName,
   spelledCount = 0,
+  toast,
 }: UpdateStatsParams) => {
   if (!userId) return;
   
@@ -142,6 +145,12 @@ export const updateLearningStats = ({
   if (testName && !stats.reviewedToday.completedTests.includes(testName)) {
       stats.reviewedToday.completedTests.push(testName);
       stats.xp += XP_AMOUNTS.grammar_test;
+      if (toast) {
+           toast({
+              description: <XpToast event="grammar_test" amount={XP_AMOUNTS.grammar_test} />,
+              duration: 3000,
+          });
+      }
   }
 
   localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
