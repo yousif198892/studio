@@ -171,7 +171,7 @@ export default function ChatPage() {
         }
     }
     
-  }, [userId, contactToSelect, selectedContact?.id]);
+  }, [userId, contactToSelect]);
 
 
   useEffect(() => {
@@ -244,8 +244,8 @@ export default function ChatPage() {
     if(hadUnread) {
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
         if (notifyLayout) {
-             localStorage.setItem('unreadCountNeedsUpdate', 'true');
-             localStorage.removeItem('unreadCountNeedsUpdate');
+             localStorage.setItem('messagesNeedsUpdate', 'true');
+             localStorage.removeItem('messagesNeedsUpdate');
         }
     }
   };
@@ -345,24 +345,27 @@ export default function ChatPage() {
   }
 
   const handleDeleteMessage = async (message: SupervisorMessage | PeerMessage, scope: 'me' | 'everyone') => {
+    if (!userId) return;
+
     if (scope === 'everyone') {
         if ('supervisorId' in message) {
             await deleteSupervisorMessageDB(message.id);
         } else {
             await deletePeerMessageDB(message.id);
         }
+        setMessages(prev => prev.filter(m => m.id !== message.id));
     } else { // 'me'
         const updatedMessage = {
             ...message,
-            deletedFor: [...(message.deletedFor || []), userId!]
+            deletedFor: [...(message.deletedFor || []), userId]
         };
         if ('supervisorId' in updatedMessage) {
             await saveSupervisorMessage(updatedMessage);
         } else {
             await savePeerMessage(updatedMessage);
         }
+         setMessages(prev => prev.filter(m => m.id !== message.id));
     }
-    setMessages(prev => prev.filter(m => m.id !== message.id));
   };
 
   const handleToggleBlockUser = async () => {
@@ -391,6 +394,8 @@ export default function ChatPage() {
   const description = currentUser.role === 'supervisor' ? t('chatPage.supervisorDescription') : t('chatPage.studentDescription');
 
   const isContactBlocked = selectedContact ? currentUser?.blockedUsers?.includes(selectedContact.id) : false;
+  const isCurrentUserBlocked = selectedContact ? selectedContact.blockedUsers?.includes(currentUser.id) : false;
+
 
   return (
     <div className="flex flex-col h-full">
@@ -499,62 +504,64 @@ export default function ChatPage() {
                         </Avatar>
                         )}
                         
-                        {editingMessage?.id === msg.id ? (
-                            <div className="w-full max-w-sm space-y-2">
-                                <Input value={editedContent} onChange={(e) => setEditedContent(e.target.value)} autoFocus />
-                                <div className="flex justify-end gap-2">
-                                    <Button variant="ghost" size="sm" onClick={handleCancelEdit}>{t('chatPage.deleteDialog.cancel')}</Button>
-                                    <Button size="sm" onClick={handleSaveEdit}>{t('profile.personalInfo.save')}</Button>
-                                </div>
-                            </div>
-                        ) : (
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <div className={cn("rounded-lg px-4 py-2 max-w-sm break-words cursor-pointer", msg.senderId === userId ? "bg-primary text-primary-foreground" : "bg-muted")}>
-                                    <p className="text-sm">{msg.content}</p>
-                                    <p className="text-xs opacity-75 mt-1 text-right">
-                                        {msg.isEdited && <span className="italic">{t('chatPage.edited')} </span>}
-                                        {format(new Date(msg.createdAt), "p")}
-                                    </p>
+                        <div className="flex flex-col gap-1 items-end">
+                            {editingMessage?.id === msg.id ? (
+                                <div className="w-full max-w-sm space-y-2">
+                                    <Input value={editedContent} onChange={(e) => setEditedContent(e.target.value)} autoFocus />
+                                    <div className="flex justify-end gap-2">
+                                        <Button variant="ghost" size="sm" onClick={handleCancelEdit}>{t('chatPage.deleteDialog.cancel')}</Button>
+                                        <Button size="sm" onClick={handleSaveEdit}>{t('profile.personalInfo.save')}</Button>
                                     </div>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align={msg.senderId === userId ? 'end' : 'start'}>
-                                    {msg.senderId === userId && (
-                                        <>
-                                        <DropdownMenuItem onClick={() => handleStartEdit(msg)}>
-                                            <Pencil className="mr-2 h-4 w-4" />
-                                            <span>{t('chatPage.messageActions.edit')}</span>
+                                </div>
+                            ) : (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <div className={cn("rounded-lg px-4 py-2 max-w-sm break-words cursor-pointer", msg.senderId === userId ? "bg-primary text-primary-foreground" : "bg-muted")}>
+                                        <p className="text-sm">{msg.content}</p>
+                                        </div>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align={msg.senderId === userId ? 'end' : 'start'}>
+                                        {msg.senderId === userId && (
+                                            <>
+                                            <DropdownMenuItem onClick={() => handleStartEdit(msg)}>
+                                                <Pencil className="mr-2 h-4 w-4" />
+                                                <span>{t('chatPage.messageActions.edit')}</span>
+                                            </DropdownMenuItem>
+                                            
+                                            <AlertDialog>
+                                                <AlertDialogTrigger asChild>
+                                                    <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        <span>{t('chatPage.messageActions.delete')}</span>
+                                                    </DropdownMenuItem>
+                                                </AlertDialogTrigger>
+                                                <AlertDialogContent>
+                                                    <AlertDialogHeader>
+                                                        <AlertDialogTitle>{t('chatPage.deleteDialog.title')}</AlertDialogTitle>
+                                                    </AlertDialogHeader>
+                                                    <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForMe')}</AlertDialogDescription>
+                                                    <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForEveryone')}</AlertDialogDescription>
+                                                    <AlertDialogFooter>
+                                                        <AlertDialogCancel>{t('chatPage.deleteDialog.cancel')}</AlertDialogCancel>
+                                                        <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'me')}>{t('chatPage.deleteDialog.deleteForMe')}</AlertDialogAction>
+                                                        <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'everyone')} className="bg-destructive hover:bg-destructive/90">{t('chatPage.deleteDialog.deleteForEveryone')}</AlertDialogAction>
+                                                    </AlertDialogFooter>
+                                                </AlertDialogContent>
+                                            </AlertDialog>
+                                            </>
+                                        )}
+                                        <DropdownMenuItem onClick={handleToggleBlockUser}>
+                                            <Ban className="mr-2 h-4 w-4" />
+                                            <span>{t('chatPage.messageActions.block')}</span>
                                         </DropdownMenuItem>
-                                        
-                                        <AlertDialog>
-                                            <AlertDialogTrigger asChild>
-                                                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                                                    <Trash2 className="mr-2 h-4 w-4" />
-                                                    <span>{t('chatPage.messageActions.delete')}</span>
-                                                </DropdownMenuItem>
-                                            </AlertDialogTrigger>
-                                            <AlertDialogContent>
-                                                <AlertDialogHeader>
-                                                    <AlertDialogTitle>{t('chatPage.deleteDialog.title')}</AlertDialogTitle>
-                                                </AlertDialogHeader>
-                                                <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForMe')}</AlertDialogDescription>
-                                                <AlertDialogDescription>{t('chatPage.deleteDialog.descriptionForEveryone')}</AlertDialogDescription>
-                                                <AlertDialogFooter>
-                                                    <AlertDialogCancel>{t('chatPage.deleteDialog.cancel')}</AlertDialogCancel>
-                                                    <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'me')}>{t('chatPage.deleteDialog.deleteForMe')}</AlertDialogAction>
-                                                    <AlertDialogAction onClick={() => handleDeleteMessage(msg, 'everyone')} className="bg-destructive hover:bg-destructive/90">{t('chatPage.deleteDialog.deleteForEveryone')}</AlertDialogAction>
-                                                </AlertDialogFooter>
-                                            </AlertDialogContent>
-                                        </AlertDialog>
-                                        </>
-                                    )}
-                                    <DropdownMenuItem onClick={handleToggleBlockUser}>
-                                        <Ban className="mr-2 h-4 w-4" />
-                                        <span>{t('chatPage.messageActions.block')}</span>
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            )}
+                             <p className="text-xs opacity-75 mt-1 text-right">
+                                {msg.isEdited && <span className="italic">{t('chatPage.edited')} </span>}
+                                {format(new Date(msg.createdAt), "p")}
+                            </p>
+                        </div>
                         
                         {msg.senderId === userId && currentUser && (
                         <Avatar className="h-8 w-8 self-end mb-2">
@@ -570,6 +577,8 @@ export default function ChatPage() {
               <CardFooter className="pt-4 border-t">
                 {isContactBlocked ? (
                     <div className="w-full text-center text-sm text-muted-foreground">{t('chatPage.blockedMessage')}</div>
+                ) : isCurrentUserBlocked ? (
+                     <div className="w-full text-center text-sm text-muted-foreground">{selectedContact.name} {t('chatPage.blockedContact')}</div>
                 ) : (
                     <div className="flex w-full items-center space-x-2">
                         <Input
