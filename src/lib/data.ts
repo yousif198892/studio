@@ -158,6 +158,28 @@ export const mockUsers: User[] = [
     avatar: "https://placehold.co/100x100.png?text=AI",
     grade: '6',
     section: 'B',
+  },
+   {
+    id: "user4",
+    name: "Zainab Ali",
+    email: "zainab.ali@example.com",
+    password: "password123",
+    role: "student",
+    supervisorId: "sup2",
+    avatar: "https://placehold.co/100x100.png?text=ZA",
+    grade: '7',
+    section: 'C',
+  },
+  {
+    id: "user5",
+    name: "Omar Abdullah",
+    email: "omar.abdullah@example.com",
+    password: "password123",
+    role: "student",
+    supervisorId: "sup2",
+    avatar: "https://placehold.co/100x100.png?text=OA",
+    grade: '7',
+    section: 'C',
   }
 ];
 
@@ -167,7 +189,7 @@ export const mockWords: Word[] = [
         word: "Apple",
         definition: "A round fruit with red or green skin and a whitish inside.",
         unit: "Unit 1",
-        lesson: "Lesson 1",
+        lesson: "Lesson 1: Fruits",
         imageUrl: "https://placehold.co/600x400.png?text=Apple",
         options: ["Apple", "Banana", "Orange", "Grape"],
         correctOption: "Apple",
@@ -178,7 +200,7 @@ export const mockWords: Word[] = [
         word: "Book",
         definition: "A written or printed work consisting of pages glued or sewn together along one side and bound in covers.",
         unit: "Unit 1",
-        lesson: "Lesson 1",
+        lesson: "Lesson 2: Classroom",
         imageUrl: "https://placehold.co/600x400.png?text=Book",
         options: ["Book", "Pen", "Table", "Chair"],
         correctOption: "Book",
@@ -188,11 +210,33 @@ export const mockWords: Word[] = [
         id: "word3",
         word: "Cat",
         definition: "A small domesticated carnivorous mammal with soft fur, a short snout, and retractable claws.",
-        unit: "Unit 1",
-        lesson: "Lesson 2",
+        unit: "Unit 2",
+        lesson: "Lesson 1: Animals",
         imageUrl: "https://placehold.co/600x400.png?text=Cat",
         options: ["Cat", "Dog", "Bird", "Fish"],
         correctOption: "Cat",
+        supervisorId: "sup1",
+    },
+     {
+        id: "word4",
+        word: "Dog",
+        definition: "A domesticated carnivorous mammal that typically has a long snout, an acute sense of smell, and a barking, howling, or whining voice.",
+        unit: "Unit 2",
+        lesson: "Lesson 1: Animals",
+        imageUrl: "https://placehold.co/600x400.png?text=Dog",
+        options: ["Dog", "Lion", "Tiger", "Bear"],
+        correctOption: "Dog",
+        supervisorId: "sup1",
+    },
+    {
+        id: "word5",
+        word: "Car",
+        definition: "A road vehicle, typically with four wheels, powered by an internal combustion engine or electric motor and able to carry a small number of people.",
+        unit: "Unit 2",
+        lesson: "Lesson 2: Transportation",
+        imageUrl: "https://placehold.co/600x400.png?text=Car",
+        options: ["Car", "Bus", "Train", "Bicycle"],
+        correctOption: "Car",
         supervisorId: "sup1",
     },
 ];
@@ -322,7 +366,7 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
             const messages = await getSupervisorMessagesDB(student.id, userId);
             supervisorConversations[student.id] = messages
                 .filter(m => !(m.deletedFor?.includes(userId)))
-                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                .sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
         }
     }
 

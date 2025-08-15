@@ -87,7 +87,7 @@ const getDb = () => {
         const usersStore = tx.objectStore('users');
         usersStore.count().then(count => {
           if (count === 0) {
-              mockUsers.forEach(user => usersStore.add(user));
+              mockUsers.forEach(user => usersStore.add(user).catch(err => console.log('Silently ignoring duplicate user:', err)));
               console.log('Populated users store with mock data.');
           }
         });
