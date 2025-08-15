@@ -30,7 +30,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { WordAudioPlayer } from "@/components/word-audio-player";
 import { RescheduleWordDialog } from "@/components/reschedule-word-dialog";
-import { formatDistanceToNowStrict, isPast, differenceInHours, differenceInDays } from "date-fns";
+import { formatDistanceToNowStrict, isPast, differenceInHours } from "date-fns";
 import { ar } from "date-fns/locale";
 import { WordProgress } from "@/lib/storage";
 import { useLanguage } from "@/hooks/use-language";

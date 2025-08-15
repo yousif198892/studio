@@ -636,7 +636,7 @@ export const translations = {
         }
     },
      championPage: {
-        title: "لوحة المتصدرين",
+        title: "لوحة المتصدرين للأبطال",
         description: "شاهد من هو في قمة الفصل! يتم إعادة تعيين لوحة المتصدرين كل أسبوع.",
         weeklyRankings: "التصنيفات الأسبوعية",
         leaderboardDescription: "لوحة المتصدرين لك ولزملائك في الفصل. تتم إعادة التعيين {0}.",
@@ -647,13 +647,13 @@ export const translations = {
     },
     learningWordsPage: {
         title: "كلمات قيد التعلم",
-        description: "هذه هي قائمة الانتظار النشطة الخاصة بك. استمر في مراجعة هذه الكلمات لإتقانها!",
+        description: "هذه هي قائمة المراجعة النشطة الخاصة بك. استمر في مراجعة هذه الكلمات لإتقانها!",
         cardTitle: "قائمة التعلم الخاصة بك",
         cardDescription: "قائمة بجميع الكلمات التي تتعلمها حاليًا. قم بالتصفية حسب الوحدة والدرس أدناه.",
-        filterUnit: "التصفية حسب الوحدة",
-        filterLesson: "التصفية حسب الدرس",
-        allUnits: "كل الوحدات",
-        allLessons: "كل الدروس",
+        filterUnit: "تصفية حسب الوحدة",
+        filterLesson: "تصفية حسب الدرس",
+        allUnits: "جميع الوحدات",
+        allLessons: "جميع الدروس",
         clearFilters: "مسح الفلاتر",
         tableImage: "الصورة",
         tableWord: "الكلمة",
