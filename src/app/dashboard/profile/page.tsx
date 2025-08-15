@@ -319,7 +319,7 @@ export default function ProfilePage() {
         <div className="lg:col-span-1 space-y-6">
             <Card>
                 <CardHeader>
-                    <CardTitle>{t('profile.personalInfo.picture')}</CardTitle>
+                    <CardTitle>{t('profile.picture.title')}</CardTitle>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">
                     <div className="profile-picture">
