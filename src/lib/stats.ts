@@ -49,10 +49,11 @@ export const getInitialStats = (today: string): LearningStats => ({
 });
 
 const getStatsForUser = (userId: string): LearningStats => {
-    if (typeof window === 'undefined') return getInitialStats(new Date().toISOString().split('T')[0]);
+    if (typeof window === 'undefined') return getInitialStats(new Date().toLocaleDateString('en-CA'));
     const storedStats = localStorage.getItem(`learningStats_${userId}`);
     const today = new Date();
-    const todayStr = today.toISOString().split('T')[0];
+    // Use local date for daily check
+    const todayStr = today.toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
     const startOfThisWeek = startOfWeek(today, { weekStartsOn: 1 }); // Monday
 
     let stats: LearningStats = storedStats ? JSON.parse(storedStats) : getInitialStats(todayStr);
@@ -89,7 +90,7 @@ export const updateXp = (userId: string, event: XpEvent) => {
     // Get stats, which also handles the weekly reset check
     const stats = getStatsForUser(userId);
     const amount = XP_AMOUNTS[event];
-    const today = new Date().toISOString().split('T')[0];
+    const today = new Date().toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
 
     if (event === 'daily_login') {
         if (stats.lastLoginDate === today) {
@@ -122,7 +123,7 @@ export const updateLearningStats = ({
   if (!userId) return;
   
   const stats = getStatsForUser(userId);
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
 
   // Update stats
   stats.totalWordsReviewed += reviewedCount;

@@ -93,7 +93,8 @@ export default function Dashboard() {
           setWordsLearningCount(learning);
           
           const storedStats = localStorage.getItem(`learningStats_${userId}`);
-          const today = new Date().toISOString().split('T')[0];
+          // Use local date for daily check
+          const today = new Date().toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
           let currentStats: LearningStats;
 
           if (storedStats) {
