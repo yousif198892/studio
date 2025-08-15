@@ -93,7 +93,7 @@ export default function ClassmatesPage() {
                                                 />
                                                 <div>
                                                     <p className="font-semibold">{classmate.name}</p>
-                                                    <p className="text-sm text-muted-foreground">{classmate.email}</p>
+                                                    <p className="text-sm text-muted-foreground">{classmate.grade && classmate.section ? `Grade ${classmate.grade} | Section ${classmate.section}` : ''}</p>
                                                 </div>
                                             </div>
                                              <Link href={`/dashboard/chat?userId=${userId}&contactId=${classmate.id}`} passHref>
