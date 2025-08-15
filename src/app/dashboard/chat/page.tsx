@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -33,6 +34,7 @@ import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/hooks/use-language";
 
 type ConversationPartner = User & {
   lastMessage: SupervisorMessage | PeerMessage | null;
@@ -57,6 +59,7 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [allConversations, setAllConversations] = useState<AllConversations>({ supervisor: {}, peer: {} });
 
@@ -305,11 +308,11 @@ export default function ChatPage() {
   };
 
   if (!currentUser) {
-    return <div>Loading...</div>
+    return <div>{t('chatPage.loading')}</div>
   }
   
-  const title = currentUser.role === 'supervisor' ? "Student Chats" : "Chat";
-  const description = currentUser.role === 'supervisor' ? "Read and reply to messages from your students." : "Conversations with your supervisor and classmates.";
+  const title = currentUser.role === 'supervisor' ? t('chatPage.supervisorTitle') : t('chatPage.studentTitle');
+  const description = currentUser.role === 'supervisor' ? t('chatPage.supervisorDescription') : t('chatPage.studentDescription');
 
   return (
     <div className="flex flex-col h-full">
@@ -318,7 +321,7 @@ export default function ChatPage() {
       <Card className="grid grid-cols-1 md:grid-cols-[300px_1fr] flex-1">
         <div className="flex flex-col border-r">
           <CardHeader>
-            <CardTitle>Conversations</CardTitle>
+            <CardTitle>{t('chatPage.conversations')}</CardTitle>
           </CardHeader>
           <ScrollArea className="flex-1">
             <CardContent className="p-2">
@@ -341,7 +344,7 @@ export default function ChatPage() {
                         <div className="flex-1 overflow-hidden">
                             <p className="font-semibold truncate">{convo.name}</p>
                             <p className="text-xs text-muted-foreground truncate">
-                            {convo.lastMessage ? convo.lastMessage.content : "No messages yet"}
+                            {convo.lastMessage ? convo.lastMessage.content : t('chatPage.noMessages')}
                             </p>
                         </div>
                         {convo.unreadCount > 0 && <Badge>{convo.unreadCount}</Badge>}
@@ -350,7 +353,7 @@ export default function ChatPage() {
                   ))
               ) : (
                 <div className="text-center text-muted-foreground py-12 px-4">
-                  No conversations started yet.
+                  {t('chatPage.noConversations')}
                 </div>
               )}
             </CardContent>
@@ -369,7 +372,9 @@ export default function ChatPage() {
                     </Avatar>
                     <div>
                         <CardTitle>{selectedContact.name}</CardTitle>
-                        <CardDescription className="capitalize">{selectedContact.type}</CardDescription>
+                        <CardDescription className="capitalize">
+                            {t(selectedContact.type === 'supervisor' ? 'chatPage.contactType.supervisor' : 'chatPage.contactType.peer')}
+                        </CardDescription>
                     </div>
                 </div>
               </CardHeader>
@@ -426,7 +431,7 @@ export default function ChatPage() {
                   <Input
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
-                    placeholder="Type a message..."
+                    placeholder={t('chatPage.typeMessage')}
                     onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
                   />
                   <Button
@@ -434,14 +439,14 @@ export default function ChatPage() {
                     disabled={!newMessage.trim()}
                   >
                     <Send className="h-4 w-4" />
-                    <span className="sr-only">Send</span>
+                    <span className="sr-only">{t('chatPage.send')}</span>
                   </Button>
                 </div>
               </CardFooter>
             </>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
-              <p>Select a conversation to start chatting</p>
+              <p>{t('chatPage.selectConversation')}</p>
             </div>
           )}
         </div>
@@ -449,3 +454,4 @@ export default function ChatPage() {
     </div>
   );
 }
+

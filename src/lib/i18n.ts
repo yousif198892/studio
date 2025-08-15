@@ -20,6 +20,23 @@ export const translations = {
       about: 'About',
       spelling: 'Spelling',
     },
+    chatPage: {
+        supervisorTitle: "Student Chats",
+        studentTitle: "Chat",
+        supervisorDescription: "Read and reply to messages from your students.",
+        studentDescription: "Conversations with your supervisor and classmates.",
+        conversations: "Conversations",
+        noMessages: "No messages yet",
+        noConversations: "No conversations started yet.",
+        selectConversation: "Select a conversation to start chatting",
+        typeMessage: "Type a message...",
+        send: "Send",
+        loading: "Loading...",
+        contactType: {
+            supervisor: "Supervisor",
+            peer: "Peer",
+        },
+    },
     about: {
         title: "About LinguaLeap",
         description: "The people and technology behind your learning experience.",
@@ -385,6 +402,23 @@ export const translations = {
       about: 'حول',
       spelling: 'الإملاء',
     },
+    chatPage: {
+        supervisorTitle: "محادثات الطلاب",
+        studentTitle: "محادثة",
+        supervisorDescription: "اقرأ وأجب على رسائل طلابك.",
+        studentDescription: "محادثات مع مشرفك وزملائك.",
+        conversations: "المحادثات",
+        noMessages: "لا توجد رسائل بعد",
+        noConversations: "لم تبدأ أي محادثات بعد.",
+        selectConversation: "اختر محادثة لبدء الدردشة",
+        typeMessage: "اكتب رسالة...",
+        send: "إرسال",
+        loading: "جار التحميل...",
+        contactType: {
+            supervisor: "مشرف",
+            peer: "زميل",
+        },
+    },
     about: {
         title: "حول LinguaLeap",
         description: "تعرف على الأشخاص والتكنولوجيا وراء تجربتك التعليمية.",
@@ -736,6 +770,7 @@ export const translations = {
 export type TranslationKey = 
     | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile' | 'sidebar.learn'
     | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.champion' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins' | 'sidebar.about' | 'sidebar.spelling'
+    | 'chatPage.supervisorTitle' | 'chatPage.studentTitle' | 'chatPage.supervisorDescription' | 'chatPage.studentDescription' | 'chatPage.conversations' | 'chatPage.noMessages' | 'chatPage.noConversations' | 'chatPage.selectConversation' | 'chatPage.typeMessage' | 'chatPage.send' | 'chatPage.loading' | 'chatPage.contactType.supervisor' | 'chatPage.contactType.peer'
     | 'about.title' | 'about.description' | 'about.greeting' | 'about.teacherIntro' | 'about.aiIntro' | 'about.signature' | 'about.version'
     | 'profile.title' | 'profile.personalInfo.title' | 'profile.personalInfo.description' | 'profile.personalInfo.fullName' | 'profile.personalInfo.email' | 'profile.personalInfo.save'
     | 'profile.personalInfo.grade' | 'profile.personalInfo.section' | 'profile.personalInfo.selectGrade' | 'profile.personalInfo.selectSection' | 'profile.personalInfo.supervisor'
@@ -775,3 +810,4 @@ export type TranslationKey =
     | 'masteredWordsPage.title' | 'masteredWordsPage.description' | 'masteredWordsPage.cardTitle' | 'masteredWordsPage.cardDescription' | 'masteredWordsPage.filterUnit' | 'masteredWordsPage.filterLesson' | 'masteredWordsPage.allUnits' | 'masteredWordsPage.allLessons' | 'masteredWordsPage.clearFilters' | 'masteredWordsPage.tableImage' | 'masteredWordsPage.tableWord' | 'masteredWordsPage.tableUnit' | 'masteredWordsPage.noWords' | 'masteredWordsPage.loading'
     | `xpEvents.${'review_word' | 'spell_correct' | 'daily_login' | 'master_word' | 'grammar_test'}`
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+
