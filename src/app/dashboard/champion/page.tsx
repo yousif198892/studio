@@ -10,6 +10,7 @@ import { Trophy } from "lucide-react";
 import { LearningStats } from "@/lib/stats.tsx";
 import { cn } from "@/lib/utils";
 import { endOfWeek, formatDistanceToNow } from "date-fns";
+import { ar } from "date-fns/locale";
 import { useLanguage } from "@/hooks/use-language";
 
 type ClassmateWithXp = User & {
@@ -29,7 +30,7 @@ export default function ChampionPage() {
     const [leaderboard, setLeaderboard] = useState<ClassmateWithXp[]>([]);
     const [loading, setLoading] = useState(true);
     const [weekEndsIn, setWeekEndsIn] = useState("");
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
 
     useEffect(() => {
@@ -62,15 +63,16 @@ export default function ChampionPage() {
         fetchData();
 
         const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 1 });
-        setWeekEndsIn(formatDistanceToNow(endOfThisWeek, { addSuffix: true }));
+        const locale = language === 'ar' ? { locale: ar } : {};
+        setWeekEndsIn(formatDistanceToNow(endOfThisWeek, { addSuffix: true, ...locale }));
 
         const timer = setInterval(() => {
-             setWeekEndsIn(formatDistanceToNow(endOfThisWeek, { addSuffix: true }));
+             setWeekEndsIn(formatDistanceToNow(endOfThisWeek, { addSuffix: true, ...locale }));
         }, 60000); // Update every minute
 
         return () => clearInterval(timer);
         
-    }, [userId]);
+    }, [userId, language]);
 
     const getRankContent = (rank: number) => {
         if (rank === 0) return <Trophy className="w-6 h-6 text-yellow-500 fill-yellow-400" />;
