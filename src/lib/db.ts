@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { db } from './firebase';
@@ -14,7 +15,9 @@ import {
     where,
     documentId,
     Timestamp,
-    orderBy
+    orderBy,
+    runTransaction,
+    increment
 } from 'firebase/firestore';
 
 import { User, Word, Message, mockUsers, mockMessages, mockWords, SupervisorMessage, PeerMessage } from './data';
@@ -24,17 +27,16 @@ import { WordProgress } from './storage';
 // This function will populate the database with initial data if it's empty.
 async function seedDatabase() {
     console.log("Checking if database needs seeding...");
-    const usersRef = collection(db, "users");
-    const usersSnapshot = await getDocs(usersRef);
+    const countersRef = doc(db, "counters", "userIds");
+    const countersSnap = await getDoc(countersRef);
 
-    if (usersSnapshot.empty) {
-        console.log("Database is empty. Seeding data...");
+    if (!countersSnap.exists()) {
+        console.log("Database is empty or counters are missing. Seeding data...");
         const batch = writeBatch(db);
 
         // Seed users
         mockUsers.forEach(user => {
             const userDocRef = doc(db, "users", user.id);
-            // Convert trialExpiresAt to Firestore Timestamp if it exists
             const userData = { ...user };
             if (user.trialExpiresAt) {
                 (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
@@ -54,6 +56,22 @@ async function seedDatabase() {
             const messageData = { ...message, createdAt: Timestamp.fromDate(message.createdAt) };
             batch.set(messageDocRef, messageData);
         });
+        
+        // Seed counters
+        const studentNumbers = mockUsers
+            .filter(u => u.role === 'student' && u.id.startsWith('user'))
+            .map(u => parseInt(u.id.replace('user', ''), 10))
+            .filter(n => !isNaN(n));
+        
+        const supervisorNumbers = mockUsers
+            .filter(u => u.role === 'supervisor' && u.id.startsWith('sup'))
+            .map(u => parseInt(u.id.replace('sup', ''), 10))
+            .filter(n => !isNaN(n));
+
+        const lastStudentId = studentNumbers.length > 0 ? Math.max(...studentNumbers) : 0;
+        const lastSupervisorId = supervisorNumbers.length > 0 ? Math.max(...supervisorNumbers) : 0;
+        
+        batch.set(countersRef, { student: lastStudentId, supervisor: lastSupervisorId });
 
         await batch.commit();
         console.log("Database seeded successfully.");
@@ -69,6 +87,26 @@ if (typeof window !== "undefined") {
 
 
 // --- User Functions ---
+export async function getNextUserIdDB(role: 'student' | 'supervisor'): Promise<number> {
+    const counterRef = doc(db, "counters", "userIds");
+    
+    try {
+        const newId = await runTransaction(db, async (transaction) => {
+            const counterDoc = await transaction.get(counterRef);
+            if (!counterDoc.exists()) {
+                throw "Counter document does not exist!";
+            }
+            const newCount = counterDoc.data()[role] + 1;
+            transaction.update(counterRef, { [role]: newCount });
+            return newCount;
+        });
+        return newId;
+    } catch (e) {
+        console.error("Transaction failed: ", e);
+        throw e;
+    }
+}
+
 export async function getAllUsersDB(): Promise<User[]> {
     const usersCol = collection(db, 'users');
     const userSnapshot = await getDocs(usersCol);
@@ -316,5 +354,3 @@ export async function getHeroImage(): Promise<string | undefined> {
     }
     return undefined;
 }
-
-    

@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { User, addUserDB, getAllUsers, getUserByEmailDB, getUserById } from "@/lib/data";
+import { User, addUserDB, getNextUserId, getUserByEmailDB, getUserById } from "@/lib/data";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -77,13 +77,7 @@ export function RegisterForm() {
             return;
         }
 
-        const allUsers = await getAllUsers();
-        const studentNumbers = allUsers
-            .filter(u => u.role === 'student' && u.id.startsWith('user'))
-            .map(u => parseInt(u.id.replace('user', ''), 10))
-            .filter(n => !isNaN(n));
-        
-        const newIdNumber = studentNumbers.length > 0 ? Math.max(...studentNumbers) + 1 : 1;
+        const newIdNumber = await getNextUserId('student');
 
         const newUser: User = {
             id: `user${newIdNumber}`,

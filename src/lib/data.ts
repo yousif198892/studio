@@ -1,4 +1,5 @@
 
+
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
@@ -28,7 +29,8 @@ import {
     updateSupervisorMessagesDB,
     deleteSupervisorMessageDB as deleteSupervisorMessageFromDB,
     deletePeerMessageDB as deletePeerMessageFromDB,
-    getStudentsBySupervisorDB
+    getStudentsBySupervisorDB,
+    getNextUserIdDB,
 } from './db';
 
 
@@ -253,6 +255,10 @@ export async function getUserById(id: string): Promise<User | undefined> {
     return await getUserByIdDB(id);
 }
 
+export async function getNextUserId(role: 'student' | 'supervisor'): Promise<number> {
+    return getNextUserIdDB(role);
+}
+
 export async function getWordsBySupervisor(supervisorId: string): Promise<Word[]> {
     return await getWordsBySupervisorDB(supervisorId);
 }
@@ -425,5 +431,3 @@ export {
     getUserByEmailDB, 
     getWordsBySupervisorDB
 };
-
-    

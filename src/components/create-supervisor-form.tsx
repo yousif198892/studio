@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { User, addUserDB, getAllUsers } from "@/lib/data";
+import { User, addUserDB, getAllUsers, getNextUserId } from "@/lib/data";
 import { z } from "zod";
 import { Checkbox } from "./ui/checkbox";
 import { add } from "date-fns";
@@ -49,13 +49,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
     const { name, email, password, isTrial } = validatedFields.data;
 
      try {
-        const allUsers = await getAllUsers();
-        const supervisorNumbers = allUsers
-            .filter(u => u.role === 'supervisor' && u.id.startsWith('sup'))
-            .map(u => parseInt(u.id.replace('sup', ''), 10))
-            .filter(n => !isNaN(n));
-
-        const newIdNumber = supervisorNumbers.length > 0 ? Math.max(...supervisorNumbers) + 1 : 1;
+        const newIdNumber = await getNextUserId('supervisor');
         
         const newUser: User = {
             id: `sup${newIdNumber}`,
