@@ -21,7 +21,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { redirectToDashboard } from "@/lib/actions";
-import { getUserByIdDB, updateUserDB } from "@/lib/data";
+import { getUserById, updateUserDB } from "@/lib/data";
 import { isPast } from "date-fns";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -66,7 +66,7 @@ export function LoginForm() {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const firebaseUser = userCredential.user;
 
-            let user = await getUserByIdDB(firebaseUser.uid);
+            let user = await getUserById(firebaseUser.uid);
 
             if (!user) {
                 // This case is unlikely if registration is done correctly, but it's good practice to handle it.
