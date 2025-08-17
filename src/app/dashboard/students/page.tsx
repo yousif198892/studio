@@ -31,7 +31,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { format, subDays } from "date-fns";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LearningStats } from "@/lib/stats.tsx";
+import { LearningStats, getStatsForUser } from "@/lib/stats.tsx";
 
 type StudentWithStats = User & {
     stats: LearningStats;
@@ -70,37 +70,9 @@ export default function StudentsPage() {
             const currentUser = await getUserById(userId);
             setUser(currentUser || null);
             const studentList = await getStudentsBySupervisorId(userId);
-            const today = new Date().toISOString().split('T')[0];
 
             const studentsWithStatsPromises = studentList.map(async (student) => {
-                const storedStats = localStorage.getItem(`learningStats_${student.id}`);
-                let stats: LearningStats = {
-                    timeSpentSeconds: 0,
-                    totalWordsReviewed: 0,
-                    reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] },
-                    activityLog: [],
-                    xp: 0,
-                    lastLoginDate: '1970-01-01',
-                    spellingPractice: { count: 0, date: today },
-                };
-                if (storedStats) {
-                    const parsedStats: LearningStats = JSON.parse(storedStats);
-                    
-                    if (!parsedStats.activityLog) {
-                        parsedStats.activityLog = [];
-                    }
-                    if (!parsedStats.reviewedToday || parsedStats.reviewedToday.date !== today) {
-                        parsedStats.reviewedToday = { count: 0, date: today, timeSpentSeconds: 0, completedTests: [] };
-                    }
-                    if (typeof parsedStats.reviewedToday.timeSpentSeconds !== 'number') {
-                        parsedStats.reviewedToday.timeSpentSeconds = 0;
-                    }
-                    if (!Array.isArray(parsedStats.reviewedToday.completedTests)) {
-                        parsedStats.reviewedToday.completedTests = [];
-                    }
-                    stats = parsedStats;
-                }
-
+                const stats = await getStatsForUser(student.id);
                 const words = await getWordsForStudent(student.id);
                 const mastered = words.filter(w => w.strength === -1).length;
                 const learning = words.length - mastered;
@@ -121,7 +93,6 @@ export default function StudentsPage() {
 
   const handleDelete = async (studentId: string) => {
     try {
-      // Optimistically update the UI
       setStudents(prev => prev.filter(s => s.id !== studentId));
       
       const studentToUpdate = await getUserById(studentId);
@@ -129,10 +100,10 @@ export default function StudentsPage() {
       if (studentToUpdate) {
         studentToUpdate.supervisorId = undefined;
         await updateUserDB(studentToUpdate);
-         // Optional: Also clear the student's specific learning progress from the supervisor's words
-        localStorage.removeItem(`wordProgress_${studentId}`);
-        localStorage.removeItem(`learningStats_${studentId}`);
-
+         
+        // In a real app with Firestore, you might also want to delete the user's progress subcollection.
+        // For simplicity here, we'll just detach them.
+        
         toast({
             title: "Success!",
             description: "Student has been removed from your list.",
@@ -147,18 +118,16 @@ export default function StudentsPage() {
         description: "Could not remove the student.",
         variant: "destructive",
       });
-      // If there was an error, refetch the original list to revert the UI change
-      const userId = searchParams.get('userId');
+      // Re-fetch data to revert UI change on error
       if (userId) {
-        const studentList = await getStudentsBySupervisorId(userId);
-        const today = new Date().toISOString().split('T')[0];
-        const studentsWithStatsPromises = studentList.map(async (s) => ({
-            ...s,
-            stats: JSON.parse(localStorage.getItem(`learningStats_${s.id}`) || 'null') || { timeSpentSeconds: 0, totalWordsReviewed: 0, reviewedToday: { count: 0, date: today, timeSpentSeconds: 0, completedTests: []}, activityLog: [], xp: 0, lastLoginDate: '1970-01-01', spellingPractice: { count: 0, date: today } },
-            wordsLearningCount: (await getWordsForStudent(s.id)).filter(w => w.strength >=0).length,
-            wordsMasteredCount: (await getWordsForStudent(s.id)).filter(w => w.strength === -1).length
-        }));
-        setStudents(await Promise.all(studentsWithStatsPromises));
+         const studentList = await getStudentsBySupervisorId(userId);
+         const studentsWithStatsPromises = studentList.map(async (s) => ({
+             ...s,
+             stats: await getStatsForUser(s.id),
+             wordsLearningCount: (await getWordsForStudent(s.id)).filter(w => w.strength >=0).length,
+             wordsMasteredCount: (await getWordsForStudent(s.id)).filter(w => w.strength === -1).length
+         }));
+         setStudents(await Promise.all(studentsWithStatsPromises));
       }
     }
   }

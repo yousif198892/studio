@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { Button } from "@/components/ui/button";
@@ -138,8 +137,6 @@ export default function ProfilePage() {
         title: t('toasts.success'),
         description: "Personal information saved!",
       });
-      
-      window.dispatchEvent(new Event('storage'));
   }
   
   const handleSavePreferences = async () => {
@@ -210,9 +207,6 @@ export default function ProfilePage() {
         title: t('toasts.success'),
         description: "Profile picture updated successfully!",
       });
-
-    // Manually trigger the storage event to update the layout
-    window.dispatchEvent(new Event('storage'));
   }
 
   const handleHeroPictureUpload = async () => {

@@ -1,312 +1,310 @@
 
 'use client';
 
-import { openDB, type DBSchema, type IDBPDatabase } from 'idb';
+import { db } from './firebase';
+import { 
+    collection, 
+    doc, 
+    getDoc, 
+    getDocs, 
+    setDoc, 
+    deleteDoc, 
+    writeBatch,
+    query,
+    where,
+    documentId,
+    Timestamp,
+    orderBy
+} from 'firebase/firestore';
+
 import { User, Word, Message, mockUsers, mockMessages, mockWords, SupervisorMessage, PeerMessage } from './data';
 import { WordProgress } from './storage';
 
-interface LinguaLeapDB extends DBSchema {
-  users: {
-    key: string;
-    value: User;
-    indexes: { 'by-email': string };
-  };
-  words: {
-    key: string;
-    value: Word;
-    indexes: { 'by-supervisorId': string };
-  };
-  adminMessages: {
-    key: string;
-    value: Message;
-  };
-  wordProgress: {
-    key: string;
-    value: WordProgress;
-    indexes: { 'by-studentId': string };
-  };
-  supervisorMessages: {
-    key: string;
-    value: SupervisorMessage;
-    indexes: { 'by-conversation': ['studentId', 'supervisorId'] };
-  };
-  peerMessages: {
-    key: string;
-    value: PeerMessage;
-    indexes: { 'by-conversation': 'conversationId' };
-  };
-  landingPage: {
-    key: string;
-    value: { id: string; image: string };
-  };
-}
+// --- Seeding Function ---
+// This function will populate the database with initial data if it's empty.
+async function seedDatabase() {
+    console.log("Checking if database needs seeding...");
+    const usersRef = collection(db, "users");
+    const usersSnapshot = await getDocs(usersRef);
 
-let dbPromise: Promise<IDBPDatabase<LinguaLeapDB>> | null = null;
+    if (usersSnapshot.empty) {
+        console.log("Database is empty. Seeding data...");
+        const batch = writeBatch(db);
 
-const getDb = () => {
-  if (typeof window === 'undefined') {
-    return null;
-  }
-  if (!dbPromise) {
-    const dbName = 'lingua-leap-db';
-    const dbVersion = 7; // Version remains the same unless schema changes
-
-    dbPromise = openDB<LinguaLeapDB>(dbName, dbVersion, {
-      upgrade(db, oldVersion, newVersion, tx) {
-        console.log(`Upgrading database from version ${oldVersion} to ${newVersion}...`);
-        
-        // Create stores if they don't exist
-        if (!db.objectStoreNames.contains('users')) {
-          const userStore = db.createObjectStore('users', { keyPath: 'id' });
-          userStore.createIndex('by-email', 'email', { unique: true });
-        }
-        if (!db.objectStoreNames.contains('words')) {
-          const wordStore = db.createObjectStore('words', { keyPath: 'id' });
-          wordStore.createIndex('by-supervisorId', 'supervisorId');
-        }
-        if (!db.objectStoreNames.contains('adminMessages')) {
-          db.createObjectStore('adminMessages', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('wordProgress')) {
-          const progressStore = db.createObjectStore('wordProgress', { keyPath: 'id' });
-          progressStore.createIndex('by-studentId', 'studentId');
-        }
-        if (!db.objectStoreNames.contains('landingPage')) {
-          db.createObjectStore('landingPage', { keyPath: 'id' });
-        }
-        if (!db.objectStoreNames.contains('supervisorMessages')) {
-          const store = db.createObjectStore('supervisorMessages', { keyPath: 'id' });
-          store.createIndex('by-conversation', ['studentId', 'supervisorId']);
-        }
-        if (!db.objectStoreNames.contains('peerMessages')) {
-          const store = db.createObjectStore('peerMessages', { keyPath: 'id' });
-          store.createIndex('by-conversation', 'conversationId');
-        }
-        
-        // Populate mock data on upgrade if stores are empty
-        const usersStore = tx.objectStore('users');
-        usersStore.count().then(count => {
-          if (count === 0) {
-              mockUsers.forEach(user => usersStore.add(user).catch(err => console.log('Silently ignoring duplicate user:', err)));
-              console.log('Populated users store with mock data.');
-          }
-        });
-
-        const wordsStore = tx.objectStore('words');
-        wordsStore.count().then(count => {
-            if (count === 0) {
-                mockWords.forEach(word => wordsStore.add(word));
-                console.log('Populated words store with mock data.');
+        // Seed users
+        mockUsers.forEach(user => {
+            const userDocRef = doc(db, "users", user.id);
+            // Convert trialExpiresAt to Firestore Timestamp if it exists
+            const userData = { ...user };
+            if (user.trialExpiresAt) {
+                (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
             }
+            batch.set(userDocRef, userData);
         });
 
-        const messagesStore = tx.objectStore('adminMessages');
-        messagesStore.count().then(count => {
-            if (count === 0) {
-                mockMessages.forEach(message => messagesStore.add(message));
-                console.log('Populated messages store with mock data.');
-            }
+        // Seed words
+        mockWords.forEach(word => {
+            const wordDocRef = doc(db, "words", word.id);
+            batch.set(wordDocRef, word);
         });
 
-        console.log("Database upgrade complete.");
-      },
-       blocked() {
-        alert('Database is blocked. Please close other tabs with this app open.');
-      },
-      blocking() {
-        alert('Database is blocked by an old version. Please refresh the page.');
-      },
-      terminated() {
-        alert('Database connection terminated unexpectedly. Please reload the page.');
-      }
-    });
-  }
-  return dbPromise;
-};
+        // Seed messages
+        mockMessages.forEach(message => {
+            const messageDocRef = doc(db, "adminMessages", message.id);
+            const messageData = { ...message, createdAt: Timestamp.fromDate(message.createdAt) };
+            batch.set(messageDocRef, messageData);
+        });
 
-// Function to clear the database
-export async function resetDatabase() {
-    if (typeof window === 'undefined') return;
-    
-    // Close the database connection if it's open
-    if (dbPromise) {
-        const db = await dbPromise;
-        db.close();
-        dbPromise = null;
+        await batch.commit();
+        console.log("Database seeded successfully.");
+    } else {
+        console.log("Database already contains data. No seeding needed.");
     }
-
-    // Delete the database
-    await window.indexedDB.deleteDatabase('lingua-leap-db');
-    console.log("Database has been reset.");
 }
+
+// Call the seed function once when the module is loaded.
+seedDatabase().catch(console.error);
 
 
 // --- User Functions ---
 export async function getAllUsersDB(): Promise<User[]> {
-    const db = getDb();
-    if (!db) return mockUsers;
-    return (await db).getAll('users');
+    const usersCol = collection(db, 'users');
+    const userSnapshot = await getDocs(usersCol);
+    return userSnapshot.docs.map(doc => {
+        const data = doc.data();
+        if (data.trialExpiresAt && data.trialExpiresAt instanceof Timestamp) {
+            data.trialExpiresAt = data.trialExpiresAt.toDate().toISOString();
+        }
+        return { ...data, id: doc.id } as User;
+    });
 }
 
 export async function getUserByIdDB(id: string): Promise<User | undefined> {
-    const db = getDb();
-    if (!db) return mockUsers.find(u => u.id === id);
-    return (await db).get('users', id);
+    const userDocRef = doc(db, 'users', id);
+    const userSnap = await getDoc(userDocRef);
+    if (!userSnap.exists()) return undefined;
+    const data = userSnap.data();
+    if (data.trialExpiresAt && data.trialExpiresAt instanceof Timestamp) {
+        data.trialExpiresAt = data.trialExpiresAt.toDate().toISOString();
+    }
+    return { ...data, id: userSnap.id } as User;
 }
 
 export async function getUserByEmailDB(email: string): Promise<User | undefined> {
-    const db = getDb();
-    if (!db) return mockUsers.find(u => u.email === email);
-    return (await db).getFromIndex('users', 'by-email', email);
+    const q = query(collection(db, "users"), where("email", "==", email));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) return undefined;
+    const userDoc = querySnapshot.docs[0];
+    const data = userDoc.data();
+    if (data.trialExpiresAt && data.trialExpiresAt instanceof Timestamp) {
+        data.trialExpiresAt = data.trialExpiresAt.toDate().toISOString();
+    }
+    return { ...data, id: userDoc.id } as User;
 }
 
 export async function addUserDB(user: User): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).put('users', user);
+    const userDocRef = doc(db, 'users', user.id);
+    const userData = { ...user };
+     if (user.trialExpiresAt) {
+        (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
+    }
+    await setDoc(userDocRef, userData);
 }
 
 export async function updateUserDB(user: User): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).put('users', user);
+    const userDocRef = doc(db, 'users', user.id);
+     const userData = { ...user };
+     if (user.trialExpiresAt) {
+        (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
+    }
+    await setDoc(userDocRef, userData, { merge: true });
 }
 
 export async function deleteUserDB(id: string): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).delete('users', id);
+    await deleteDoc(doc(db, 'users', id));
 }
 
 // --- Word Functions ---
 export async function getWordsBySupervisorDB(supervisorId: string): Promise<Word[]> {
-    const db = getDb();
-    if (!db) return mockWords.filter(w => w.supervisorId === supervisorId);
-    return (await db).getAllFromIndex('words', 'by-supervisorId', supervisorId);
+    const q = query(collection(db, "words"), where("supervisorId", "==", supervisorId));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Word));
 }
 
 export async function addWordDB(word: Word): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).put('words', word);
+    const wordDocRef = doc(db, 'words', word.id);
+    await setDoc(wordDocRef, word);
 }
 
 export async function getWordByIdDB(id: string): Promise<Word | undefined> {
-    const db = getDb();
-    if (!db) return undefined;
-    return (await db).get('words', id);
+    const wordDocRef = doc(db, 'words', id);
+    const docSnap = await getDoc(wordDocRef);
+    return docSnap.exists() ? { ...docSnap.data(), id: docSnap.id } as Word : undefined;
 }
-
 
 export async function updateWordDB(word: Word): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).put('words', word);
+    const wordDocRef = doc(db, 'words', word.id);
+    await setDoc(wordDocRef, word, { merge: true });
 }
 
-
 export async function deleteWordDB(id: string): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).delete('words', id);
+    await deleteDoc(doc(db, 'words', id));
 }
 
 // --- WordProgress Functions ---
 export async function getStudentProgressDB(studentId: string): Promise<WordProgress[]> {
-    const db = getDb();
-    if (!db) return [];
-    return (await db).getAllFromIndex('wordProgress', 'by-studentId', studentId);
+    const progressCol = collection(db, `users/${studentId}/wordProgress`);
+    const progressSnapshot = await getDocs(progressCol);
+    return progressSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            ...data,
+            id: doc.id,
+            nextReview: (data.nextReview as Timestamp).toDate(),
+        } as WordProgress;
+    });
 }
 
-export async function saveStudentProgressDB(progress: WordProgress[]): Promise<void> {
-    const db = getDb();
-    if (!db) return;
-    const tx = (await db).transaction('wordProgress', 'readwrite');
-    await Promise.all([...progress.map(p => tx.store.put(p)), tx.done]);
+export async function saveStudentProgressDB(studentId: string, progress: WordProgress[]): Promise<void> {
+    const batch = writeBatch(db);
+    progress.forEach(p => {
+        const docRef = doc(db, `users/${studentId}/wordProgress`, p.id);
+        const progressData = {
+            ...p,
+            nextReview: Timestamp.fromDate(p.nextReview),
+        };
+        batch.set(docRef, progressData);
+    });
+    await batch.commit();
 }
 
-// --- Message Functions ---
+// --- Admin Message Functions ---
 export async function getMessagesDB(): Promise<Message[]> {
-    const db = getDb();
-    if (!db) return mockMessages;
-    const allMessages = await (await db).getAll('adminMessages');
-    return allMessages.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const messagesCol = collection(db, 'adminMessages');
+    const q = query(messagesCol, orderBy("createdAt", "desc"));
+    const messageSnapshot = await getDocs(q);
+    return messageSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            ...data,
+            id: doc.id,
+            createdAt: (data.createdAt as Timestamp).toDate(),
+        } as Message;
+    });
 }
 
 export async function addMessageDB(message: Message): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).put('adminMessages', message);
+    const messageData = { ...message, createdAt: Timestamp.fromDate(message.createdAt) };
+    const docRef = doc(db, "adminMessages", message.id);
+    await setDoc(docRef, messageData);
 }
 
 export async function deleteMessageDB(id: string): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).delete('adminMessages', id);
+    await deleteDoc(doc(db, 'adminMessages', id));
 }
 
+
 // --- Chat Message Functions ---
+function getSupervisorChatCollectionId(studentId: string, supervisorId: string): string {
+    return `supervisor-chats/${studentId}-${supervisorId}/messages`;
+}
+
+function getPeerChatCollectionId(conversationId: string): string {
+    return `peer-chats/${conversationId}/messages`;
+}
+
 export async function getSupervisorMessagesDB(studentId: string, supervisorId: string): Promise<SupervisorMessage[]> {
-    const db = getDb();
-    if (!db) return [];
-    return (await db).getAllFromIndex('supervisorMessages', 'by-conversation', IDBKeyRange.only([studentId, supervisorId]));
+    const collId = getSupervisorChatCollectionId(studentId, supervisorId);
+    const q = query(collection(db, collId), orderBy("createdAt", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            ...data,
+            id: doc.id,
+            createdAt: (data.createdAt as Timestamp).toDate(),
+        } as SupervisorMessage;
+    });
 }
 
 export async function getPeerMessagesDB(conversationId: string): Promise<PeerMessage[]> {
-    const db = getDb();
-    if (!db) return [];
-    return (await db).getAllFromIndex('peerMessages', 'by-conversation', conversationId);
+    const collId = getPeerChatCollectionId(conversationId);
+    const q = query(collection(db, collId), orderBy("createdAt", "asc"));
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            ...data,
+            id: doc.id,
+            createdAt: (data.createdAt as Timestamp).toDate(),
+        } as PeerMessage;
+    });
 }
 
 export async function saveSupervisorMessageDB(message: SupervisorMessage): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).put('supervisorMessages', message);
+    const collId = getSupervisorChatCollectionId(message.studentId, message.supervisorId);
+    const docRef = doc(db, collId, message.id);
+    const messageData = {
+        ...message,
+        createdAt: Timestamp.fromDate(message.createdAt)
+    };
+    await setDoc(docRef, messageData, { merge: true });
 }
 
 export async function savePeerMessageDB(message: PeerMessage): Promise<void> {
-    const db = getDb();
-    if (db) await (await db).put('peerMessages', message);
+    const collId = getPeerChatCollectionId(message.conversationId);
+    const docRef = doc(db, collId, message.id);
+    const messageData = {
+        ...message,
+        createdAt: Timestamp.fromDate(message.createdAt)
+    };
+    await setDoc(docRef, messageData, { merge: true });
 }
 
-export async function updateSupervisorMessagesDB(messages: SupervisorMessage[]): Promise<void> {
-    const db = getDb();
-    if (!db) return;
-    const tx = (await db).transaction('supervisorMessages', 'readwrite');
-    await Promise.all([...messages.map(m => tx.store.put(m)), tx.done]);
+export async function updateSupervisorMessagesDB(studentId: string, supervisorId: string, messages: SupervisorMessage[]): Promise<void> {
+    const batch = writeBatch(db);
+    const collId = getSupervisorChatCollectionId(studentId, supervisorId);
+    messages.forEach(msg => {
+        const docRef = doc(db, collId, msg.id);
+        const messageData = { ...msg, createdAt: Timestamp.fromDate(msg.createdAt) };
+        batch.set(docRef, messageData, { merge: true });
+    });
+    await batch.commit();
 }
 
-export async function updatePeerMessagesDB(messages: PeerMessage[]): Promise<void> {
-    const db = getDb();
-    if (!db) return;
-    const tx = (await db).transaction('peerMessages', 'readwrite');
-    await Promise.all([...messages.map(m => tx.store.put(m)), tx.done]);
+export async function updatePeerMessagesDB(conversationId: string, messages: PeerMessage[]): Promise<void> {
+    const batch = writeBatch(db);
+    const collId = getPeerChatCollectionId(conversationId);
+    messages.forEach(msg => {
+        const docRef = doc(db, collId, msg.id);
+        const messageData = { ...msg, createdAt: Timestamp.fromDate(msg.createdAt) };
+        batch.set(docRef, messageData, { merge: true });
+    });
+    await batch.commit();
 }
 
-export async function deleteSupervisorMessageDB(id: string): Promise<void> {
-    const db = getDb();
-    if(db) await (await db).delete('supervisorMessages', id);
+export async function deleteSupervisorMessageDB(studentId: string, supervisorId: string, id: string): Promise<void> {
+    const collId = getSupervisorChatCollectionId(studentId, supervisorId);
+    await deleteDoc(doc(db, collId, id));
 }
 
-export async function deletePeerMessageDB(id: string): Promise<void> {
-    const db = getDb();
-    if(db) await (await db).delete('peerMessages', id);
+export async function deletePeerMessageDB(conversationId: string, id: string): Promise<void> {
+    const collId = getPeerChatCollectionId(conversationId);
+    await deleteDoc(doc(db, collId, id));
 }
 
 
-// --- Hero Image Functions ---
+// --- Landing Page Hero Image ---
 export async function setHeroImage(image: string): Promise<void> {
-  const db = getDb();
-  if (db) {
-    try {
-        await (await db).put('landingPage', { id: 'heroImage', image });
-    } catch (error) {
-        console.error("Failed to set hero image in IndexedDB", error);
-    }
-  }
+    const docRef = doc(db, 'app-config', 'landingPage');
+    await setDoc(docRef, { heroImage: image });
 }
 
 export async function getHeroImage(): Promise<string | undefined> {
-  const db = getDb();
-  if (db) {
-    try {
-        const result = await (await db).get('landingPage', 'heroImage');
-        return result?.image;
-    } catch (error) {
-        console.error("Failed to get hero image from IndexedDB", error);
-        return undefined;
+    const docRef = doc(db, 'app-config', 'landingPage');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data().heroImage;
     }
-  }
-  return undefined;
+    return undefined;
 }

@@ -7,7 +7,7 @@ import { User, getUserById, getStudentsBySupervisorId } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Trophy } from "lucide-react";
-import { LearningStats } from "@/lib/stats.tsx";
+import { LearningStats, getStatsForUser } from "@/lib/stats.tsx";
 import { cn } from "@/lib/utils";
 import { endOfWeek, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
@@ -16,13 +16,6 @@ import { useLanguage } from "@/hooks/use-language";
 type ClassmateWithXp = User & {
     xp: number;
 };
-
-const getStatsForUser = (userId: string): LearningStats => {
-    if (typeof window === 'undefined') return { xp: 0 } as LearningStats;
-    const storedStats = localStorage.getItem(`learningStats_${userId}`);
-    return storedStats ? JSON.parse(storedStats) : { xp: 0 };
-}
-
 
 export default function ChampionPage() {
     const searchParams = useSearchParams();
@@ -45,7 +38,7 @@ export default function ChampionPage() {
                     userMap.set(currentUser.id, currentUser);
 
                     const leaderboardDataPromises = Array.from(userMap.values()).map(async (student) => {
-                         const stats = getStatsForUser(student.id);
+                         const stats = await getStatsForUser(student.id);
                          return {
                              ...student,
                              xp: stats.xp || 0

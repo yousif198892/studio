@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
@@ -171,7 +170,7 @@ export default function ChatPage() {
         }
     }
     
-  }, [userId, contactToSelect]);
+  }, [userId, contactToSelect, selectedContact]);
 
 
   useEffect(() => {
@@ -179,19 +178,12 @@ export default function ChatPage() {
         await loadData(true);
     }
     init();
-  }, [loadData]);
-
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-        if(event.key?.startsWith('supervisorMessages') || event.key?.startsWith('peerMessages') || event.key === 'users') {
-           loadData();
-        }
-    };
     
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [loadData]);
-
+    // Periodically poll for new messages
+    const intervalId = setInterval(() => loadData(false), 5000); 
+    
+    return () => clearInterval(intervalId);
+  }, [userId, contactToSelect]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -243,10 +235,6 @@ export default function ChatPage() {
     
     if(hadUnread) {
         setConversations(prev => prev.map(c => c.id === contact.id ? { ...c, unreadCount: 0 } : c));
-        if (notifyLayout) {
-             localStorage.setItem('messagesNeedsUpdate', 'true');
-             localStorage.removeItem('messagesNeedsUpdate');
-        }
     }
   };
 
@@ -349,9 +337,9 @@ export default function ChatPage() {
 
     if (scope === 'everyone') {
         if ('supervisorId' in message) {
-            await deleteSupervisorMessageDB(message.id);
+            await deleteSupervisorMessageDB(message);
         } else {
-            await deletePeerMessageDB(message.id);
+            await deletePeerMessageDB(message);
         }
         setMessages(prev => prev.filter(m => m.id !== message.id));
     } else { // 'me'

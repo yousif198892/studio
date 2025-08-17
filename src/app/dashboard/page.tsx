@@ -93,17 +93,17 @@ export default function Dashboard() {
           setWordsMasteredCount(mastered);
           setWordsLearningCount(learning);
           
-          let currentStats = getStatsForUser(userId);
+          let currentStats = await getStatsForUser(userId);
           
           // Daily Login XP Check
-          const { updated, amount } = updateXp(userId, 'daily_login');
+          const { updated, amount } = await updateXp(userId, 'daily_login');
           if (updated) {
               toast({
                   description: <XpToast event="daily_login" amount={amount} />,
                   duration: 3000,
               });
               // Refetch stats to include the new XP from daily login
-              currentStats = getStatsForUser(userId);
+              currentStats = await getStatsForUser(userId);
           }
           
           setStats(currentStats);

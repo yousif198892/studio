@@ -1,9 +1,7 @@
 
-
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 
-import { getStudentProgressDB, saveStudentProgressDB } from './db';
 import { WordProgress } from './storage';
 import { 
     getAllUsersDB,
@@ -20,6 +18,8 @@ import {
     updateWordDB,
     getWordByIdDB,
     getUserByEmailDB,
+    getStudentProgressDB,
+    saveStudentProgressDB,
     getSupervisorMessagesDB,
     getPeerMessagesDB,
     savePeerMessageDB,
@@ -27,7 +27,7 @@ import {
     updatePeerMessagesDB,
     updateSupervisorMessagesDB,
     deleteSupervisorMessageDB,
-    deletePeerMessageDB,
+    deletePeerMessageDB
 } from './db';
 
 
@@ -190,7 +190,7 @@ export const mockWords: Word[] = [
         definition: "A round fruit with red or green skin and a whitish inside.",
         unit: "Unit 1",
         lesson: "Lesson 1: Fruits",
-        imageUrl: "https://placehold.co/600x400.png?text=Apple",
+        imageUrl: "https://placehold.co/600x400.png",
         options: ["Apple", "Banana", "Orange", "Grape"],
         correctOption: "Apple",
         supervisorId: "sup1",
@@ -201,7 +201,7 @@ export const mockWords: Word[] = [
         definition: "A written or printed work consisting of pages glued or sewn together along one side and bound in covers.",
         unit: "Unit 1",
         lesson: "Lesson 2: Classroom",
-        imageUrl: "https://placehold.co/600x400.png?text=Book",
+        imageUrl: "https://placehold.co/600x400.png",
         options: ["Book", "Pen", "Table", "Chair"],
         correctOption: "Book",
         supervisorId: "sup1",
@@ -212,7 +212,7 @@ export const mockWords: Word[] = [
         definition: "A small domesticated carnivorous mammal with soft fur, a short snout, and retractable claws.",
         unit: "Unit 2",
         lesson: "Lesson 1: Animals",
-        imageUrl: "https://placehold.co/600x400.png?text=Cat",
+        imageUrl: "https://placehold.co/600x400.png",
         options: ["Cat", "Dog", "Bird", "Fish"],
         correctOption: "Cat",
         supervisorId: "sup1",
@@ -223,7 +223,7 @@ export const mockWords: Word[] = [
         definition: "A domesticated carnivorous mammal that typically has a long snout, an acute sense of smell, and a barking, howling, or whining voice.",
         unit: "Unit 2",
         lesson: "Lesson 1: Animals",
-        imageUrl: "https://placehold.co/600x400.png?text=Dog",
+        imageUrl: "https://placehold.co/600x400.png",
         options: ["Dog", "Lion", "Tiger", "Bear"],
         correctOption: "Dog",
         supervisorId: "sup1",
@@ -234,7 +234,7 @@ export const mockWords: Word[] = [
         definition: "A road vehicle, typically with four wheels, powered by an internal combustion engine or electric motor and able to carry a small number of people.",
         unit: "Unit 2",
         lesson: "Lesson 2: Transportation",
-        imageUrl: "https://placehold.co/600x400.png?text=Car",
+        imageUrl: "https://placehold.co/600x400.png",
         options: ["Car", "Bus", "Train", "Bicycle"],
         correctOption: "Car",
         supervisorId: "sup1",
@@ -278,6 +278,7 @@ export async function getWordsForStudent(studentId: string): Promise<(Word & Wor
                 id: supervisorWord.id,
                 strength: 0,
                 nextReview: new Date(),
+                studentId: studentId
             };
         }
     });
@@ -288,7 +289,7 @@ export async function getWordsForStudent(studentId: string): Promise<(Word & Wor
         nextReview: w.nextReview,
         studentId: studentId
     }));
-    await saveStudentProgressDB(allProgressToSave);
+    await saveStudentProgressDB(studentId, allProgressToSave);
 
     return mergedWords;
 }
@@ -327,10 +328,8 @@ export async function getStudentsBySupervisorId(supervisorId: string): Promise<U
 }
 
 
-// CHAT - Migrated to IndexedDB
+// CHAT - Migrated to Firestore
 export async function getConversationsForStudent(userId: string): Promise<{ supervisor: Record<string, SupervisorMessage[]>, peer: Record<string, PeerMessage[]> }> {
-    if (typeof window === 'undefined') return { supervisor: {}, peer: {} };
-    
     const currentUser = await getUserById(userId);
     if (!currentUser) return { supervisor: {}, peer: {} };
 
@@ -338,15 +337,11 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
     const peerConversations: Record<string, PeerMessage[]> = {};
     
     if (currentUser.role === 'student') {
-        // Get convo with supervisor
         if (currentUser.supervisorId) {
             const messages = await getSupervisorMessagesDB(userId, currentUser.supervisorId);
             supervisorConversations[currentUser.supervisorId] = messages
-                .filter(m => !(m.deletedFor?.includes(userId)))
-                .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                .filter(m => !(m.deletedFor?.includes(userId)));
         }
-
-        // Get peer convos
         if (currentUser.supervisorId) {
             const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId);
             for (const student of allStudents) {
@@ -354,8 +349,7 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
                 const conversationId = [userId, student.id].sort().join('-');
                 const messages = await getPeerMessagesDB(conversationId);
                 peerConversations[student.id] = messages
-                    .filter(m => !(m.deletedFor?.includes(userId)))
-                    .sort((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                    .filter(m => !(m.deletedFor?.includes(userId)));
             }
         }
     }
@@ -365,31 +359,26 @@ export async function getConversationsForStudent(userId: string): Promise<{ supe
         for (const student of students) {
             const messages = await getSupervisorMessagesDB(student.id, userId);
             supervisorConversations[student.id] = messages
-                .filter(m => !(m.deletedFor?.includes(userId)))
-                .sort((a,b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
+                .filter(m => !(m.deletedFor?.includes(userId)));
         }
     }
 
     return { supervisor: supervisorConversations, peer: peerConversations };
 };
 
-
-export const saveSupervisorMessage = async (message: SupervisorMessage) => {
-    if (typeof window === 'undefined') return;
+export async function saveSupervisorMessage(message: SupervisorMessage) {
     await saveSupervisorMessageDB(message);
 }
 
-export const savePeerMessage = async (message: PeerMessage) => {
-    if (typeof window === 'undefined') return;
+export async function savePeerMessage(message: PeerMessage) {
     await savePeerMessageDB(message);
 };
 
-export const markSupervisorMessagesAsRead = async (currentUserId: string, otherUserId: string) => {
-    if (typeof window === 'undefined') return;
+export async function markSupervisorMessagesAsRead(currentUserId: string, otherUserId: string) {
     const currentUser = await getUserById(currentUserId);
     if (!currentUser) return;
     
-    let studentId, supervisorId;
+    let studentId: string, supervisorId: string;
     if (currentUser.role === 'student') {
         studentId = currentUserId;
         supervisorId = otherUserId;
@@ -401,20 +390,26 @@ export const markSupervisorMessagesAsRead = async (currentUserId: string, otherU
     const messages = await getSupervisorMessagesDB(studentId, supervisorId);
     const messagesToUpdate = messages.map(m => (m.senderId !== currentUserId ? { ...m, read: true } : m));
     if (messagesToUpdate.length > 0) {
-      await updateSupervisorMessagesDB(messagesToUpdate);
+      await updateSupervisorMessagesDB(studentId, supervisorId, messagesToUpdate);
     }
 };
 
-export const markPeerMessagesAsRead = async (currentUserId: string, peerId: string) => {
-    if (typeof window === 'undefined') return;
+export async function markPeerMessagesAsRead(currentUserId: string, peerId: string) {
     const conversationId = [currentUserId, peerId].sort().join('-');
     const messages = await getPeerMessagesDB(conversationId);
     const messagesToUpdate = messages.map(m => m.senderId === peerId ? { ...m, read: true } : m);
     if (messagesToUpdate.length > 0) {
-      await updatePeerMessagesDB(messagesToUpdate);
+      await updatePeerMessagesDB(conversationId, messagesToUpdate);
     }
 };
 
+export async function deleteSupervisorMessageDB(message: SupervisorMessage) {
+    await deleteSupervisorMessageDB(message.studentId, message.supervisorId, message.id);
+}
+
+export async function deletePeerMessageDB(message: PeerMessage) {
+    await deletePeerMessageDB(message.conversationId, message.id);
+}
 
 // Re-exporting write functions
 export { 
@@ -428,7 +423,5 @@ export {
     updateWordDB, 
     getWordByIdDB, 
     getUserByEmailDB, 
-    getWordsBySupervisorDB,
-    deleteSupervisorMessageDB,
-    deletePeerMessageDB
+    getWordsBySupervisorDB
 };

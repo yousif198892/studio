@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -8,6 +7,7 @@ import {
   User,
   getMessages,
   getUserById,
+  deleteMessageDB,
 } from "@/lib/data";
 import {
   Card,
@@ -54,18 +54,22 @@ function AdminInbox() {
   }, []);
 
   const handleDelete = async (messageId: string) => {
-    // In a real app, this would be a server action.
-    let storedMessages: Message[] = JSON.parse(localStorage.getItem("adminMessages") || "[]");
-    storedMessages = storedMessages.filter((m) => m.id !== messageId);
-    localStorage.setItem("adminMessages", JSON.stringify(storedMessages));
-    
-    const updatedMessages = messages.filter((m) => m.id !== messageId);
-    setMessages(updatedMessages);
+    try {
+      await deleteMessageDB(messageId);
+      const updatedMessages = messages.filter((m) => m.id !== messageId);
+      setMessages(updatedMessages);
 
-    toast({
-      title: "Success!",
-      description: "Message deleted successfully.",
-    });
+      toast({
+        title: "Success!",
+        description: "Message deleted successfully.",
+      });
+    } catch (error) {
+       toast({
+        title: "Error",
+        description: "Could not delete message.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

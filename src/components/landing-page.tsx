@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -15,10 +14,9 @@ import { getHeroImage } from "@/lib/db";
 
 export function LandingPage() {
   const { t, language, setLanguage } = useLanguage();
-  const [heroImage, setHeroImage] = useState("https://placehold.co/500x625.png?text=LinguaLeap");
+  const [heroImage, setHeroImage] = useState("https://placehold.co/500x625.png");
 
   useEffect(() => {
-    // This effect runs only on the client side
     const fetchImage = async () => {
       const storedImage = await getHeroImage();
       if (storedImage) {
