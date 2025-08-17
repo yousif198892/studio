@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { redirect, useSearchParams } from "next/navigation";
@@ -150,5 +149,3 @@ export default function DashboardLayout({
       </SidebarProvider>
   );
 }
-
-    
