@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { updateStudentProgressInStorage } from "@/lib/storage";
 import { WordProgress } from "@/lib/storage";
-import { updateLearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats.tsx";
+import { updateLearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { XpToast } from "./xp-toast";
 
@@ -45,8 +45,9 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
 
   useEffect(() => {
     // Load how many words the user has spelled today
-    const stats = JSON.parse(localStorage.getItem(`learningStats_${userId}`) || '{}');
+    const stats = getStatsForUser(userId);
     const today = new Date().toISOString().split('T')[0];
+
     if (stats.spellingPractice?.date === today) {
         setSpelledToday(stats.spellingPractice.count);
     } else {
@@ -275,3 +276,5 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
     </Card>
   );
 }
+
+    

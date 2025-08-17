@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { getWordsForStudent, getUserById, getStudentsBySupervisorId, Word } from "@/lib/data";
 import { User } from "@/lib/data";
-import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck, ChevronDown, Star } from "lucide-react";
+import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck, ChevronDown, Star, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/hooks/use-language";
@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SpellingPracticeCard } from "@/components/spelling-practice-card";
-import { LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats.tsx";
+import { LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats";
 import { useToast } from "@/hooks/use-toast";
 import { XpToast } from "@/components/xp-toast";
 
@@ -60,6 +60,7 @@ export default function Dashboard() {
   const userId = searchParams.get('userId');
   const { t } = useLanguage();
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
   const [students, setStudents] = useState<User[]>([]);
   const [stats, setStats] = useState<LearningStats | null>(null);
@@ -112,6 +113,7 @@ export default function Dashboard() {
             setStudents(studentList);
         }
       }
+      setLoading(false);
     };
     fetchData();
   }, [userId, toast]);
@@ -139,8 +141,13 @@ export default function Dashboard() {
     return `${minutes}m`;
   };
   
-  if (!user || (user.role === 'student' && !stats)) {
-    return <div>{t('dashboard.loading')}</div>;
+  if (loading || !user || (user.role === 'student' && !stats)) {
+    return (
+        <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-4">{t('dashboard.loading')}</p>
+        </div>
+    );
   }
 
   const isReviewButtonDisabled = !selectedUnit || !selectedLesson;

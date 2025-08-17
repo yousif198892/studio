@@ -8,6 +8,7 @@ import { DashboardSidebar } from "@/components/dashboard-sidebar";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { User, getMessages, Word, getWordsBySupervisor, getWordsForStudent, getConversationsForStudent, getStudentsBySupervisorId, getAllUsers, getUserById } from "@/lib/data";
 import { useEffect, useState, useCallback } from "react";
+import { Loader2 } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -37,7 +38,6 @@ export default function DashboardLayout({
         return;
       }
       
-      setLoading(true);
       const foundUser = await getUserById(userId);
       
       if (foundUser) {
@@ -114,7 +114,8 @@ export default function DashboardLayout({
   if (loading) {
     return (
         <div className="flex items-center justify-center min-h-screen">
-            <p>Loading...</p>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <p className="ml-4">Loading...</p>
         </div>
     );
   }
@@ -149,3 +150,5 @@ export default function DashboardLayout({
       </SidebarProvider>
   );
 }
+
+    
