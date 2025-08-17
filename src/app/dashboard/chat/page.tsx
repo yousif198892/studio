@@ -13,8 +13,8 @@ import {
   markSupervisorMessagesAsRead,
   markPeerMessagesAsRead,
   PeerMessage,
-  deletePeerMessageDB,
-  deleteSupervisorMessageDB,
+  deletePeerMessage,
+  deleteSupervisorMessage,
   updateUserDB
 } from "@/lib/data";
 import {
@@ -337,9 +337,9 @@ export default function ChatPage() {
 
     if (scope === 'everyone') {
         if ('supervisorId' in message) {
-            await deleteSupervisorMessageDB(message);
+            await deleteSupervisorMessage(message);
         } else {
-            await deletePeerMessageDB(message);
+            await deletePeerMessage(message);
         }
         setMessages(prev => prev.filter(m => m.id !== message.id));
     } else { // 'me'

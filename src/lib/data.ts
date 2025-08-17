@@ -26,8 +26,8 @@ import {
     saveSupervisorMessageDB,
     updatePeerMessagesDB,
     updateSupervisorMessagesDB,
-    deleteSupervisorMessageDB,
-    deletePeerMessageDB
+    deleteSupervisorMessageDB as deleteSupervisorMessageFromDB,
+    deletePeerMessageDB as deletePeerMessageFromDB
 } from './db';
 
 
@@ -403,12 +403,12 @@ export async function markPeerMessagesAsRead(currentUserId: string, peerId: stri
     }
 };
 
-export async function deleteSupervisorMessageDB(message: SupervisorMessage) {
-    await deleteSupervisorMessageDB(message.studentId, message.supervisorId, message.id);
+export async function deleteSupervisorMessage(message: SupervisorMessage) {
+    await deleteSupervisorMessageFromDB(message.studentId, message.supervisorId, message.id);
 }
 
-export async function deletePeerMessageDB(message: PeerMessage) {
-    await deletePeerMessageDB(message.conversationId, message.id);
+export async function deletePeerMessage(message: PeerMessage) {
+    await deletePeerMessageFromDB(message.conversationId, message.id);
 }
 
 // Re-exporting write functions
