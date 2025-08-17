@@ -14,7 +14,6 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { updateLearningStats } from '@/lib/stats.tsx';
 import { useToast } from '@/hooks/use-toast';
-import { XpToast } from '@/components/xp-toast';
 
 const TENSE_NAME = "Present Continuous";
 
@@ -29,9 +28,9 @@ export default function PresentContinuousQuizPage() {
     const startTimeRef = useRef<number | null>(null);
     const { toast } = useToast();
 
-    const handleUpdateStats = useCallback((durationSeconds: number, testName?: string) => {
+    const handleUpdateStats = useCallback(async (durationSeconds: number, testName?: string) => {
         if (userId) {
-            updateLearningStats({ userId, durationSeconds, testName, toast });
+            await updateLearningStats({ userId, durationSeconds, testName, toast });
         }
     }, [userId, toast]);
 

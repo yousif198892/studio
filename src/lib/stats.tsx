@@ -59,10 +59,16 @@ export const getStatsForUser = async (userId: string): Promise<LearningStats> =>
     const statsDocRef = doc(db, `users/${userId}/app-data/stats`);
     const statsSnap = await getDoc(statsDocRef);
 
-    let stats: LearningStats = statsSnap.exists() 
-        ? (statsSnap.data() as LearningStats)
-        : getInitialStats(todayStr);
+    let stats: LearningStats;
 
+    if (statsSnap.exists()) {
+        stats = statsSnap.data() as LearningStats;
+    } else {
+        stats = getInitialStats(todayStr);
+        // If no stats exist, save the initial stats to Firestore
+        await setDoc(statsDocRef, stats);
+    }
+    
     // --- Data Migration & Defaults ---
     if (typeof stats.xp !== 'number') stats.xp = 0;
     if (!stats.lastLoginDate) stats.lastLoginDate = '1970-01-01';

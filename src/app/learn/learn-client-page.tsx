@@ -44,9 +44,9 @@ export default function LearnClientPage() {
     }
   }, [userId, unitFilter, lessonFilter]);
 
-  const handleUpdateStats = useCallback((reviewedCount: number, durationSeconds: number) => {
+  const handleUpdateStats = useCallback(async (reviewedCount: number, durationSeconds: number) => {
     if (userId) {
-      updateLearningStats({ userId, reviewedCount, durationSeconds });
+      await updateLearningStats({ userId, reviewedCount, durationSeconds });
     }
   }, [userId]);
 
@@ -106,9 +106,9 @@ export default function LearnClientPage() {
     }
     
     await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
-    handleUpdateStats(1, 0); // Only update review count, not time
+    await handleUpdateStats(1, 0); // Only update review count, not time
     
-    updateXp(userId, xpEvent);
+    await updateXp(userId, xpEvent);
     toast({
       description: <XpToast event={xpEvent} amount={XP_AMOUNTS[xpEvent]} />,
       duration: 3000,
@@ -125,9 +125,9 @@ export default function LearnClientPage() {
     nextReview.setDate(nextReview.getDate() + 1); // Schedule for tomorrow
     
     await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
-    handleUpdateStats(1, 0); // Only update review count, not time
+    await handleUpdateStats(1, 0); // Only update review count, not time
     
-    updateXp(userId, 'review_word');
+    await updateXp(userId, 'review_word');
     toast({
       description: <XpToast event="review_word" amount={XP_AMOUNTS["review_word"]} />,
       duration: 3000,

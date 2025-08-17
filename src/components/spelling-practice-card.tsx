@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { updateStudentProgressInStorage } from "@/lib/storage";
 import { WordProgress } from "@/lib/storage";
-import { updateLearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats";
+import { updateLearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { XpToast } from "./xp-toast";
 
@@ -44,15 +44,17 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
   const DAILY_LIMIT = 10;
 
   useEffect(() => {
-    // Load how many words the user has spelled today
-    const stats = getStatsForUser(userId);
-    const today = new Date().toISOString().split('T')[0];
+    const loadStats = async () => {
+        const stats = await getStatsForUser(userId);
+        const today = new Date().toISOString().split('T')[0];
 
-    if (stats.spellingPractice?.date === today) {
-        setSpelledToday(stats.spellingPractice.count);
-    } else {
-        setSpelledToday(0);
+        if (stats.spellingPractice?.date === today) {
+            setSpelledToday(stats.spellingPractice.count);
+        } else {
+            setSpelledToday(0);
+        }
     }
+    loadStats();
 
     const words = allWords.filter((w) => w.strength && w.strength > 0);
     setPracticeWords(words);
@@ -100,13 +102,13 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
   }, [selectNewWord]);
 
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentWord || !answer.trim() || feedback !== 'idle' || spelledToday >= DAILY_LIMIT) return;
 
     const correct = answer.trim().toLowerCase() === currentWord.word.toLowerCase();
     
-    updateLearningStats({ userId, spelledCount: 1 });
+    await updateLearningStats({ userId, spelledCount: 1 });
     setSpelledToday(prev => prev + 1);
 
     if (correct) {
@@ -118,7 +120,7 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
          nextReview: nextReview,
       });
       
-      updateXp(userId, 'spell_correct');
+      await updateXp(userId, 'spell_correct');
       toast({
         description: <XpToast event="spell_correct" amount={XP_AMOUNTS.spell_correct} />,
         duration: 3000,

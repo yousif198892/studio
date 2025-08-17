@@ -121,12 +121,18 @@ export default function StudentsPage() {
       // Re-fetch data to revert UI change on error
       if (userId) {
          const studentList = await getStudentsBySupervisorId(userId);
-         const studentsWithStatsPromises = studentList.map(async (s) => ({
-             ...s,
-             stats: await getStatsForUser(s.id),
-             wordsLearningCount: (await getWordsForStudent(s.id)).filter(w => w.strength >=0).length,
-             wordsMasteredCount: (await getWordsForStudent(s.id)).filter(w => w.strength === -1).length
-         }));
+         const studentsWithStatsPromises = studentList.map(async (s) => {
+             const stats = await getStatsForUser(s.id);
+             const words = await getWordsForStudent(s.id);
+             const mastered = words.filter(w => w.strength === -1).length;
+             const learning = words.length - mastered;
+             return {
+                 ...s,
+                 stats,
+                 wordsLearningCount: learning,
+                 wordsMasteredCount: mastered
+             };
+         });
          setStudents(await Promise.all(studentsWithStatsPromises));
       }
     }

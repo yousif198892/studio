@@ -63,7 +63,9 @@ async function seedDatabase() {
 }
 
 // Call the seed function once when the module is loaded.
-seedDatabase().catch(console.error);
+if (typeof window !== "undefined") {
+    seedDatabase().catch(console.error);
+}
 
 
 // --- User Functions ---
