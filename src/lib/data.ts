@@ -108,7 +108,9 @@ export const mockMessages: Message[] = [
     }
 ];
 
-export const mockUsers: User[] = [
+// Passwords are now managed by Firebase Authentication and are not stored here.
+// The seeding script in db.ts will handle creating these users in Auth with a default password.
+export const mockUsers: Omit<User, 'password'>[] = [
   {
     id: "sup1",
     name: "Ali Hassan",

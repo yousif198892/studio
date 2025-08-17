@@ -2,7 +2,7 @@
 
 'use client';
 
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { 
     collection, 
     doc, 
@@ -19,6 +19,7 @@ import {
     runTransaction,
     increment
 } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 
 import { User, Word, Message, mockUsers, mockMessages, mockWords, SupervisorMessage, PeerMessage } from './data';
 import { WordProgress } from './storage';
@@ -29,20 +30,38 @@ async function seedDatabase() {
     console.log("Checking if database needs seeding...");
     const countersRef = doc(db, "counters", "userIds");
     const countersSnap = await getDoc(countersRef);
+    const DEFAULT_PASSWORD = "password123";
 
     if (!countersSnap.exists()) {
         console.log("Database is empty or counters are missing. Seeding data...");
         const batch = writeBatch(db);
 
-        // Seed users
-        mockUsers.forEach(user => {
+        // Seed users to Firestore and Firebase Auth
+        for (const user of mockUsers) {
+            // Create user in Firebase Authentication
+            try {
+                // We use the user's pre-defined ID for the UID to keep it consistent with mock data
+                await createUserWithEmailAndPassword(auth, user.email, DEFAULT_PASSWORD);
+                 console.log(`Successfully created auth user for ${user.email}`);
+            } catch (error: any) {
+                // If user already exists in auth, we can ignore the error
+                if (error.code === 'auth/email-already-in-use') {
+                    console.log(`Auth user for ${user.email} already exists.`);
+                } else {
+                    console.error(`Error creating auth user for ${user.email}:`, error);
+                    // We might want to stop the whole process if a critical user fails
+                    if (user.isMainAdmin) throw error; 
+                }
+            }
+
+            // Add user data to Firestore
             const userDocRef = doc(db, "users", user.id);
-            const { ...userData } = user; // Create a copy and remove password
+            const { ...userData } = user; // Create a copy
             if (user.trialExpiresAt) {
                 (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
             }
             batch.set(userDocRef, userData);
-        });
+        }
 
         // Seed words
         mockWords.forEach(word => {
