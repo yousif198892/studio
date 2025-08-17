@@ -104,6 +104,12 @@ export async function getUserByEmailDB(email: string): Promise<User | undefined>
     return { ...data, id: userDoc.id } as User;
 }
 
+export async function getStudentsBySupervisorDB(supervisorId: string): Promise<User[]> {
+    const q = query(collection(db, "users"), where("supervisorId", "==", supervisorId), where("role", "==", "student"));
+    const querySnapshot = await getDocs(q);
+    return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as User));
+}
+
 export async function addUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
     const userData = { ...user };
@@ -310,3 +316,5 @@ export async function getHeroImage(): Promise<string | undefined> {
     }
     return undefined;
 }
+
+    

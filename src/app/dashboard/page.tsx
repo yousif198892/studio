@@ -78,6 +78,7 @@ export default function Dashboard() {
   useEffect(() => {
     const fetchData = async () => {
       if (userId) {
+        setLoading(true);
         const foundUser = await getUserById(userId);
         setUser(foundUser || null);
         
@@ -367,34 +368,48 @@ export default function Dashboard() {
                      <CardDescription>{t('dashboard.supervisor.myStudents.description')}</CardDescription>
                  </CardHeader>
                  <CardContent>
-                     <Table>
-                         <TableHeader>
-                             <TableRow>
-                             <TableHead className="hidden w-[100px] sm:table-cell">
-                                 <span className="sr-only">Image</span>
-                             </TableHead>
-                             <TableHead>{t('dashboard.supervisor.myStudents.name')}</TableHead>
-                             <TableHead>{t('dashboard.supervisor.myStudents.email')}</TableHead>
-                             </TableRow>
-                         </TableHeader>
-                         <TableBody>
-                             {students.map((student) => (
-                                 <TableRow key={student.id}>
-                                     <TableCell className="hidden sm:table-cell">
-                                         <Image
-                                         alt="Student avatar"
-                                         className="aspect-square rounded-full object-contain"
-                                         height="64"
-                                         src={student.avatar}
-                                         width="64"
-                                         />
-                                     </TableCell>
-                                     <TableCell className="font-medium">{student.name}</TableCell>
-                                     <TableCell>{student.email}</TableCell>
+                    {loading ? (
+                         <div className="flex items-center justify-center p-8">
+                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                         </div>
+                    ) : (
+                         <Table>
+                             <TableHeader>
+                                 <TableRow>
+                                 <TableHead className="hidden w-[100px] sm:table-cell">
+                                     <span className="sr-only">Image</span>
+                                 </TableHead>
+                                 <TableHead>{t('dashboard.supervisor.myStudents.name')}</TableHead>
+                                 <TableHead>{t('dashboard.supervisor.myStudents.email')}</TableHead>
                                  </TableRow>
-                             ))}
-                         </TableBody>
-                     </Table>
+                             </TableHeader>
+                             <TableBody>
+                                 {students.length > 0 ? (
+                                    students.map((student) => (
+                                     <TableRow key={student.id}>
+                                         <TableCell className="hidden sm:table-cell">
+                                             <Image
+                                             alt="Student avatar"
+                                             className="aspect-square rounded-full object-contain"
+                                             height="64"
+                                             src={student.avatar}
+                                             width="64"
+                                             />
+                                         </TableCell>
+                                         <TableCell className="font-medium">{student.name}</TableCell>
+                                         <TableCell>{student.email}</TableCell>
+                                     </TableRow>
+                                     ))
+                                 ) : (
+                                    <TableRow>
+                                        <TableCell colSpan={3} className="text-center h-24">
+                                            No students have registered with your ID yet.
+                                        </TableCell>
+                                    </TableRow>
+                                 )}
+                             </TableBody>
+                         </Table>
+                    )}
                  </CardContent>
              </Card>
          </div>
@@ -403,5 +418,7 @@ export default function Dashboard() {
 
    return <div>{t('dashboard.loading')}</div>
  }
+
+    
 
     

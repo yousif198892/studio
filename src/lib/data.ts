@@ -27,7 +27,8 @@ import {
     updatePeerMessagesDB,
     updateSupervisorMessagesDB,
     deleteSupervisorMessageDB as deleteSupervisorMessageFromDB,
-    deletePeerMessageDB as deletePeerMessageFromDB
+    deletePeerMessageDB as deletePeerMessageFromDB,
+    getStudentsBySupervisorDB
 } from './db';
 
 
@@ -323,8 +324,7 @@ export async function getMessages(): Promise<Message[]> {
 }
 
 export async function getStudentsBySupervisorId(supervisorId: string): Promise<User[]> {
-    const allUsers = await getAllUsers();
-    return allUsers.filter(u => u.role === 'student' && u.supervisorId === supervisorId);
+    return await getStudentsBySupervisorDB(supervisorId);
 }
 
 
@@ -425,3 +425,5 @@ export {
     getUserByEmailDB, 
     getWordsBySupervisorDB
 };
+
+    
