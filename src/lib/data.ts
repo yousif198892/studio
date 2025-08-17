@@ -38,7 +38,6 @@ export type User = {
   id: string;
   name: string;
   email: string;
-  password?: string; // Added for login simulation
   role: "student" | "supervisor";
   avatar: string;
   supervisorId?: string;
@@ -114,7 +113,6 @@ export const mockUsers: User[] = [
     id: "sup1",
     name: "Ali Hassan",
     email: "ali.hassan@example.com",
-    password: "password123",
     role: "supervisor",
     avatar: "https://placehold.co/100x100.png?text=AH",
     timezone: "Asia/Baghdad",
@@ -123,7 +121,6 @@ export const mockUsers: User[] = [
     id: "sup2",
     name: "Yousif",
     email: "warriorwithinyousif@gmail.com",
-    password: "password123",
     role: "supervisor",
     avatar: "https://placehold.co/100x100.png?text=Y",
     timezone: "Asia/Baghdad",
@@ -133,7 +130,6 @@ export const mockUsers: User[] = [
     id: "user1",
     name: "Fatima Ahmed",
     email: "fatima.ahmed@example.com",
-    password: "password123",
     role: "student",
     supervisorId: "sup1",
     avatar: "https://placehold.co/100x100.png?text=FA",
@@ -144,7 +140,6 @@ export const mockUsers: User[] = [
     id: "user2",
     name: "Mohammed Khan",
     email: "mohammed.khan@example.com",
-    password: "password123",
     role: "student",
     supervisorId: "sup1",
     avatar: "https://placehold.co/100x100.png?text=MK",
@@ -155,7 +150,6 @@ export const mockUsers: User[] = [
     id: "user3",
     name: "Aisha Ibrahim",
     email: "aisha.ibrahim@example.com",
-    password: "password123",
     role: "student",
     supervisorId: "sup1",
     avatar: "https://placehold.co/100x100.png?text=AI",
@@ -166,7 +160,6 @@ export const mockUsers: User[] = [
     id: "user4",
     name: "Zainab Ali",
     email: "zainab.ali@example.com",
-    password: "password123",
     role: "student",
     supervisorId: "sup2",
     avatar: "https://placehold.co/100x100.png?text=ZA",
@@ -177,7 +170,6 @@ export const mockUsers: User[] = [
     id: "user5",
     name: "Omar Abdullah",
     email: "omar.abdullah@example.com",
-    password: "password123",
     role: "student",
     supervisorId: "sup2",
     avatar: "https://placehold.co/100x100.png?text=OA",

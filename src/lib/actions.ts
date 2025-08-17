@@ -57,33 +57,6 @@ export async function getAiWordOptions(data: {
 
 // --- AUTH ACTIONS ---
 
-const createSupervisorSchema = z.object({
-  name: z.string().min(1, 'Name is required.'),
-  email: z.string().email('Invalid email address.'),
-  password: z.string().min(6, 'Password must be at least 6 characters.'),
-});
-
-export async function validateSupervisorCreation(prevState: any, formData: FormData) {
-  const validatedFields = createSupervisorSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    password: formData.get("password"),
-  });
-
-  if (!validatedFields.success) {
-    return {
-      errors: validatedFields.error.flatten().fieldErrors,
-      message: "Validation failed.",
-      success: false,
-    };
-  }
-  
-  // This part of the logic needs to be client-side.
-  // We are returning success here, and the client will handle the DB check.
-  // A better solution might involve a dedicated API route if we needed true server-side validation without server actions calling client code.
-  return { success: true, message: "Validation successful", formData };
-}
-
 export async function redirectToDashboard(userId: string) {
     redirect(`/dashboard?userId=${userId}`);
 }

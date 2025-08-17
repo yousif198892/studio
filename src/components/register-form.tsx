@@ -18,10 +18,12 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { User, addUserDB, getNextUserId, getUserByEmailDB, getUserById } from "@/lib/data";
+import { User, addUserDB, getUserById } from "@/lib/data";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const registerSchema = z.object({
     name: z.string().min(1, 'Name is required.'),
@@ -63,13 +65,6 @@ export function RegisterForm() {
     const { name, email, password, supervisorId, grade, section } = validatedFields.data;
 
     try {
-        const existingUser = await getUserByEmailDB(email);
-        if(existingUser) {
-            toast({ title: t('toasts.error'), description: t('toasts.userExists'), variant: "destructive" });
-            setIsSubmitting(false);
-            return;
-        }
-
         const supervisor = await getUserById(supervisorId);
         if (!supervisor || supervisor.role !== 'supervisor') {
             toast({ title: t('toasts.error'), description: t('toasts.invalidSupervisorId'), variant: "destructive" });
@@ -77,13 +72,15 @@ export function RegisterForm() {
             return;
         }
 
-        const newIdNumber = await getNextUserId('student');
+        // 1. Create user in Firebase Authentication
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const firebaseUser = userCredential.user;
 
-        const newUser: User = {
-            id: `user${newIdNumber}`,
+        // 2. Create user document in Firestore
+        const newUser: Omit<User, 'password'> = {
+            id: firebaseUser.uid, // Use Firebase UID as the document ID
             name,
             email,
-            password,
             role: 'student',
             avatar: "https://placehold.co/100x100.png",
             supervisorId,
@@ -98,8 +95,12 @@ export function RegisterForm() {
 
         router.push(`/welcome?userId=${newUser.id}`);
 
-    } catch (error) {
-        toast({ title: t('toasts.error'), description: "An unexpected error occurred.", variant: "destructive" });
+    } catch (error: any) {
+        let errorMessage = "An unexpected error occurred.";
+        if (error.code === 'auth/email-already-in-use') {
+            errorMessage = "This email address is already in use.";
+        }
+        toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
     } finally {
         setIsSubmitting(false);
     }

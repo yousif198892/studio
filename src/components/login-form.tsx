@@ -21,8 +21,10 @@ import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { redirectToDashboard } from "@/lib/actions";
-import { getUserByEmailDB, updateUserDB } from "@/lib/data";
+import { getUserByIdDB, updateUserDB } from "@/lib/data";
 import { isPast } from "date-fns";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -59,44 +61,52 @@ export function LoginForm() {
         }
 
         const { email, password } = validatedFields.data;
-        let user = await getUserByEmailDB(email);
         
-        if (!user || user.password !== password) {
-             toast({
-                title: t('toasts.error'),
-                description: "Invalid email or password.",
-                variant: "destructive"
-            });
-            setIsPending(false);
-            return;
-        }
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const firebaseUser = userCredential.user;
 
-        // Check for trial expiration
-        if (user.role === 'supervisor' && user.trialExpiresAt && isPast(new Date(user.trialExpiresAt))) {
-            if (!user.isSuspended) {
-                user.isSuspended = true;
-                await updateUserDB(user);
-                 toast({
-                    title: "Trial Expired",
-                    description: "Your trial period has ended. Please contact an administrator.",
-                    variant: "destructive"
-                });
+            let user = await getUserByIdDB(firebaseUser.uid);
+
+            if (!user) {
+                // This case is unlikely if registration is done correctly, but it's good practice to handle it.
+                toast({ title: t('toasts.error'), description: "No user data found in database.", variant: "destructive"});
                 setIsPending(false);
                 return;
             }
-        }
 
-        if (user.isSuspended) {
-             toast({
-                title: t('toasts.error'),
-                description: "This account has been suspended.",
-                variant: "destructive"
-            });
+            // Check for trial expiration
+            if (user.role === 'supervisor' && user.trialExpiresAt && isPast(new Date(user.trialExpiresAt))) {
+                if (!user.isSuspended) {
+                    user.isSuspended = true;
+                    await updateUserDB(user);
+                    toast({
+                        title: "Trial Expired",
+                        description: "Your trial period has ended. Please contact an administrator.",
+                        variant: "destructive"
+                    });
+                    setIsPending(false);
+                    return;
+                }
+            }
+
+            if (user.isSuspended) {
+                toast({ title: t('toasts.error'), description: "This account has been suspended.", variant: "destructive"});
+                setIsPending(false);
+                return;
+            }
+            
+            await redirectToDashboard(user.id);
+
+        } catch (error: any) {
+            console.error("Firebase Auth Error: ", error);
+            let errorMessage = "Invalid email or password.";
+            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                errorMessage = "Invalid email or password.";
+            }
+            toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
             setIsPending(false);
-            return;
         }
-        
-        await redirectToDashboard(user.id);
     }
 
 

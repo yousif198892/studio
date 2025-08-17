@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Home,
   BookOpen,
@@ -38,6 +38,8 @@ import { Button } from "./ui/button";
 import { type User } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { cn } from "@/lib/utils";
+import { signOut } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 
 const ChampionIcon = ({ className }: { className?: string }) => (
@@ -91,6 +93,7 @@ export function DashboardSidebar({
   chatConversationsCount = 0,
 }: DashboardSidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const userRole = user.role;
   const { t } = useLanguage();
   const { setOpenMobile, isMobile } = useSidebar();
@@ -99,6 +102,11 @@ export function DashboardSidebar({
     if (isMobile) {
       setOpenMobile(false);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut(auth);
+    router.push('/login');
   };
 
   const menuItems = [
@@ -263,11 +271,9 @@ export function DashboardSidebar({
                 {user?.email}
                 </p>
             </div>
-            <Link href="/login">
-                <Button variant="ghost" size="icon">
-                    <LogOut className="h-4 w-4" />
-                </Button>
-            </Link>
+            <Button variant="ghost" size="icon" onClick={handleSignOut}>
+                <LogOut className="h-4 w-4" />
+            </Button>
             </div>
         </SidebarFooter>
     </Sidebar>
