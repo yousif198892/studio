@@ -37,7 +37,7 @@ async function seedDatabase() {
         // Seed users
         mockUsers.forEach(user => {
             const userDocRef = doc(db, "users", user.id);
-            const userData = { ...user };
+            const { ...userData } = user; // Create a copy and remove password
             if (user.trialExpiresAt) {
                 (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
             }

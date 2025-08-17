@@ -100,9 +100,9 @@ export function LoginForm() {
 
         } catch (error: any) {
             console.error("Firebase Auth Error: ", error);
-            let errorMessage = "Invalid email or password.";
+            let errorMessage = "An unexpected error occurred. Please try again.";
             if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                errorMessage = "Invalid email or password.";
+                errorMessage = "Invalid email or password. Please check your credentials or sign up if you don't have an account.";
             }
             toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
             setIsPending(false);

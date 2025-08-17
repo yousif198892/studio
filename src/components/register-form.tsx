@@ -76,8 +76,8 @@ export function RegisterForm() {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
 
-        // 2. Create user document in Firestore
-        const newUser: Omit<User, 'password'> = {
+        // 2. Create user document in Firestore, omitting the password
+        const newUser: User = {
             id: firebaseUser.uid, // Use Firebase UID as the document ID
             name,
             email,
