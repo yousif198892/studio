@@ -19,7 +19,7 @@ import {
     runTransaction,
     increment
 } from 'firebase/firestore';
-import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
 import { User, Word, Message, mockUsers, mockMessages, mockWords, SupervisorMessage, PeerMessage } from './data';
 import { WordProgress } from './storage';
@@ -38,29 +38,50 @@ async function seedDatabase() {
 
         // Seed users to Firestore and Firebase Auth
         for (const user of mockUsers) {
-            // Create user in Firebase Authentication
+             // Create user in Firebase Authentication
             try {
-                // We use the user's pre-defined ID for the UID to keep it consistent with mock data
-                await createUserWithEmailAndPassword(auth, user.email, DEFAULT_PASSWORD);
-                 console.log(`Successfully created auth user for ${user.email}`);
+                // Try to sign in to see if user exists
+                await signInWithEmailAndPassword(auth, user.email, DEFAULT_PASSWORD);
+                console.log(`Auth user for ${user.email} already exists.`);
             } catch (error: any) {
-                // If user already exists in auth, we can ignore the error
-                if (error.code === 'auth/email-already-in-use') {
-                    console.log(`Auth user for ${user.email} already exists.`);
+                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+                    // User does not exist in Auth, so create them
+                    try {
+                        const userCredential = await createUserWithEmailAndPassword(auth, user.email, DEFAULT_PASSWORD);
+                        const authUser = userCredential.user;
+                        console.log(`Successfully created auth user for ${user.email} with UID: ${authUser.uid}`);
+                        
+                        // IMPORTANT: Use the new auth UID as the document ID in Firestore
+                        const userDocRef = doc(db, "users", authUser.uid);
+                        const userData = { ...user, id: authUser.uid }; // Overwrite mock ID
+                        
+                        if (userData.trialExpiresAt) {
+                            (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
+                        }
+                        batch.set(userDocRef, userData);
+
+                    } catch (creationError) {
+                        console.error(`Error creating auth user for ${user.email}:`, creationError);
+                        if (user.isMainAdmin) throw creationError;
+                    }
                 } else {
-                    console.error(`Error creating auth user for ${user.email}:`, error);
-                    // We might want to stop the whole process if a critical user fails
-                    if (user.isMainAdmin) throw error; 
+                     console.error(`Error checking auth user ${user.email}:`, error);
                 }
             }
 
-            // Add user data to Firestore
+            // For existing Firestore documents that might have the old ID, we don't try to migrate them here.
+            // This seed logic is primarily for a fresh start.
+            // If the user already existed in Auth, we assume their firestore doc is also correct.
+            // If they didn't, we create it with the new correct UID.
             const userDocRef = doc(db, "users", user.id);
-            const { ...userData } = user; // Create a copy
-            if (user.trialExpiresAt) {
-                (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
+            const userSnap = await getDoc(userDocRef);
+            if (!userSnap.exists()) {
+                 const userData = { ...user };
+                 if (user.trialExpiresAt) {
+                    (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
+                }
+                batch.set(userDocRef, userData);
             }
-            batch.set(userDocRef, userData);
         }
 
         // Seed words
@@ -99,9 +120,14 @@ async function seedDatabase() {
     }
 }
 
+
 // Call the seed function once when the module is loaded.
 if (typeof window !== "undefined") {
-    seedDatabase().catch(console.error);
+    // A simple flag to ensure seeding doesn't run multiple times on HMR
+    if (!(window as any).__hasSeeded) {
+        seedDatabase().catch(console.error);
+        (window as any).__hasSeeded = true;
+    }
 }
 
 
