@@ -30,29 +30,40 @@ async function seedDatabase() {
     const DEFAULT_PASSWORD = "password123";
 
     try {
-        // Step 1: Check if the user document exists in Firestore.
-        const userByEmail = await getUserByEmailDB(mainAdminEmail);
-        
-        if (userByEmail) {
+        // Step 1: Check if the user document exists in Firestore by email.
+        const userInDb = await getUserByEmailDB(mainAdminEmail);
+
+        if (userInDb) {
             console.log("Main supervisor document already exists in Firestore. Seeding not required.");
-            // Optional: ensure auth user exists too, though it should.
-             try {
-                await signInWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
-             } catch (e: any) {
-                 if (e.code === 'auth/user-not-found') {
-                    console.log("User exists in DB but not Auth. Re-creating auth user.");
-                    await createUserWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
-                 }
-             }
             return;
         }
 
         console.log("Main supervisor not found in Firestore. Proceeding with creation.");
         
         // Step 2: Create the user in Firebase Authentication.
-        const userCredential = await createUserWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
-        const authUser = userCredential.user;
-        console.log(`Successfully created main supervisor in Auth with UID: ${authUser.uid}`);
+        // This will either create a new user or fail if one with this email already exists.
+        // We will catch the 'already-exists' error and proceed, as our goal is to ensure both Auth and DB records are synced.
+        let authUser;
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
+            authUser = userCredential.user;
+            console.log(`Successfully created main supervisor in Auth with UID: ${authUser.uid}`);
+        } catch (authError: any) {
+             if (authError.code === 'auth/email-already-in-use') {
+                console.log("Auth user already exists. We will ensure the Firestore doc is created.");
+                // We need to sign in to get the UID if we didn't create the user now.
+                 const userCredential = await signInWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
+                 authUser = userCredential.user;
+             } else {
+                // For any other auth error, we should stop.
+                throw authError;
+             }
+        }
+        
+        if (!authUser) {
+             console.error("Could not get Auth user. Aborting seed.");
+             return;
+        }
 
         // Step 3: Create the user document in Firestore with the correct UID and a new shortId.
         const shortId = await getNextSupervisorShortIdDB();
@@ -73,12 +84,7 @@ async function seedDatabase() {
         console.log(`Successfully created main supervisor document in Firestore with shortId: ${shortId}.`);
 
     } catch (error: any) {
-        if (error.code === 'auth/email-already-in-use') {
-            console.log("Main supervisor already exists in Firebase Auth. Seeding process will ensure Firestore document is also present.");
-            // This is fine, it means the auth user exists. The logic will check Firestore next time.
-        } else {
-            console.error("An unexpected error occurred during seeding:", error);
-        }
+        console.error("An unexpected error occurred during seeding:", error);
     }
 }
 
