@@ -64,7 +64,8 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
         let newUser: User | null = null;
         try {
             const shortId = await getNextSupervisorShortId();
-            newUser = {
+            
+            const baseUser: Omit<User, 'trialExpiresAt'> = {
                 id: firebaseUser.uid,
                 shortId,
                 name,
@@ -74,8 +75,17 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
                 isSuspended: false,
                 isMainAdmin: false,
                 timezone: "Asia/Baghdad",
-                trialExpiresAt: isTrial ? add(new Date(), { months: 1 }).toISOString() : undefined,
             };
+
+            if (isTrial) {
+                newUser = {
+                    ...baseUser,
+                    trialExpiresAt: add(new Date(), { months: 1 }).toISOString(),
+                };
+            } else {
+                 newUser = baseUser as User;
+            }
+
             await addUserDB(newUser);
         } catch (dbError) {
              toast({

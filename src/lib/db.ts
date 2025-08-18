@@ -101,18 +101,29 @@ export async function getStudentsBySupervisorDB(supervisorId: string): Promise<U
 
 export async function addUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
-    const userData = { ...user };
-     if (user.trialExpiresAt) {
-        (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
+    // Create a mutable copy to avoid modifying the original object
+    const userData: { [key: string]: any } = { ...user };
+    
+    // Convert date string to Firestore Timestamp if it exists
+    if (userData.trialExpiresAt) {
+        userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
+    } else {
+        // Ensure undefined doesn't get sent to Firestore
+        delete userData.trialExpiresAt;
     }
+    
     await setDoc(userDocRef, userData);
 }
 
+
 export async function updateUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
-     const userData = { ...user };
-     if (user.trialExpiresAt) {
-        (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
+    const userData: { [key: string]: any } = { ...user };
+     if (userData.trialExpiresAt) {
+        userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
+    } else {
+        // Ensure undefined doesn't get sent to Firestore
+        delete userData.trialExpiresAt;
     }
     await setDoc(userDocRef, userData, { merge: true });
 }
