@@ -7,7 +7,7 @@ import { getMessages, getWordsBySupervisor, getAllUsers, getUserById, getStudent
 import type { WordProgress } from "@/lib/storage";
 import { useEffect, useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
-import { DashboardSidebar } from "./dashboard-sidebar";
+import { DashboardSidebar } from "@/components/dashboard-sidebar";
 
 export function DashboardSidebarWrapper() {
   const searchParams = useSearchParams();
