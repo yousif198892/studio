@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { User, addUserDB, getNextSupervisorShortId } from "@/lib/data";
+import { User, addUserDB, getNextSupervisorShortId, getUserByEmailDB } from "@/lib/data";
 import { z } from "zod";
 import { Checkbox } from "./ui/checkbox";
 import { add } from "date-fns";
@@ -51,6 +51,14 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
     const { name, email, password, isTrial } = validatedFields.data;
 
      try {
+        // Check if user already exists in our database first
+        const existingUser = await getUserByEmailDB(email);
+        if (existingUser) {
+            toast({ title: "Error", description: "This email is already associated with an account.", variant: "destructive" });
+            setIsPending(false);
+            return;
+        }
+
         const shortId = await getNextSupervisorShortId();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
@@ -82,7 +90,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
     } catch (e: any) {
         let errorMessage = "Could not create supervisor account.";
         if (e.code === 'auth/email-already-in-use') {
-            errorMessage = "This email is already registered.";
+            errorMessage = "This email is already registered. If the user should be a supervisor but isn't, delete their Auth record and try again.";
         }
          toast({
             title: "Error",
