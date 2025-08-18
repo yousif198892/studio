@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { getFirebaseApp } from './firebase'; // Use the getter
@@ -111,7 +110,10 @@ export async function addUserDB(user: User): Promise<void> {
     
     if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-    } else if (!userData.trialExpiresAt) {
+    }
+    
+    // Explicitly delete if it's undefined or null to prevent Firestore errors
+    if (!userData.trialExpiresAt) {
         delete userData.trialExpiresAt;
     }
     
@@ -123,7 +125,9 @@ export async function updateUserDB(user: User): Promise<void> {
     const userData: { [key: string]: any } = { ...user };
      if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-    } else if (!userData.trialExpiresAt) {
+    }
+    
+    if (userData.trialExpiresAt === undefined) {
         delete userData.trialExpiresAt;
     }
     await setDoc(userDocRef, userData, { merge: true });
