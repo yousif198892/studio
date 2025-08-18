@@ -115,12 +115,11 @@ export async function addUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
     
+    // Only convert to Timestamp if it exists and is a string
     if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-    }
-    
-    // Explicitly delete if it's undefined or null to prevent Firestore errors
-    if (!userData.trialExpiresAt) {
+    } else if (!userData.trialExpiresAt) {
+        // Explicitly delete if it's undefined or null to prevent Firestore errors
         delete userData.trialExpiresAt;
     }
     
@@ -131,13 +130,13 @@ export async function updateUserDB(user: User): Promise<void> {
     const db = getDb();
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
-     if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
-        userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-    }
     
-    if (userData.trialExpiresAt === undefined) {
-        delete userData.trialExpiresAt;
+    if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
+        userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
+    } else if (userData.trialExpiresAt === undefined) {
+         delete userData.trialExpiresAt;
     }
+
     await setDoc(userDocRef, userData, { merge: true });
 }
 

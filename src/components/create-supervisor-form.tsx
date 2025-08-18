@@ -66,7 +66,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
         try {
             const shortId = await getNextSupervisorShortId();
             
-            const baseUser: Omit<User, 'trialExpiresAt'> & { trialExpiresAt?: string } = {
+            const baseUser: Partial<User> = {
                 id: firebaseUser.uid,
                 shortId,
                 name,
