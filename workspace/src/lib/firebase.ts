@@ -1,4 +1,4 @@
-// src/lib/firebase.ts
+
 'use client';
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
@@ -15,35 +15,22 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
+// Initialize Firebase
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-// This function ensures that we only initialize Firebase once on the client side.
-function getFirebaseApp(): FirebaseApp {
-    if (getApps().length > 0) {
-        return getApp();
-    }
-
-    const app = initializeApp(firebaseConfig);
-
-    // Enable persistence only on the client.
-    // This check is slightly redundant because of 'use client', but good for safety.
-    if (typeof window !== 'undefined') {
-        try {
-            const db = getFirestore(app);
-            enableIndexedDbPersistence(db).catch((err) => {
-                 if (err.code == 'failed-precondition') {
-                    console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
-                } else if (err.code == 'unimplemented') {
-                    console.warn('Firebase persistence is not available in this browser.');
-                }
-            });
-        } catch (e) {
-            console.error("Error enabling Firestore persistence", e);
+// Enable persistence on the client
+if (typeof window !== 'undefined') {
+    try {
+        enableIndexedDbPersistence(db);
+    } catch (err: any) {
+        if (err.code === 'failed-precondition') {
+            console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
+        } else if (err.code === 'unimplemented') {
+            console.warn('Firebase persistence is not available in this browser.');
         }
     }
-    return app;
 }
 
-
-// We only export the getter function.
-// The actual db and auth instances will be created on-demand in db.ts.
-export { getFirebaseApp };
+export { app, auth, db };
