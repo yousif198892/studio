@@ -1,11 +1,10 @@
 
-
 'use client';
 
 import { getWeek, startOfWeek } from 'date-fns';
 import { XpToast } from '@/components/xp-toast';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/db';
+import { db } from '@/lib/firebase';
 
 export type LearningStats = {
   timeSpentSeconds: number; 

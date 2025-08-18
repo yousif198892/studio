@@ -16,29 +16,18 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-let app: FirebaseApp;
-if (typeof window !== 'undefined') {
-    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-} else {
-    // This is a dummy initialization for server-side rendering to avoid errors.
-    // It won't actually work, but it will prevent the app from crashing during build.
-    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-}
-
-
+const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Enable persistence on the client, and only on the client.
-if (typeof window !== 'undefined') {
-    try {
-        enableIndexedDbPersistence(db);
-    } catch (err: any) {
-        if (err.code === 'failed-precondition') {
-            console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
-        } else if (err.code === 'unimplemented') {
-            console.warn('Firebase persistence is not available in this browser.');
-        }
+// Enable persistence on the client.
+try {
+    enableIndexedDbPersistence(db);
+} catch (err: any) {
+    if (err.code === 'failed-precondition') {
+        console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
+    } else if (err.code === 'unimplemented') {
+        console.warn('Firebase persistence is not available in this browser.');
     }
 }
 
