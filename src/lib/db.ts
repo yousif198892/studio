@@ -13,11 +13,9 @@ import {
     writeBatch,
     query,
     where,
-    documentId,
     Timestamp,
     orderBy,
     runTransaction,
-    increment
 } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
@@ -27,96 +25,64 @@ import { WordProgress } from './storage';
 // --- Seeding Function ---
 // This function will populate the database with initial data if it's empty.
 async function seedDatabase() {
-    console.log("Checking if database needs seeding...");
-    const countersRef = doc(db, "counters", "userIds");
-    const countersSnap = await getDoc(countersRef);
+    console.log("Checking if main supervisor account needs seeding...");
     const DEFAULT_PASSWORD = "password123";
-
-    if (!countersSnap.exists()) {
-        console.log("Database is empty or counters are missing. Seeding data...");
-        const batch = writeBatch(db);
-
-        // Seed users to Firestore and Firebase Auth
-        for (const user of mockUsers) {
-             // Create user in Firebase Authentication
-            try {
-                // Try to sign in to see if user exists
-                await signInWithEmailAndPassword(auth, user.email, DEFAULT_PASSWORD);
-                console.log(`Auth user for ${user.email} already exists.`);
-            } catch (error: any) {
-                 if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-                    // User does not exist in Auth, so create them
-                    try {
-                        const userCredential = await createUserWithEmailAndPassword(auth, user.email, DEFAULT_PASSWORD);
-                        const authUser = userCredential.user;
-                        console.log(`Successfully created auth user for ${user.email} with UID: ${authUser.uid}`);
-                        
-                        // IMPORTANT: Use the new auth UID as the document ID in Firestore
-                        const userDocRef = doc(db, "users", authUser.uid);
-                        const userData = { ...user, id: authUser.uid }; // Overwrite mock ID
-                        
-                        if (userData.trialExpiresAt) {
-                            (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-                        }
-                        batch.set(userDocRef, userData);
-
-                    } catch (creationError) {
-                        console.error(`Error creating auth user for ${user.email}:`, creationError);
-                        if (user.isMainAdmin) throw creationError;
-                    }
-                } else {
-                     console.error(`Error checking auth user ${user.email}:`, error);
-                }
-            }
-
-            // For existing Firestore documents that might have the old ID, we don't try to migrate them here.
-            // This seed logic is primarily for a fresh start.
-            // If the user already existed in Auth, we assume their firestore doc is also correct.
-            // If they didn't, we create it with the new correct UID.
-            const userDocRef = doc(db, "users", user.id);
-            const userSnap = await getDoc(userDocRef);
-            if (!userSnap.exists()) {
-                 const userData = { ...user };
-                 if (user.trialExpiresAt) {
-                    (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(user.trialExpiresAt));
-                }
-                batch.set(userDocRef, userData);
-            }
+    const mainAdminEmail = "warriorwithinyousif@gmail.com";
+    
+    // Check if main admin user exists in Firestore by email
+    const mainAdminFirestore = await getUserByEmailDB(mainAdminEmail);
+    
+    if (!mainAdminFirestore) {
+        console.log(`Main supervisor with email ${mainAdminEmail} not found in Firestore. Attempting to seed...`);
+        const mainAdminMockData = mockUsers.find(u => u.email === mainAdminEmail);
+        
+        if (!mainAdminMockData) {
+            console.error("Main admin data not found in mockUsers. Seeding cannot proceed.");
+            return;
         }
 
-        // Seed words
-        mockWords.forEach(word => {
-            const wordDocRef = doc(db, "words", word.id);
-            batch.set(wordDocRef, word);
-        });
+        try {
+            // Step 1: Check if user exists in Auth. If not, create them.
+            let userCredential;
+            try {
+                userCredential = await signInWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
+                console.log("Main admin already exists in Firebase Auth.");
+            } catch (error: any) {
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    console.log("Creating main admin in Firebase Auth...");
+                    userCredential = await createUserWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
+                    console.log("Successfully created main admin in Firebase Auth.");
+                } else {
+                    // Rethrow other auth errors
+                    throw error;
+                }
+            }
 
-        // Seed messages
-        mockMessages.forEach(message => {
-            const messageDocRef = doc(db, "adminMessages", message.id);
-            const messageData = { ...message, createdAt: Timestamp.fromDate(message.createdAt) };
-            batch.set(messageDocRef, messageData);
-        });
-        
-        // Seed counters
-        const studentNumbers = mockUsers
-            .filter(u => u.role === 'student' && u.id.startsWith('user'))
-            .map(u => parseInt(u.id.replace('user', ''), 10))
-            .filter(n => !isNaN(n));
-        
-        const supervisorNumbers = mockUsers
-            .filter(u => u.role === 'supervisor' && u.id.startsWith('sup'))
-            .map(u => parseInt(u.id.replace('sup', ''), 10))
-            .filter(n => !isNaN(n));
+            const authUser = userCredential.user;
 
-        const lastStudentId = studentNumbers.length > 0 ? Math.max(...studentNumbers) : 0;
-        const lastSupervisorId = supervisorNumbers.length > 0 ? Math.max(...supervisorNumbers) : 0;
-        
-        batch.set(countersRef, { student: lastStudentId, supervisor: lastSupervisorId });
+            // Step 2: Create the user document in Firestore using the Auth UID.
+            const userDocRef = doc(db, "users", authUser.uid);
+            const userDocSnap = await getDoc(userDocRef);
 
-        await batch.commit();
-        console.log("Database seeded successfully.");
+            if (!userDocSnap.exists()) {
+                console.log("Creating main admin document in Firestore...");
+                const userData: User = {
+                    ...mainAdminMockData,
+                    id: authUser.uid, // Use the real Auth UID
+                };
+                 if (userData.trialExpiresAt) {
+                    (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
+                }
+                await setDoc(userDocRef, userData);
+                console.log("Successfully created main admin document in Firestore.");
+            } else {
+                console.log("Main admin document already exists in Firestore.");
+            }
+        } catch (error) {
+            console.error("An error occurred during the seeding process for the main admin:", error);
+        }
     } else {
-        console.log("Database already contains data. No seeding needed.");
+        console.log("Main supervisor account already exists. No seeding needed.");
     }
 }
 
@@ -139,7 +105,9 @@ export async function getNextUserIdDB(role: 'student' | 'supervisor'): Promise<n
         const newId = await runTransaction(db, async (transaction) => {
             const counterDoc = await transaction.get(counterRef);
             if (!counterDoc.exists()) {
-                throw "Counter document does not exist!";
+                // If the counter doc doesn't exist, initialize it.
+                transaction.set(counterRef, { student: 0, supervisor: 0 });
+                return 1;
             }
             const newCount = counterDoc.data()[role] + 1;
             transaction.update(counterRef, { [role]: newCount });
