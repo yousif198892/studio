@@ -23,7 +23,7 @@ import { Upload } from "@/components/ui/upload";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User, Word } from "@/lib/data";
+import { type User } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -39,65 +39,9 @@ import {
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import { Switch } from "@/components/ui/switch";
-import { 
-    doc,
-    getDoc, 
-    setDoc, 
-    deleteDoc, 
-    getDocs, 
-    collection, 
-    query, 
-    where,
-    Timestamp,
-} from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
 import { signOut } from "firebase/auth";
-
-
-// Client-side DB functions
-async function getUserById(id: string): Promise<User | undefined> {
-    if (!id) return undefined;
-    const userDocRef = doc(db, 'users', id);
-    const userSnap = await getDoc(userDocRef);
-    if (!userSnap.exists()) return undefined;
-    const data = userSnap.data();
-    if (data.trialExpiresAt && data.trialExpiresAt instanceof Timestamp) {
-        data.trialExpiresAt = data.trialExpiresAt.toDate().toISOString();
-    }
-    return { ...data, id: userSnap.id } as User;
-}
-
-async function updateUserDB(user: User): Promise<void> {
-    const userDocRef = doc(db, 'users', user.id);
-    const userData: { [key: string]: any } = { ...user };
-    
-    if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
-        userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-    } else if (userData.trialExpiresAt === undefined) {
-         delete userData.trialExpiresAt;
-    }
-
-    await setDoc(userDocRef, userData, { merge: true });
-}
-
-async function deleteUserDB(id: string): Promise<void> {
-    await deleteDoc(doc(db, 'users', id));
-}
-
-async function getWordsBySupervisorDB(supervisorId: string): Promise<Word[]> {
-    const q = query(collection(db, "words"), where("supervisorId", "==", supervisorId));
-    const querySnapshot = await getDocs(q);
-    return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Word));
-}
-
-async function deleteWordDB(id: string): Promise<void> {
-    await deleteDoc(doc(db, 'words', id));
-}
-
-async function setHeroImage(image: string): Promise<void> {
-    const docRef = doc(db, 'app-config', 'landingPage');
-    await setDoc(docRef, { heroImage: image });
-}
+import { auth } from "@/lib/firebase";
+import { getUserById, updateUserDB, deleteUserDB, getWordsBySupervisor, deleteWordDB, setHeroImage } from "@/lib/firestore";
 
 
 export default function ProfilePage() {
@@ -308,7 +252,7 @@ export default function ProfilePage() {
         await deleteUserDB(user.id);
         
         if (user.role === 'supervisor') {
-            const supervisorWords = await getWordsBySupervisorDB(user.id);
+            const supervisorWords = await getWordsBySupervisor(user.id);
             for (const word of supervisorWords) {
                 await deleteWordDB(word.id);
             }

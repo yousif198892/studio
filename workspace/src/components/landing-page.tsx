@@ -10,17 +10,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-
-async function getHeroImage(): Promise<string | undefined> {
-    const docRef = doc(db, 'app-config', 'landingPage');
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-        return docSnap.data().heroImage;
-    }
-    return undefined;
-}
+import { getHeroImage } from "@/lib/firestore";
 
 
 export function LandingPage() {
@@ -28,7 +18,7 @@ export function LandingPage() {
   const [heroImage, setHeroImage] = useState("https://placehold.co/500x625.png");
 
   useEffect(() => {
-    // This effect runs only on the client side, after mount.
+    // This effect runs only on the client side
     const fetchImage = async () => {
       const storedImage = await getHeroImage();
       if (storedImage) {

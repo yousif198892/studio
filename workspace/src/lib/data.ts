@@ -1,11 +1,8 @@
 
-'use server';
 
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
-// This file is now intended for server-safe functions or data types.
-
-import { redirect } from "next/navigation";
+// This file now ONLY contains server-safe functions or data types.
 
 export type User = {
   id: string; // This is the Firebase Auth UID
@@ -70,15 +67,3 @@ export type PeerMessage = {
     isEdited?: boolean;
     deletedFor?: string[];
 };
-
-
-// --- AUTH ACTIONS ---
-// This is a server action and is safe to be in a server-context file.
-export async function redirectToDashboard(userId: string) {
-    redirect(`/dashboard?userId=${userId}`);
-}
-
-// All DB-accessing functions have been moved to client components
-// that import directly from `lib/firebase.ts`. This file no longer
-// contains direct DB calls to prevent being bundled in server components
-// during the build process, which caused the `invalid-api-key` error.
