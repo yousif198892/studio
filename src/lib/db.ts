@@ -29,44 +29,64 @@ async function seedDatabase() {
     const mainAdminEmail = "warriorwithinyousif@gmail.com";
     const DEFAULT_PASSWORD = "password123";
 
+    let authUser;
     try {
-        // Attempt to sign in to see if the user exists in Auth
-        await signInWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
-        console.log("Main supervisor already exists in Firebase Auth. Seeding not required.");
+        // Step 1: Attempt to create the user in Firebase Authentication.
+        const userCredential = await createUserWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
+        authUser = userCredential.user;
+        console.log(`Successfully created main supervisor in Auth with UID: ${authUser.uid}`);
     } catch (error: any) {
-        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
-            console.log("Main supervisor not found in Auth. Creating user...");
-            try {
-                // Create user in Firebase Authentication
-                const userCredential = await createUserWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
-                const authUser = userCredential.user;
-                console.log(`Successfully created user in Auth with UID: ${authUser.uid}`);
-
-                // Now, create the corresponding document in Firestore with a shortId
-                const shortId = await getNextSupervisorShortIdDB();
-                const userDocRef = doc(db, "users", authUser.uid);
-                
-                const mainAdminData: Omit<User, 'id'> = {
-                    name: "Yousif",
-                    email: mainAdminEmail,
-                    role: "supervisor",
-                    avatar: "https://placehold.co/100x100.png?text=Y",
-                    timezone: "Asia/Baghdad",
-                    isMainAdmin: true,
-                    shortId: shortId,
-                };
-
-                await setDoc(userDocRef, mainAdminData);
-                console.log(`Successfully created main supervisor document in Firestore with shortId: ${shortId}.`);
-
-            } catch (creationError) {
-                console.error("Error creating main supervisor during seeding:", creationError);
-            }
+        if (error.code === 'auth/email-already-in-use') {
+            // User already exists in Auth, so we need to sign in to get their UID.
+            console.log("Main supervisor already exists in Firebase Auth. Signing in to verify...");
+             try {
+                const userCredential = await signInWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
+                authUser = userCredential.user;
+             } catch(signInError) {
+                console.error("Could not sign in existing main supervisor. The password might have been changed.", signInError);
+                return; // Stop seeding if we can't get the user.
+             }
         } else {
-            console.error("An unexpected error occurred during auth check:", error);
+            console.error("An unexpected error occurred during auth user creation:", error);
+            return; // Stop if there's an unexpected error.
         }
     }
+
+    if (!authUser) {
+        console.error("Could not obtain auth user. Aborting seed.");
+        return;
+    }
+
+    // Step 2: Check if the user document exists in Firestore.
+    const userDocRef = doc(db, "users", authUser.uid);
+    const userDocSnap = await getDoc(userDocRef);
+
+    if (!userDocSnap.exists()) {
+        console.log(`User document for UID ${authUser.uid} not found in Firestore. Creating it...`);
+        try {
+            // Document doesn't exist, so create it with a new shortId.
+            const shortId = await getNextSupervisorShortIdDB();
+            
+            const mainAdminData: Omit<User, 'id'> = {
+                name: "Yousif",
+                email: mainAdminEmail,
+                role: "supervisor",
+                avatar: "https://placehold.co/100x100.png?text=Y",
+                timezone: "Asia/Baghdad",
+                isMainAdmin: true,
+                shortId: shortId,
+            };
+
+            await setDoc(userDocRef, mainAdminData);
+            console.log(`Successfully created main supervisor document in Firestore with shortId: ${shortId}.`);
+        } catch (dbError) {
+            console.error("Error creating main supervisor document in Firestore:", dbError);
+        }
+    } else {
+        console.log("Main supervisor document already exists in Firestore. Seeding not required.");
+    }
 }
+
 
 if (typeof window !== "undefined") {
     if (!(window as any).__hasSeeded) {
