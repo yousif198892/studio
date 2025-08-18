@@ -17,6 +17,7 @@ export function LandingPage() {
   const [heroImage, setHeroImage] = useState("https://placehold.co/500x625.png");
 
   useEffect(() => {
+    // This effect runs only on the client side
     const fetchImage = async () => {
       const storedImage = await getHeroImage();
       if (storedImage) {

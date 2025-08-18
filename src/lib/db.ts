@@ -2,8 +2,9 @@
 
 'use client';
 
-import { db, auth } from './firebase';
+import { getFirebaseApp } from './firebase'; // Use the getter
 import { 
+    getFirestore,
     collection, 
     doc, 
     getDoc, 
@@ -17,10 +18,15 @@ import {
     orderBy,
     runTransaction,
 } from 'firebase/firestore';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, User as AuthUser } from 'firebase/auth';
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, User as AuthUser } from 'firebase/auth';
 
 import { User, Word, Message, SupervisorMessage, PeerMessage } from './data';
 import { WordProgress } from './storage';
+
+// Initialize services on demand
+const db = getFirestore(getFirebaseApp());
+const auth = getAuth(getFirebaseApp());
+
 
 // --- User Functions ---
 export async function getNextSupervisorShortIdDB(): Promise<string> {
@@ -101,28 +107,23 @@ export async function getStudentsBySupervisorDB(supervisorId: string): Promise<U
 
 export async function addUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
-    // Create a mutable copy to avoid modifying the original object
     const userData: { [key: string]: any } = { ...user };
     
-    // Convert date string to Firestore Timestamp if it exists
-    if (userData.trialExpiresAt) {
+    if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-    } else {
-        // Ensure undefined doesn't get sent to Firestore
+    } else if (!userData.trialExpiresAt) {
         delete userData.trialExpiresAt;
     }
     
     await setDoc(userDocRef, userData);
 }
 
-
 export async function updateUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
-     if (userData.trialExpiresAt) {
+     if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-    } else {
-        // Ensure undefined doesn't get sent to Firestore
+    } else if (!userData.trialExpiresAt) {
         delete userData.trialExpiresAt;
     }
     await setDoc(userDocRef, userData, { merge: true });
