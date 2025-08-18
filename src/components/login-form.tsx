@@ -21,9 +21,9 @@ import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { redirectToDashboard } from "@/lib/actions";
-import { getUserById, updateUserDB } from "@/lib/data";
+import { getUserById, updateUserDB, User, getNextSupervisorShortId, addUserDB } from "@/lib/data";
 import { isPast } from "date-fns";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 const loginSchema = z.object({
@@ -38,6 +38,37 @@ export function LoginForm() {
     const router = useRouter();
     const [showPassword, setShowPassword] = useState(false);
     const [isPending, setIsPending] = useState(false);
+    const mainAdminEmail = "warriorwithinyousif@gmail.com";
+    const defaultPassword = "password123";
+
+    const handleLogin = async (userId: string) => {
+        let user = await getUserById(userId);
+        if (!user) {
+             toast({ title: t('toasts.error'), description: "No user data found in database.", variant: "destructive"});
+             return;
+        }
+        
+        // Check for trial expiration
+        if (user.role === 'supervisor' && user.trialExpiresAt && isPast(new Date(user.trialExpiresAt))) {
+            if (!user.isSuspended) {
+                user.isSuspended = true;
+                await updateUserDB(user);
+                toast({
+                    title: "Trial Expired",
+                    description: "Your trial period has ended. Please contact an administrator.",
+                    variant: "destructive"
+                });
+                return;
+            }
+        }
+
+        if (user.isSuspended) {
+            toast({ title: t('toasts.error'), description: "This account has been suspended.", variant: "destructive"});
+            return;
+        }
+        
+        await redirectToDashboard(user.id);
+    }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -64,47 +95,40 @@ export function LoginForm() {
         
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const firebaseUser = userCredential.user;
-
-            let user = await getUserById(firebaseUser.uid);
-
-            if (!user) {
-                // This case is unlikely if registration is done correctly, but it's good practice to handle it.
-                toast({ title: t('toasts.error'), description: "No user data found in database.", variant: "destructive"});
-                setIsPending(false);
-                return;
-            }
-
-            // Check for trial expiration
-            if (user.role === 'supervisor' && user.trialExpiresAt && isPast(new Date(user.trialExpiresAt))) {
-                if (!user.isSuspended) {
-                    user.isSuspended = true;
-                    await updateUserDB(user);
-                    toast({
-                        title: "Trial Expired",
-                        description: "Your trial period has ended. Please contact an administrator.",
-                        variant: "destructive"
-                    });
-                    setIsPending(false);
-                    return;
-                }
-            }
-
-            if (user.isSuspended) {
-                toast({ title: t('toasts.error'), description: "This account has been suspended.", variant: "destructive"});
-                setIsPending(false);
-                return;
-            }
-            
-            await redirectToDashboard(user.id);
-
+            await handleLogin(userCredential.user.uid);
         } catch (error: any) {
-            console.error("Firebase Auth Error: ", error);
-            let errorMessage = "An unexpected error occurred. Please try again.";
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                errorMessage = "Invalid email or password. Please check your credentials or sign up if you don't have an account.";
+             if ((error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') && email === mainAdminEmail && password === defaultPassword) {
+                // If main admin login fails, try to create the account
+                try {
+                    console.log("Main supervisor not found, attempting to create...");
+                    const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const shortId = await getNextSupervisorShortId();
+                    const mainAdminData: User = {
+                        id: newUserCredential.user.uid,
+                        name: "Yousif",
+                        email: mainAdminEmail,
+                        role: "supervisor",
+                        avatar: "https://placehold.co/100x100.png?text=Y",
+                        timezone: "Asia/Baghdad",
+                        isMainAdmin: true,
+                        isSuspended: false,
+                        shortId: shortId,
+                    };
+                    await addUserDB(mainAdminData);
+                    console.log("Main supervisor created successfully.");
+                    await handleLogin(newUserCredential.user.uid);
+                } catch (creationError: any) {
+                     toast({ title: t('toasts.error'), description: `Failed to auto-create admin account: ${creationError.message}`, variant: "destructive" });
+                }
+             } else {
+                console.error("Firebase Auth Error: ", error);
+                let errorMessage = "An unexpected error occurred. Please try again.";
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    errorMessage = "Invalid email or password. Please check your credentials or sign up if you don't have an account.";
+                }
+                toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
             }
-            toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
+        } finally {
             setIsPending(false);
         }
     }
