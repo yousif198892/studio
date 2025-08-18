@@ -13,7 +13,7 @@ import { z } from "zod";
 import { Checkbox } from "./ui/checkbox";
 import { add } from "date-fns";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getAuthInstance } from "@/lib/db";
 
 const createSupervisorSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -49,6 +49,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
     }
 
     const { name, email, password, isTrial } = validatedFields.data;
+    const auth = getAuthInstance();
 
      try {
         const existingUser = await getUserByEmailDB(email);
@@ -65,7 +66,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
         try {
             const shortId = await getNextSupervisorShortId();
             
-            const baseUser: Omit<User, 'trialExpiresAt'> = {
+            const baseUser: Omit<User, 'trialExpiresAt'> & { trialExpiresAt?: string } = {
                 id: firebaseUser.uid,
                 shortId,
                 name,
@@ -78,15 +79,12 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
             };
 
             if (isTrial) {
-                newUser = {
-                    ...baseUser,
-                    trialExpiresAt: add(new Date(), { months: 1 }).toISOString(),
-                };
-            } else {
-                 newUser = baseUser as User;
+                baseUser.trialExpiresAt = add(new Date(), { months: 1 }).toISOString();
             }
-
+            
+            newUser = baseUser as User;
             await addUserDB(newUser);
+
         } catch (dbError) {
              toast({
                 title: "Database Error",

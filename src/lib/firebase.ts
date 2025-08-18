@@ -14,7 +14,7 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// This function ensures that we only initialize Firebase on the client-side.
+// This function ensures that we only initialize Firebase once.
 function getFirebaseApp(): FirebaseApp {
     if (getApps().length === 0) {
         const app = initializeApp(firebaseConfig);
@@ -37,9 +37,6 @@ function getFirebaseApp(): FirebaseApp {
     }
 }
 
-const app = getFirebaseApp();
-const db = getFirestore(app);
-const auth = getAuth(app);
-
-
-export { db, auth, getFirebaseApp };
+// We only export the getter function.
+// The actual db and auth instances will be created on-demand in db.ts.
+export { getFirebaseApp };

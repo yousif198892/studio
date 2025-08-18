@@ -23,7 +23,7 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getAuthInstance } from "@/lib/db";
 
 const registerSchema = z.object({
     name: z.string().min(1, 'Name is required.'),
@@ -63,6 +63,7 @@ export function RegisterForm() {
     }
 
     const { name, email, password, supervisorId, grade, section } = validatedFields.data;
+    const auth = getAuthInstance();
 
     try {
         const supervisor = await getUserByShortId(supervisorId);

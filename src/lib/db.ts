@@ -17,18 +17,19 @@ import {
     orderBy,
     runTransaction,
 } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, User as AuthUser } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 
 import { User, Word, Message, SupervisorMessage, PeerMessage } from './data';
 import { WordProgress } from './storage';
 
-// Initialize services on demand
-const db = getFirestore(getFirebaseApp());
-const auth = getAuth(getFirebaseApp());
+// Initialize services on demand inside functions to ensure client-side execution.
+const getDb = () => getFirestore(getFirebaseApp());
+const getAuthInstance = () => getAuth(getFirebaseApp());
 
 
 // --- User Functions ---
 export async function getNextSupervisorShortIdDB(): Promise<string> {
+    const db = getDb();
     const counterRef = doc(db, "counters", "supervisorId");
     try {
         const newCount = await runTransaction(db, async (transaction) => {
@@ -50,6 +51,7 @@ export async function getNextSupervisorShortIdDB(): Promise<string> {
 
 
 export async function getAllUsersDB(): Promise<User[]> {
+    const db = getDb();
     const usersCol = collection(db, 'users');
     const userSnapshot = await getDocs(usersCol);
     return userSnapshot.docs.map(doc => {
@@ -63,6 +65,7 @@ export async function getAllUsersDB(): Promise<User[]> {
 
 export async function getUserByIdDB(id: string): Promise<User | undefined> {
     if (!id) return undefined;
+    const db = getDb();
     const userDocRef = doc(db, 'users', id);
     const userSnap = await getDoc(userDocRef);
     if (!userSnap.exists()) return undefined;
@@ -74,6 +77,7 @@ export async function getUserByIdDB(id: string): Promise<User | undefined> {
 }
 
 export async function getUserByEmailDB(email: string): Promise<User | undefined> {
+    const db = getDb();
     const q = query(collection(db, "users"), where("email", "==", email));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) return undefined;
@@ -86,6 +90,7 @@ export async function getUserByEmailDB(email: string): Promise<User | undefined>
 }
 
 export async function getUserByShortIdDB(shortId: string): Promise<User | undefined> {
+    const db = getDb();
     const q = query(collection(db, "users"), where("shortId", "==", shortId));
     const querySnapshot = await getDocs(q);
     if (querySnapshot.empty) return undefined;
@@ -99,12 +104,14 @@ export async function getUserByShortIdDB(shortId: string): Promise<User | undefi
 
 
 export async function getStudentsBySupervisorDB(supervisorId: string): Promise<User[]> {
+    const db = getDb();
     const q = query(collection(db, "users"), where("supervisorId", "==", supervisorId), where("role", "==", "student"));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as User));
 }
 
 export async function addUserDB(user: User): Promise<void> {
+    const db = getDb();
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
     
@@ -121,6 +128,7 @@ export async function addUserDB(user: User): Promise<void> {
 }
 
 export async function updateUserDB(user: User): Promise<void> {
+    const db = getDb();
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
      if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
@@ -134,38 +142,45 @@ export async function updateUserDB(user: User): Promise<void> {
 }
 
 export async function deleteUserDB(id: string): Promise<void> {
+    const db = getDb();
     await deleteDoc(doc(db, 'users', id));
 }
 
 // --- Word Functions ---
 export async function getWordsBySupervisorDB(supervisorId: string): Promise<Word[]> {
+    const db = getDb();
     const q = query(collection(db, "words"), where("supervisorId", "==", supervisorId));
     const querySnapshot = await getDocs(q);
     return querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id } as Word));
 }
 
 export async function addWordDB(word: Word): Promise<void> {
+    const db = getDb();
     const wordDocRef = doc(db, 'words', word.id);
     await setDoc(wordDocRef, word);
 }
 
 export async function getWordByIdDB(id: string): Promise<Word | undefined> {
+    const db = getDb();
     const wordDocRef = doc(db, 'words', id);
     const docSnap = await getDoc(wordDocRef);
     return docSnap.exists() ? { ...docSnap.data(), id: docSnap.id } as Word : undefined;
 }
 
 export async function updateWordDB(word: Word): Promise<void> {
+    const db = getDb();
     const wordDocRef = doc(db, 'words', word.id);
     await setDoc(wordDocRef, word, { merge: true });
 }
 
 export async function deleteWordDB(id: string): Promise<void> {
+    const db = getDb();
     await deleteDoc(doc(db, 'words', id));
 }
 
 // --- WordProgress Functions ---
 export async function getStudentProgressDB(studentId: string): Promise<WordProgress[]> {
+    const db = getDb();
     const progressCol = collection(db, `users/${studentId}/wordProgress`);
     const progressSnapshot = await getDocs(progressCol);
     return progressSnapshot.docs.map(doc => {
@@ -179,6 +194,7 @@ export async function getStudentProgressDB(studentId: string): Promise<WordProgr
 }
 
 export async function saveStudentProgressDB(studentId: string, progress: WordProgress[]): Promise<void> {
+    const db = getDb();
     const batch = writeBatch(db);
     progress.forEach(p => {
         const docRef = doc(db, `users/${studentId}/wordProgress`, p.id);
@@ -193,6 +209,7 @@ export async function saveStudentProgressDB(studentId: string, progress: WordPro
 
 // --- Admin Message Functions ---
 export async function getMessagesDB(): Promise<Message[]> {
+    const db = getDb();
     const messagesCol = collection(db, 'adminMessages');
     const q = query(messagesCol, orderBy("createdAt", "desc"));
     const messageSnapshot = await getDocs(q);
@@ -207,12 +224,14 @@ export async function getMessagesDB(): Promise<Message[]> {
 }
 
 export async function addMessageDB(message: Message): Promise<void> {
+    const db = getDb();
     const messageData = { ...message, createdAt: Timestamp.fromDate(message.createdAt) };
     const docRef = doc(db, "adminMessages", message.id);
     await setDoc(docRef, messageData);
 }
 
 export async function deleteMessageDB(id: string): Promise<void> {
+    const db = getDb();
     await deleteDoc(doc(db, 'adminMessages', id));
 }
 
@@ -227,6 +246,7 @@ function getPeerChatCollectionId(conversationId: string): string {
 }
 
 export async function getSupervisorMessagesDB(studentId: string, supervisorId: string): Promise<SupervisorMessage[]> {
+    const db = getDb();
     const collId = getSupervisorChatCollectionId(studentId, supervisorId);
     const q = query(collection(db, collId), orderBy("createdAt", "asc"));
     const snapshot = await getDocs(q);
@@ -241,6 +261,7 @@ export async function getSupervisorMessagesDB(studentId: string, supervisorId: s
 }
 
 export async function getPeerMessagesDB(conversationId: string): Promise<PeerMessage[]> {
+    const db = getDb();
     const collId = getPeerChatCollectionId(conversationId);
     const q = query(collection(db, collId), orderBy("createdAt", "asc"));
     const snapshot = await getDocs(q);
@@ -255,6 +276,7 @@ export async function getPeerMessagesDB(conversationId: string): Promise<PeerMes
 }
 
 export async function saveSupervisorMessageDB(message: SupervisorMessage): Promise<void> {
+    const db = getDb();
     const collId = getSupervisorChatCollectionId(message.studentId, message.supervisorId);
     const docRef = doc(db, collId, message.id);
     const messageData = {
@@ -265,6 +287,7 @@ export async function saveSupervisorMessageDB(message: SupervisorMessage): Promi
 }
 
 export async function savePeerMessageDB(message: PeerMessage): Promise<void> {
+    const db = getDb();
     const collId = getPeerChatCollectionId(message.conversationId);
     const docRef = doc(db, collId, message.id);
     const messageData = {
@@ -275,6 +298,7 @@ export async function savePeerMessageDB(message: PeerMessage): Promise<void> {
 }
 
 export async function updateSupervisorMessagesDB(studentId: string, supervisorId: string, messages: SupervisorMessage[]): Promise<void> {
+    const db = getDb();
     const batch = writeBatch(db);
     const collId = getSupervisorChatCollectionId(studentId, supervisorId);
     messages.forEach(msg => {
@@ -286,6 +310,7 @@ export async function updateSupervisorMessagesDB(studentId: string, supervisorId
 }
 
 export async function updatePeerMessagesDB(conversationId: string, messages: PeerMessage[]): Promise<void> {
+    const db = getDb();
     const batch = writeBatch(db);
     const collId = getPeerChatCollectionId(conversationId);
     messages.forEach(msg => {
@@ -297,11 +322,13 @@ export async function updatePeerMessagesDB(conversationId: string, messages: Pee
 }
 
 export async function deleteSupervisorMessageDB(studentId: string, supervisorId: string, id: string): Promise<void> {
+    const db = getDb();
     const collId = getSupervisorChatCollectionId(studentId, supervisorId);
     await deleteDoc(doc(db, collId, id));
 }
 
 export async function deletePeerMessageDB(conversationId: string, id: string): Promise<void> {
+    const db = getDb();
     const collId = getPeerChatCollectionId(conversationId);
     await deleteDoc(doc(db, collId, id));
 }
@@ -309,11 +336,13 @@ export async function deletePeerMessageDB(conversationId: string, id: string): P
 
 // --- Landing Page Hero Image ---
 export async function setHeroImage(image: string): Promise<void> {
+    const db = getDb();
     const docRef = doc(db, 'app-config', 'landingPage');
     await setDoc(docRef, { heroImage: image });
 }
 
 export async function getHeroImage(): Promise<string | undefined> {
+    const db = getDb();
     const docRef = doc(db, 'app-config', 'landingPage');
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
@@ -321,3 +350,6 @@ export async function getHeroImage(): Promise<string | undefined> {
     }
     return undefined;
 }
+
+// Re-export getAuthInstance for use in other client-side components
+export { getAuthInstance };

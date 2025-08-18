@@ -24,7 +24,7 @@ import { redirectToDashboard } from "@/lib/actions";
 import { getUserById, updateUserDB, User, getNextSupervisorShortId, addUserDB } from "@/lib/data";
 import { isPast } from "date-fns";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "@/lib/firebase";
+import { getAuthInstance } from "@/lib/db";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -92,6 +92,7 @@ export function LoginForm() {
         }
 
         const { email, password } = validatedFields.data;
+        const auth = getAuthInstance();
         
         let userIdToLogin: string | null = null;
 
