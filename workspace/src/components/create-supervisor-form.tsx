@@ -10,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { User, addUserDB, getNextSupervisorShortId, getUserByEmailDB } from "@/lib/data";
 import { z } from "zod";
-import { Checkbox } from "./ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { add } from "date-fns";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { getAuthInstance } from "@/lib/db";
