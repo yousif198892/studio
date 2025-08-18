@@ -51,7 +51,6 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
     const { name, email, password, isTrial } = validatedFields.data;
 
      try {
-        // Check if user already exists in our database first
         const existingUser = await getUserByEmailDB(email);
         if (existingUser) {
             toast({ title: "Error", description: "This email is already associated with an account.", variant: "destructive" });
@@ -59,31 +58,44 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
             return;
         }
 
-        const shortId = await getNextSupervisorShortId();
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
         
-        const newUser: User = {
-            id: firebaseUser.uid,
-            shortId,
-            name,
-            email,
-            role: 'supervisor',
-            avatar: "https://placehold.co/100x100.png",
-            isSuspended: false,
-            isMainAdmin: false,
-            timezone: "Asia/Baghdad",
-            trialExpiresAt: isTrial ? add(new Date(), { months: 1 }).toISOString() : undefined,
-        };
-        
-        await addUserDB(newUser);
+        let newUser: User | null = null;
+        try {
+            const shortId = await getNextSupervisorShortId();
+            newUser = {
+                id: firebaseUser.uid,
+                shortId,
+                name,
+                email,
+                role: 'supervisor',
+                avatar: "https://placehold.co/100x100.png",
+                isSuspended: false,
+                isMainAdmin: false,
+                timezone: "Asia/Baghdad",
+                trialExpiresAt: isTrial ? add(new Date(), { months: 1 }).toISOString() : undefined,
+            };
+            await addUserDB(newUser);
+        } catch (dbError) {
+             toast({
+                title: "Database Error",
+                description: "User was created in Authentication, but failed to save to database. Please delete the user from Firebase Authentication and try again.",
+                variant: "destructive",
+            });
+            console.error("Firestore user creation failed: ", dbError);
+            setIsPending(false);
+            return;
+        }
         
         toast({
             title: "Success!",
             description: "Supervisor account created.",
         });
 
-        onSupervisorAdded(newUser);
+        if (newUser) {
+            onSupervisorAdded(newUser);
+        }
         formRef.current?.reset();
         setShowPassword(false);
 
