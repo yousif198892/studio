@@ -45,6 +45,7 @@ export function LoginForm() {
         let user = await getUserById(userId);
         if (!user) {
              toast({ title: t('toasts.error'), description: "No user data found in database.", variant: "destructive"});
+             setIsPending(false);
              return;
         }
         
@@ -58,15 +59,19 @@ export function LoginForm() {
                     description: "Your trial period has ended. Please contact an administrator.",
                     variant: "destructive"
                 });
+                setIsPending(false);
                 return;
             }
         }
 
         if (user.isSuspended) {
             toast({ title: t('toasts.error'), description: "This account has been suspended.", variant: "destructive"});
+            setIsPending(false);
             return;
         }
         
+        // The redirect will happen here, so we don't set isPending to false.
+        // The component will unmount on successful redirect.
         await redirectToDashboard(user.id);
     }
 
@@ -119,6 +124,7 @@ export function LoginForm() {
                     userIdToLogin = newUserCredential.user.uid;
                 } catch (creationError: any) {
                      toast({ title: t('toasts.error'), description: `Failed to auto-create admin account: ${creationError.message}`, variant: "destructive" });
+                     setIsPending(false);
                 }
              } else {
                 console.error("Firebase Auth Error: ", error);
@@ -127,13 +133,16 @@ export function LoginForm() {
                     errorMessage = "Invalid email or password. Please check your credentials or sign up if you don't have an account.";
                 }
                 toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
+                setIsPending(false);
             }
-        } finally {
-            setIsPending(false);
         }
 
         if (userIdToLogin) {
             await handleLogin(userIdToLogin);
+        } else {
+            // If we got here, it means an error occurred and was handled inside the catch block,
+            // but we might need to stop the pending state if there was no userId to login.
+            if (isPending) setIsPending(false);
         }
     }
 
