@@ -56,7 +56,7 @@ async function seedDatabase() {
                     shortId: shortId,
                 };
 
-                await setDoc(userDocRef, { ...mainAdminData, id: authUser.uid });
+                await setDoc(userDocRef, mainAdminData);
                 console.log(`Successfully created main supervisor document in Firestore with shortId: ${shortId}.`);
 
             } catch (creationError) {
