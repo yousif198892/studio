@@ -30,17 +30,19 @@ import {
     deleteSupervisorMessageDB as deleteSupervisorMessageFromDB,
     deletePeerMessageDB as deletePeerMessageFromDB,
     getStudentsBySupervisorDB,
-    getNextUserIdDB,
+    getNextSupervisorShortIdDB,
+    getUserByShortIdDB,
 } from './db';
 
 
 export type User = {
-  id: string;
+  id: string; // This is the Firebase Auth UID
+  shortId?: string; // This is the shareable ID for supervisors (e.g., "sup1")
   name: string;
   email: string;
   role: "student" | "supervisor";
   avatar: string;
-  supervisorId?: string;
+  supervisorId?: string; // For students, this will be the supervisor's Firebase Auth UID
   timezone?: string;
   isMainAdmin?: boolean;
   isSuspended?: boolean;
@@ -107,8 +109,8 @@ export async function getUserById(id: string): Promise<User | undefined> {
     return await getUserByIdDB(id);
 }
 
-export async function getNextUserId(role: 'student' | 'supervisor'): Promise<number> {
-    return getNextUserIdDB(role);
+export async function getNextSupervisorShortId(): Promise<string> {
+    return getNextSupervisorShortIdDB();
 }
 
 export async function getWordsBySupervisor(supervisorId: string): Promise<Word[]> {
@@ -183,6 +185,10 @@ export async function getMessages(): Promise<Message[]> {
 
 export async function getStudentsBySupervisorId(supervisorId: string): Promise<User[]> {
     return await getStudentsBySupervisorDB(supervisorId);
+}
+
+export async function getUserByShortId(shortId: string): Promise<User | undefined> {
+    return await getUserByShortIdDB(shortId);
 }
 
 

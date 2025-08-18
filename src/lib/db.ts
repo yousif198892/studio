@@ -23,7 +23,7 @@ import { User, Word, Message, SupervisorMessage, PeerMessage } from './data';
 import { WordProgress } from './storage';
 
 // --- Seeding Function ---
-// This function will populate the database with initial data if it's empty.
+// This function will populate the database with the main supervisor if they don't exist.
 async function seedDatabase() {
     console.log("Checking if main supervisor account needs seeding...");
     const mainAdminEmail = "warriorwithinyousif@gmail.com";
@@ -34,7 +34,7 @@ async function seedDatabase() {
         await signInWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
         console.log("Main supervisor already exists in Firebase Auth. Seeding not required.");
     } catch (error: any) {
-        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
             console.log("Main supervisor not found in Auth. Creating user...");
             try {
                 // Create user in Firebase Authentication
@@ -42,7 +42,8 @@ async function seedDatabase() {
                 const authUser = userCredential.user;
                 console.log(`Successfully created user in Auth with UID: ${authUser.uid}`);
 
-                // Now, create the corresponding document in Firestore
+                // Now, create the corresponding document in Firestore with a shortId
+                const shortId = await getNextSupervisorShortIdDB();
                 const userDocRef = doc(db, "users", authUser.uid);
                 
                 const mainAdminData: Omit<User, 'id'> = {
@@ -52,29 +53,22 @@ async function seedDatabase() {
                     avatar: "https://placehold.co/100x100.png?text=Y",
                     timezone: "Asia/Baghdad",
                     isMainAdmin: true,
-                };
-                
-                const userDataWithId: User = {
-                    ...mainAdminData,
-                    id: authUser.uid,
+                    shortId: shortId,
                 };
 
-                await setDoc(userDocRef, userDataWithId);
-                console.log("Successfully created main supervisor document in Firestore.");
+                await setDoc(userDocRef, { ...mainAdminData, id: authUser.uid });
+                console.log(`Successfully created main supervisor document in Firestore with shortId: ${shortId}.`);
 
             } catch (creationError) {
                 console.error("Error creating main supervisor during seeding:", creationError);
             }
         } else {
-            // Other auth error during sign-in check
             console.error("An unexpected error occurred during auth check:", error);
         }
     }
 }
 
-// Call the seed function once when the module is loaded.
 if (typeof window !== "undefined") {
-    // A simple flag to ensure seeding doesn't run multiple times on HMR
     if (!(window as any).__hasSeeded) {
         seedDatabase().catch(console.error);
         (window as any).__hasSeeded = true;
@@ -83,27 +77,26 @@ if (typeof window !== "undefined") {
 
 
 // --- User Functions ---
-export async function getNextUserIdDB(role: 'student' | 'supervisor'): Promise<number> {
-    const counterRef = doc(db, "counters", "userIds");
-    
+export async function getNextSupervisorShortIdDB(): Promise<string> {
+    const counterRef = doc(db, "counters", "supervisorId");
     try {
-        const newId = await runTransaction(db, async (transaction) => {
+        const newCount = await runTransaction(db, async (transaction) => {
             const counterDoc = await transaction.get(counterRef);
             if (!counterDoc.exists()) {
-                // If the counter doc doesn't exist, initialize it.
-                transaction.set(counterRef, { student: 0, supervisor: 0 });
+                transaction.set(counterRef, { count: 1 });
                 return 1;
             }
-            const newCount = counterDoc.data()[role] + 1;
-            transaction.update(counterRef, { [role]: newCount });
+            const newCount = counterDoc.data().count + 1;
+            transaction.update(counterRef, { count: newCount });
             return newCount;
         });
-        return newId;
+        return `sup${newCount}`;
     } catch (e) {
         console.error("Transaction failed: ", e);
         throw e;
     }
 }
+
 
 export async function getAllUsersDB(): Promise<User[]> {
     const usersCol = collection(db, 'users');
@@ -118,6 +111,7 @@ export async function getAllUsersDB(): Promise<User[]> {
 }
 
 export async function getUserByIdDB(id: string): Promise<User | undefined> {
+    if (!id) return undefined;
     const userDocRef = doc(db, 'users', id);
     const userSnap = await getDoc(userDocRef);
     if (!userSnap.exists()) return undefined;
@@ -139,6 +133,19 @@ export async function getUserByEmailDB(email: string): Promise<User | undefined>
     }
     return { ...data, id: userDoc.id } as User;
 }
+
+export async function getUserByShortIdDB(shortId: string): Promise<User | undefined> {
+    const q = query(collection(db, "users"), where("shortId", "==", shortId));
+    const querySnapshot = await getDocs(q);
+    if (querySnapshot.empty) return undefined;
+    const userDoc = querySnapshot.docs[0];
+    const data = userDoc.data();
+     if (data.trialExpiresAt && data.trialExpiresAt instanceof Timestamp) {
+        data.trialExpiresAt = data.trialExpiresAt.toDate().toISOString();
+    }
+    return { ...data, id: userDoc.id } as User;
+}
+
 
 export async function getStudentsBySupervisorDB(supervisorId: string): Promise<User[]> {
     const q = query(collection(db, "users"), where("supervisorId", "==", supervisorId), where("role", "==", "student"));

@@ -18,7 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useEffect, useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
-import { User, addUserDB, getUserById } from "@/lib/data";
+import { User, addUserDB, getUserByShortId } from "@/lib/data";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
@@ -65,7 +65,7 @@ export function RegisterForm() {
     const { name, email, password, supervisorId, grade, section } = validatedFields.data;
 
     try {
-        const supervisor = await getUserById(supervisorId);
+        const supervisor = await getUserByShortId(supervisorId);
         if (!supervisor || supervisor.role !== 'supervisor') {
             toast({ title: t('toasts.error'), description: t('toasts.invalidSupervisorId'), variant: "destructive" });
             setIsSubmitting(false);
@@ -83,7 +83,7 @@ export function RegisterForm() {
             email,
             role: 'student',
             avatar: "https://placehold.co/100x100.png",
-            supervisorId,
+            supervisorId: supervisor.id, // Use the supervisor's main UID
             timezone: "Asia/Baghdad",
             grade,
             section

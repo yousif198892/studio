@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { User, addUserDB, getAllUsers, getNextUserId } from "@/lib/data";
+import { User, addUserDB, getNextSupervisorShortId } from "@/lib/data";
 import { z } from "zod";
 import { Checkbox } from "./ui/checkbox";
 import { add } from "date-fns";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const createSupervisorSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -49,13 +51,15 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
     const { name, email, password, isTrial } = validatedFields.data;
 
      try {
-        const newIdNumber = await getNextUserId('supervisor');
+        const shortId = await getNextSupervisorShortId();
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const firebaseUser = userCredential.user;
         
         const newUser: User = {
-            id: `sup${newIdNumber}`,
+            id: firebaseUser.uid,
+            shortId,
             name,
             email,
-            password,
             role: 'supervisor',
             avatar: "https://placehold.co/100x100.png",
             isSuspended: false,
@@ -75,10 +79,14 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
         formRef.current?.reset();
         setShowPassword(false);
 
-    } catch (e) {
+    } catch (e: any) {
+        let errorMessage = "Could not create supervisor account.";
+        if (e.code === 'auth/email-already-in-use') {
+            errorMessage = "This email is already registered.";
+        }
          toast({
             title: "Error",
-            description: "Could not create supervisor account. Email may already be in use.",
+            description: errorMessage,
             variant: "destructive",
         });
     } finally {

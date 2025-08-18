@@ -1,4 +1,5 @@
 
+
 "use client"
 
 import {
@@ -359,7 +360,7 @@ export default function Dashboard() {
                  </CardHeader>
                  <CardContent className="flex items-center gap-4">
                      <KeyRound className="h-8 w-8 text-primary"/>
-                     <Badge variant="outline" className="text-lg py-2 px-4">{user.id}</Badge>
+                     <Badge variant="outline" className="text-lg py-2 px-4">{user.shortId}</Badge>
                  </CardContent>
              </Card>
              <Card>
