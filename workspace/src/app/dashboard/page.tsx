@@ -1,5 +1,4 @@
 
-
 "use client"
 
 import {
@@ -17,8 +16,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getWordsForStudent, getUserById, getStudentsBySupervisorId, Word } from "@/lib/data";
-import { User } from "@/lib/data";
+import { getWordsForStudent, getUserById, getStudentsBySupervisorId } from "@/lib/firestore";
+import { type Word, type User } from "@/lib/data";
 import { KeyRound, Clock, BarChart, CalendarCheck, Trophy, CheckCircle, XCircle, SpellCheck, ChevronDown, Star, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -38,9 +37,10 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SpellingPracticeCard } from "@/components/spelling-practice-card";
-import { LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats.tsx";
+import { type LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats";
 import { useToast } from "@/hooks/use-toast";
 import { XpToast } from "@/components/xp-toast";
+import { WordProgress } from "@/lib/storage";
 
 const getLast7Days = () => {
   const days = [];
@@ -69,12 +69,11 @@ export default function Dashboard() {
   const [wordsLearningCount, setWordsLearningCount] = useState(0);
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
   
-  const [allStudentWords, setAllStudentWords] = useState<Word[]>([]);
+  const [allStudentWords, setAllStudentWords] = useState<(Word & WordProgress)[]>([]);
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
   
   const last7Days = getLast7Days();
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -419,7 +418,3 @@ export default function Dashboard() {
 
    return <div>{t('dashboard.loading')}</div>
  }
-
-    
-
-    

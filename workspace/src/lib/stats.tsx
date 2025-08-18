@@ -4,7 +4,7 @@
 import { getWeek, startOfWeek } from 'date-fns';
 import { XpToast } from '@/components/xp-toast';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from './firebase';
 
 export type LearningStats = {
   timeSpentSeconds: number; 

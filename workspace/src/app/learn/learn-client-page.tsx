@@ -3,7 +3,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { getWordForReview, Word } from "@/lib/data";
+import { getWordForReview } from "@/lib/firestore";
+import { type Word } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
 import { updateStudentProgressInStorage } from "@/lib/storage";
@@ -11,7 +12,7 @@ import { ClientOnly } from "@/components/client-only";
 import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { updateLearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats.tsx";
+import { updateLearningStats, updateXp, XP_AMOUNTS } from "@/lib/stats";
 import { WordProgress } from "@/lib/storage";
 import { useToast } from "@/hooks/use-toast";
 import { XpToast } from "@/components/xp-toast";

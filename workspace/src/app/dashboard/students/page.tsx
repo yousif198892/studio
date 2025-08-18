@@ -9,8 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { type User, type Word } from "@/lib/data";
-import { getUserById, getStudentsBySupervisorId, getWordsBySupervisor, getStudentProgress, updateUserDB } from "@/lib/firestore";
-import type { WordProgress } from "@/lib/storage";
+import { getUserById, getStudentsBySupervisorId, updateUserDB, getWordsBySupervisor, getStudentProgress } from "@/lib/firestore";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
@@ -33,7 +32,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { format, subDays } from "date-fns";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LearningStats, getStatsForUser } from "@/lib/stats.tsx";
+import { type LearningStats, getStatsForUser } from "@/lib/stats";
+import type { WordProgress } from "@/lib/storage";
 
 type StudentWithStats = User & {
     stats: LearningStats;

@@ -1,8 +1,9 @@
 
-
 // This file contains placeholder data to simulate a database.
 // In a real application, this data would come from a database like Firestore.
 // This file now ONLY contains server-safe functions or data types.
+import { redirect } from "next/navigation";
+
 
 export type User = {
   id: string; // This is the Firebase Auth UID
@@ -67,3 +68,9 @@ export type PeerMessage = {
     isEdited?: boolean;
     deletedFor?: string[];
 };
+
+
+// This function is safe because it's a server action that doesn't import firebase.
+export async function redirectToDashboard(userId: string) {
+    redirect(`/dashboard?userId=${userId}`);
+}
