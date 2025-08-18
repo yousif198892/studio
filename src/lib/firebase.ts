@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
@@ -13,9 +14,24 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-function getFirebaseApp() {
+// This function ensures that we only initialize Firebase on the client-side.
+function getFirebaseApp(): FirebaseApp {
     if (getApps().length === 0) {
-        return initializeApp(firebaseConfig);
+        const app = initializeApp(firebaseConfig);
+        // Enable persistence only on the client.
+        if (typeof window !== 'undefined') {
+            try {
+                const db = getFirestore(app);
+                enableIndexedDbPersistence(db);
+            } catch (err: any) {
+                if (err.code == 'failed-precondition') {
+                    console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
+                } else if (err.code == 'unimplemented') {
+                    console.warn('Firebase persistence is not available in this browser.');
+                }
+            }
+        }
+        return app;
     } else {
         return getApp();
     }
@@ -25,18 +41,5 @@ const app = getFirebaseApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-
-// Enable offline persistence only on the client
-if (typeof window !== 'undefined') {
-    try {
-        enableIndexedDbPersistence(db);
-    } catch (err: any) {
-        if (err.code == 'failed-precondition') {
-            console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
-        } else if (err.code == 'unimplemented') {
-            console.warn('Firebase persistence is not available in this browser.');
-        }
-    }
-}
 
 export { db, auth, getFirebaseApp };
