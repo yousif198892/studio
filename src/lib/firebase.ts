@@ -1,8 +1,5 @@
-
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
-import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -14,24 +11,19 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
-// This function ensures that we only initialize Firebase once.
+// This function ensures that we only initialize Firebase once, and only on the client.
 function getFirebaseApp(): FirebaseApp {
     if (getApps().length === 0) {
-        const app = initializeApp(firebaseConfig);
-        // Enable persistence only on the client.
-        if (typeof window !== 'undefined') {
-            try {
-                const db = getFirestore(app);
-                enableIndexedDbPersistence(db);
-            } catch (err: any) {
-                if (err.code == 'failed-precondition') {
-                    console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
-                } else if (err.code == 'unimplemented') {
-                    console.warn('Firebase persistence is not available in this browser.');
-                }
-            }
+        // This check ensures this code only runs on the client
+        if (typeof window === 'undefined') {
+            // In a server-side context, return a dummy object or throw an error
+            // For build purposes, we should avoid throwing an error. A more robust app
+            // might have a separate server-side admin SDK initialization.
+            // For now, this check prevents server-side execution.
+            // This path should not be hit if components are structured correctly.
+            throw new Error("Firebase cannot be initialized on the server.");
         }
-        return app;
+        return initializeApp(firebaseConfig);
     } else {
         return getApp();
     }
