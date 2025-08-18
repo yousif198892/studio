@@ -93,14 +93,14 @@ export function LoginForm() {
 
         const { email, password } = validatedFields.data;
         
+        let userIdToLogin: string | null = null;
+
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            await handleLogin(userCredential.user.uid);
+            userIdToLogin = userCredential.user.uid;
         } catch (error: any) {
              if ((error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') && email === mainAdminEmail && password === defaultPassword) {
-                // If main admin login fails, try to create the account
                 try {
-                    console.log("Main supervisor not found, attempting to create...");
                     const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const shortId = await getNextSupervisorShortId();
                     const mainAdminData: User = {
@@ -115,8 +115,7 @@ export function LoginForm() {
                         shortId: shortId,
                     };
                     await addUserDB(mainAdminData);
-                    console.log("Main supervisor created successfully.");
-                    await handleLogin(newUserCredential.user.uid);
+                    userIdToLogin = newUserCredential.user.uid;
                 } catch (creationError: any) {
                      toast({ title: t('toasts.error'), description: `Failed to auto-create admin account: ${creationError.message}`, variant: "destructive" });
                 }
@@ -130,6 +129,10 @@ export function LoginForm() {
             }
         } finally {
             setIsPending(false);
+        }
+
+        if (userIdToLogin) {
+            await handleLogin(userIdToLogin);
         }
     }
 
