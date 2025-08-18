@@ -155,7 +155,7 @@ export function RegisterForm() {
                           <SelectTrigger>
                             <SelectValue placeholder="Select Section" />
                           </SelectTrigger>
-                          <SelectContent>
+                          <SelectContent className="max-h-[240px]">
                              {Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i)).map(letter => (
                                 <SelectItem key={letter} value={letter}>{letter}</SelectItem>
                             ))}
