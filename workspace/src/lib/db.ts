@@ -22,7 +22,6 @@ import { WordProgress } from './storage';
 
 // Re-export getAuthInstance for compatibility with components that use it.
 export const getAuthInstance = () => auth;
-export const getDb = () => db;
 
 
 // --- User Functions ---

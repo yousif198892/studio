@@ -16,11 +16,20 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
+let app: FirebaseApp;
+if (typeof window !== 'undefined') {
+    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+} else {
+    // This is a dummy initialization for server-side rendering to avoid errors.
+    // It won't actually work, but it will prevent the app from crashing during build.
+    app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+}
+
+
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Enable persistence on the client
+// Enable persistence on the client, and only on the client.
 if (typeof window !== 'undefined') {
     try {
         enableIndexedDbPersistence(db);
