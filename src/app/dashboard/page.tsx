@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SpellingPracticeCard } from "@/components/spelling-practice-card";
-import { LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats.tsx";
+import { LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats";
 import { useToast } from "@/hooks/use-toast";
 import { XpToast } from "@/components/xp-toast";
 

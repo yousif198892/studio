@@ -4,6 +4,8 @@
 
 import { getWeek, startOfWeek } from 'date-fns';
 import { XpToast } from '@/components/xp-toast';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
 
 export type LearningStats = {
   timeSpentSeconds: number; 
@@ -50,26 +52,34 @@ export const getInitialStats = (today: string): LearningStats => ({
     weekStartDate: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString(), // Monday
 });
 
-export const getStatsForUser = (userId: string): LearningStats => {
-    if (typeof window === 'undefined') return getInitialStats(new Date().toLocaleDateString('en-CA'));
-    const storedStats = localStorage.getItem(`learningStats_${userId}`);
+export const getStatsForUser = async (userId: string): Promise<LearningStats> => {
     const today = new Date();
-    // Use local date for daily check
-    const todayStr = today.toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
-    const startOfThisWeek = startOfWeek(today, { weekStartsOn: 1 }); // Monday
+    const todayStr = today.toLocaleDateString('en-CA');
+    const startOfThisWeek = startOfWeek(today, { weekStartsOn: 1 });
 
-    let stats: LearningStats = storedStats ? JSON.parse(storedStats) : getInitialStats(todayStr);
+    const statsDocRef = doc(db, `users/${userId}/app-data/stats`);
+    const statsSnap = await getDoc(statsDocRef);
 
+    let stats: LearningStats;
+
+    if (statsSnap.exists()) {
+        stats = statsSnap.data() as LearningStats;
+    } else {
+        stats = getInitialStats(todayStr);
+        // If no stats exist, save the initial stats to Firestore
+        await setDoc(statsDocRef, stats);
+    }
+    
     // --- Data Migration & Defaults ---
     if (typeof stats.xp !== 'number') stats.xp = 0;
     if (!stats.lastLoginDate) stats.lastLoginDate = '1970-01-01';
     if (!stats.weekStartDate) stats.weekStartDate = startOfThisWeek.toISOString();
-
+    
     // --- Weekly XP Reset Logic ---
     const lastWeekStartDate = new Date(stats.weekStartDate);
     if (getWeek(today, { weekStartsOn: 1 }) !== getWeek(lastWeekStartDate, { weekStartsOn: 1 })) {
         stats.xp = 0; // Reset XP
-        stats.weekStartDate = startOfThisWeek.toISOString(); // Set new week start date
+        stats.weekStartDate = startOfThisWeek.toISOString();
     }
     
     // --- Daily Data Reset Logic ---
@@ -86,10 +96,10 @@ export const getStatsForUser = (userId: string): LearningStats => {
     return stats;
 }
 
-export const updateXp = (userId: string, event: XpEvent) => {
+export const updateXp = async (userId: string, event: XpEvent) => {
     if (!userId) return { updated: false, amount: 0 };
     
-    const stats = getStatsForUser(userId);
+    const stats = await getStatsForUser(userId);
     const amount = XP_AMOUNTS[event];
     const today = new Date().toLocaleDateString('en-CA');
 
@@ -102,7 +112,9 @@ export const updateXp = (userId: string, event: XpEvent) => {
     
     stats.xp += amount;
     
-    localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+    const statsDocRef = doc(db, `users/${userId}/app-data/stats`);
+    await setDoc(statsDocRef, stats, { merge: true });
+
     return { updated: true, amount };
 };
 
@@ -116,7 +128,7 @@ type UpdateStatsParams = {
   toast?: (props: any) => void;
 };
 
-export const updateLearningStats = ({
+export const updateLearningStats = async ({
   userId,
   reviewedCount = 0,
   durationSeconds = 0,
@@ -126,8 +138,8 @@ export const updateLearningStats = ({
 }: UpdateStatsParams) => {
   if (!userId) return;
   
-  const stats = getStatsForUser(userId);
-  const today = new Date().toLocaleDateString('en-CA'); // Gets 'YYYY-MM-DD' format
+  const stats = await getStatsForUser(userId);
+  const today = new Date().toLocaleDateString('en-CA');
 
   // Update stats
   stats.totalWordsReviewed += reviewedCount;
@@ -153,5 +165,6 @@ export const updateLearningStats = ({
       }
   }
 
-  localStorage.setItem(`learningStats_${userId}`, JSON.stringify(stats));
+  const statsDocRef = doc(db, `users/${userId}/app-data/stats`);
+  await setDoc(statsDocRef, stats, { merge: true });
 };

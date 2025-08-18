@@ -7,7 +7,7 @@ import { User, getUserById, getStudentsBySupervisorId } from "@/lib/data";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Trophy } from "lucide-react";
-import { LearningStats, getStatsForUser } from "@/lib/stats.tsx";
+import { LearningStats, getStatsForUser } from "@/lib/stats";
 import { cn } from "@/lib/utils";
 import { endOfWeek, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
