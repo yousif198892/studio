@@ -19,73 +19,58 @@ import {
 } from 'firebase/firestore';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
 
-import { User, Word, Message, mockUsers, mockMessages, mockWords, SupervisorMessage, PeerMessage } from './data';
+import { User, Word, Message, SupervisorMessage, PeerMessage } from './data';
 import { WordProgress } from './storage';
 
 // --- Seeding Function ---
 // This function will populate the database with initial data if it's empty.
 async function seedDatabase() {
     console.log("Checking if main supervisor account needs seeding...");
-    const DEFAULT_PASSWORD = "password123";
     const mainAdminEmail = "warriorwithinyousif@gmail.com";
-    
-    // Check if main admin user exists in Firestore by email
-    const mainAdminFirestore = await getUserByEmailDB(mainAdminEmail);
-    
-    if (!mainAdminFirestore) {
-        console.log(`Main supervisor with email ${mainAdminEmail} not found in Firestore. Attempting to seed...`);
-        const mainAdminMockData = mockUsers.find(u => u.email === mainAdminEmail);
-        
-        if (!mainAdminMockData) {
-            console.error("Main admin data not found in mockUsers. Seeding cannot proceed.");
-            return;
-        }
+    const DEFAULT_PASSWORD = "password123";
 
-        try {
-            // Step 1: Check if user exists in Auth. If not, create them.
-            let userCredential;
+    try {
+        // Attempt to sign in to see if the user exists in Auth
+        await signInWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
+        console.log("Main supervisor already exists in Firebase Auth. Seeding not required.");
+    } catch (error: any) {
+        if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+            console.log("Main supervisor not found in Auth. Creating user...");
             try {
-                userCredential = await signInWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
-                console.log("Main admin already exists in Firebase Auth.");
-            } catch (error: any) {
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-                    console.log("Creating main admin in Firebase Auth...");
-                    userCredential = await createUserWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
-                    console.log("Successfully created main admin in Firebase Auth.");
-                } else {
-                    // Rethrow other auth errors
-                    throw error;
-                }
-            }
+                // Create user in Firebase Authentication
+                const userCredential = await createUserWithEmailAndPassword(auth, mainAdminEmail, DEFAULT_PASSWORD);
+                const authUser = userCredential.user;
+                console.log(`Successfully created user in Auth with UID: ${authUser.uid}`);
 
-            const authUser = userCredential.user;
-
-            // Step 2: Create the user document in Firestore using the Auth UID.
-            const userDocRef = doc(db, "users", authUser.uid);
-            const userDocSnap = await getDoc(userDocRef);
-
-            if (!userDocSnap.exists()) {
-                console.log("Creating main admin document in Firestore...");
-                const userData: User = {
-                    ...mainAdminMockData,
-                    id: authUser.uid, // Use the real Auth UID
+                // Now, create the corresponding document in Firestore
+                const userDocRef = doc(db, "users", authUser.uid);
+                
+                const mainAdminData: Omit<User, 'id'> = {
+                    name: "Yousif",
+                    email: mainAdminEmail,
+                    role: "supervisor",
+                    avatar: "https://placehold.co/100x100.png?text=Y",
+                    timezone: "Asia/Baghdad",
+                    isMainAdmin: true,
                 };
-                 if (userData.trialExpiresAt) {
-                    (userData as any).trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
-                }
-                await setDoc(userDocRef, userData);
-                console.log("Successfully created main admin document in Firestore.");
-            } else {
-                console.log("Main admin document already exists in Firestore.");
+                
+                const userDataWithId: User = {
+                    ...mainAdminData,
+                    id: authUser.uid,
+                };
+
+                await setDoc(userDocRef, userDataWithId);
+                console.log("Successfully created main supervisor document in Firestore.");
+
+            } catch (creationError) {
+                console.error("Error creating main supervisor during seeding:", creationError);
             }
-        } catch (error) {
-            console.error("An error occurred during the seeding process for the main admin:", error);
+        } else {
+            // Other auth error during sign-in check
+            console.error("An unexpected error occurred during auth check:", error);
         }
-    } else {
-        console.log("Main supervisor account already exists. No seeding needed.");
     }
 }
-
 
 // Call the seed function once when the module is loaded.
 if (typeof window !== "undefined") {
