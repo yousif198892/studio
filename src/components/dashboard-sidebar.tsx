@@ -39,7 +39,7 @@ import { type User } from "@/lib/data";
 import { useLanguage } from "@/hooks/use-language";
 import { cn } from "@/lib/utils";
 import { signOut } from "firebase/auth";
-import { getAuthInstance } from "@/lib/db";
+import { auth } from "@/lib/firebase";
 
 
 const ChampionIcon = ({ className }: { className?: string }) => (
@@ -105,7 +105,6 @@ export function DashboardSidebar({
   };
 
   const handleSignOut = async () => {
-    const auth = getAuthInstance();
     await signOut(auth);
     router.push('/login');
   };

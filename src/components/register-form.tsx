@@ -22,8 +22,8 @@ import { addUserDB, getUserByShortId } from "@/lib/firestore";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
-import { getFirebaseApp } from "@/lib/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const registerSchema = z.object({
     name: z.string().min(1, 'Name is required.'),
@@ -72,8 +72,6 @@ export function RegisterForm() {
             return;
         }
         
-        const auth = getAuth(getFirebaseApp());
-
         // 1. Create user in Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;

@@ -40,7 +40,8 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import { Switch } from "@/components/ui/switch";
 import { signOut } from "firebase/auth";
-import { getUserById, updateUserDB, deleteUserDB, getWordsBySupervisor, deleteWordDB, setHeroImage, auth } from "@/lib/firestore";
+import { auth } from "@/lib/firebase";
+import { getUserById, updateUserDB, deleteUserDB, getWordsBySupervisor, deleteWordDB, setHeroImage } from "@/lib/firestore";
 
 export default function ProfilePage() {
   const { t, language, setLanguage } = useLanguage();

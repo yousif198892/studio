@@ -12,8 +12,8 @@ import { addUserDB, getNextSupervisorShortId, getUserByEmail } from "@/lib/fires
 import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import { add } from "date-fns";
-import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
-import { getFirebaseApp } from "@/lib/firebase";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const createSupervisorSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -58,7 +58,6 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
             return;
         }
 
-        const auth = getAuth(getFirebaseApp());
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
         

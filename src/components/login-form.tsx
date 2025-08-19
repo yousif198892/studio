@@ -22,8 +22,8 @@ import { useRouter } from "next/navigation";
 import { type User } from "@/lib/data";
 import { getUserById, updateUserDB, getNextSupervisorShortId, addUserDB, getUserByEmail } from "@/lib/firestore";
 import { isPast } from "date-fns";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth } from "firebase/auth";
-import { getFirebaseApp } from "@/lib/firebase";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -97,8 +97,6 @@ export function LoginForm() {
         
         let userIdToLogin: string | null = null;
         
-        const auth = getAuth(getFirebaseApp());
-
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             userIdToLogin = userCredential.user.uid;
