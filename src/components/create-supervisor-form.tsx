@@ -8,11 +8,12 @@ import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { type User } from "@/lib/data";
-import { addUserDB, getNextSupervisorShortId, getUserByEmail, auth } from "@/lib/firestore";
+import { addUserDB, getNextSupervisorShortId, getUserByEmail } from "@/lib/firestore";
 import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import { add } from "date-fns";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { getFirebaseApp } from "@/lib/firebase";
 
 const createSupervisorSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -57,6 +58,7 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
             return;
         }
 
+        const auth = getAuth(getFirebaseApp());
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
         

@@ -3,14 +3,11 @@
 
 import { getWeek, startOfWeek } from 'date-fns';
 import { XpToast } from '@/components/xp-toast';
-import { doc, getDoc, setDoc, getFirestore } from 'firebase/firestore';
-import { getFirebaseApp } from './firestore';
-
-const app = getFirebaseApp();
-const db = getFirestore(app);
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { db } from './firebase';
 
 export type LearningStats = {
-  timeSpentSeconds: number; 
+  timeSpentSeconds: number;
   totalWordsReviewed: number;
   xp: number;
   reviewedToday: {
@@ -28,7 +25,7 @@ export type LearningStats = {
   weekStartDate?: string; // ISO date string for start of the week
 };
 
-export type XpEvent = 
+export type XpEvent =
   | 'review_word'
   | 'spell_correct'
   | 'daily_login'
@@ -71,19 +68,19 @@ export const getStatsForUser = async (userId: string): Promise<LearningStats> =>
         // If no stats exist, save the initial stats to Firestore
         await setDoc(statsDocRef, stats);
     }
-    
+
     // --- Data Migration & Defaults ---
     if (typeof stats.xp !== 'number') stats.xp = 0;
     if (!stats.lastLoginDate) stats.lastLoginDate = '1970-01-01';
     if (!stats.weekStartDate) stats.weekStartDate = startOfThisWeek.toISOString();
-    
+
     // --- Weekly XP Reset Logic ---
     const lastWeekStartDate = new Date(stats.weekStartDate);
     if (getWeek(today, { weekStartsOn: 1 }) !== getWeek(lastWeekStartDate, { weekStartsOn: 1 })) {
         stats.xp = 0; // Reset XP
         stats.weekStartDate = startOfThisWeek.toISOString();
     }
-    
+
     // --- Daily Data Reset Logic ---
     if (!stats.reviewedToday || stats.reviewedToday.date !== todayStr) {
         stats.reviewedToday = { count: 0, date: todayStr, timeSpentSeconds: 0, completedTests: [] };
@@ -94,13 +91,13 @@ export const getStatsForUser = async (userId: string): Promise<LearningStats> =>
     if (!Array.isArray(stats.activityLog)) stats.activityLog = [];
     if (!Array.isArray(stats.reviewedToday.completedTests)) stats.reviewedToday.completedTests = [];
     if (typeof stats.reviewedToday.timeSpentSeconds !== 'number') stats.reviewedToday.timeSpentSeconds = 0;
-    
+
     return stats;
 }
 
 export const updateXp = async (userId: string, event: XpEvent) => {
     if (!userId) return { updated: false, amount: 0 };
-    
+
     const stats = await getStatsForUser(userId);
     const amount = XP_AMOUNTS[event];
     const today = new Date().toLocaleDateString('en-CA');
@@ -111,9 +108,9 @@ export const updateXp = async (userId: string, event: XpEvent) => {
         }
         stats.lastLoginDate = today;
     }
-    
+
     stats.xp += amount;
-    
+
     const statsDocRef = doc(db, `users/${userId}/app-data/stats`);
     await setDoc(statsDocRef, stats, { merge: true });
 
@@ -139,7 +136,7 @@ export const updateLearningStats = async ({
   toast,
 }: UpdateStatsParams) => {
   if (!userId) return;
-  
+
   const stats = await getStatsForUser(userId);
   const today = new Date().toLocaleDateString('en-CA');
 
@@ -154,7 +151,7 @@ export const updateLearningStats = async ({
   if (!stats.activityLog.includes(today)) {
     stats.activityLog.push(today);
   }
-  
+
   // Log completed test and award XP
   if (testName && !stats.reviewedToday.completedTests.includes(testName)) {
       stats.reviewedToday.completedTests.push(testName);

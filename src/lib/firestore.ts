@@ -1,63 +1,23 @@
 
 'use client';
 
-import { 
-    collection, 
-    doc, 
-    getDoc, 
-    getDocs, 
-    setDoc, 
-    deleteDoc, 
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    setDoc,
+    deleteDoc,
     writeBatch,
     query,
     where,
     Timestamp,
     orderBy,
     runTransaction,
-    getFirestore,
-    enableIndexedDbPersistence
 } from 'firebase/firestore';
-import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { db } from './firebase'; // Import the initialized db instance
 import type { User, Word, Message, SupervisorMessage, PeerMessage } from './data';
 import type { WordProgress } from './storage';
-
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
-};
-
-function getFirebaseApp(): FirebaseApp {
-    if (typeof window === 'undefined') {
-        throw new Error("Firebase cannot be initialized on the server.");
-    }
-    if (getApps().length === 0) {
-        return initializeApp(firebaseConfig);
-    } else {
-        return getApp();
-    }
-}
-
-const app = getFirebaseApp();
-const db = getFirestore(app);
-export const auth = getAuth(app);
-
-
-try {
-    enableIndexedDbPersistence(db);
-} catch (err: any) {
-    if (err.code === 'failed-precondition') {
-        console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
-    } else if (err.code === 'unimplemented') {
-        console.warn('Firebase persistence is not available in this browser.');
-    }
-}
-
 
 // --- User Functions ---
 export async function getNextSupervisorShortId(): Promise<string> {
@@ -137,20 +97,20 @@ export async function getStudentsBySupervisorId(supervisorId: string): Promise<U
 export async function addUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
-    
+
     if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
     } else if (!userData.trialExpiresAt) {
         delete userData.trialExpiresAt;
     }
-    
+
     await setDoc(userDocRef, userData);
 }
 
 export async function updateUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
-    
+
     if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
     } else if (userData.trialExpiresAt === undefined) {
@@ -332,21 +292,12 @@ export async function deletePeerMessage(conversationId: string, id: string): Pro
     await deleteDoc(doc(db, collId, id));
 }
 
+
 // --- Landing Page Hero Image ---
 export async function setHeroImage(image: string): Promise<void> {
     const docRef = doc(db, 'app-config', 'landingPage');
     await setDoc(docRef, { heroImage: image });
 }
-
-export async function getHeroImage(): Promise<string | undefined> {
-    const docRef = doc(db, 'app-config', 'landingPage');
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-        return docSnap.data().heroImage;
-    }
-    return undefined;
-}
-
 
 export async function getWordsForStudent(studentId: string): Promise<(Word & WordProgress)[]> {
     const student = await getUserById(studentId);
@@ -386,7 +337,7 @@ export async function getWordsForStudent(studentId: string): Promise<(Word & Wor
     if (newProgressToSave.length > 0) {
         await saveStudentProgress(studentId, newProgressToSave);
     }
-    
+
     return mergedWords;
 }
 
@@ -399,7 +350,7 @@ export async function getWordForReview(studentId: string, unit?: string | null, 
   if (unit) {
       filteredWords = filteredWords.filter(word => word.unit === unit);
   }
-  
+
   if (lesson) {
       filteredWords = filteredWords.filter(word => word.lesson === lesson);
   }
@@ -411,10 +362,6 @@ export async function getWordForReview(studentId: string, unit?: string | null, 
   if (dueWords.length === 0) return null;
 
   dueWords.sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
-  
+
   return dueWords[0];
 };
-
-export function getAuthInstance() {
-    return auth;
-}

@@ -20,9 +20,10 @@ import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { type User } from "@/lib/data";
-import { getUserById, updateUserDB, getNextSupervisorShortId, addUserDB, getUserByEmail, auth } from "@/lib/firestore";
+import { getUserById, updateUserDB, getNextSupervisorShortId, addUserDB, getUserByEmail } from "@/lib/firestore";
 import { isPast } from "date-fns";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { getFirebaseApp } from "@/lib/firebase";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -95,6 +96,8 @@ export function LoginForm() {
         const { email, password } = validatedFields.data;
         
         let userIdToLogin: string | null = null;
+        
+        const auth = getAuth(getFirebaseApp());
 
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);

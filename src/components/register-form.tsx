@@ -18,11 +18,12 @@ import { useState } from "react";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { type User } from "@/lib/data";
-import { addUserDB, getUserByShortId, auth } from "@/lib/firestore";
+import { addUserDB, getUserByShortId } from "@/lib/firestore";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, getAuth } from "firebase/auth";
+import { getFirebaseApp } from "@/lib/firebase";
 
 const registerSchema = z.object({
     name: z.string().min(1, 'Name is required.'),
@@ -70,6 +71,8 @@ export function RegisterForm() {
             setIsSubmitting(false);
             return;
         }
+        
+        const auth = getAuth(getFirebaseApp());
 
         // 1. Create user in Firebase Authentication
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
