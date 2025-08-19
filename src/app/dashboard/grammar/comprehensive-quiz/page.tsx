@@ -12,7 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Loader2, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { updateLearningStats } from '@/lib/stats';
+import { updateLearningStats } from '@/lib/stats.tsx';
 import { useToast } from '@/hooks/use-toast';
 
 export default function ComprehensiveQuizPage() {

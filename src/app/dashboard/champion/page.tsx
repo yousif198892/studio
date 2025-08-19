@@ -8,7 +8,7 @@ import { getUserById, getStudentsBySupervisorId } from "@/lib/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Trophy } from "lucide-react";
-import { type LearningStats, getStatsForUser } from "@/lib/stats";
+import { type LearningStats, getStatsForUser } from "@/lib/stats.tsx";
 import { cn } from "@/lib/utils";
 import { endOfWeek, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
