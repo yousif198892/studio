@@ -1,11 +1,13 @@
 
-
 'use client';
 
 import { getWeek, startOfWeek } from 'date-fns';
 import { XpToast } from '@/components/xp-toast';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { getDb } from './db';
+import { doc, getDoc, setDoc, getFirestore } from 'firebase/firestore';
+import { getFirebaseApp } from './firestore';
+
+const app = getFirebaseApp();
+const db = getFirestore(app);
 
 export type LearningStats = {
   timeSpentSeconds: number; 
@@ -53,7 +55,6 @@ export const getInitialStats = (today: string): LearningStats => ({
 });
 
 export const getStatsForUser = async (userId: string): Promise<LearningStats> => {
-    const db = getDb();
     const today = new Date();
     const todayStr = today.toLocaleDateString('en-CA');
     const startOfThisWeek = startOfWeek(today, { weekStartsOn: 1 });
@@ -113,7 +114,6 @@ export const updateXp = async (userId: string, event: XpEvent) => {
     
     stats.xp += amount;
     
-    const db = getDb();
     const statsDocRef = doc(db, `users/${userId}/app-data/stats`);
     await setDoc(statsDocRef, stats, { merge: true });
 
@@ -167,7 +167,6 @@ export const updateLearningStats = async ({
       }
   }
 
-  const db = getDb();
   const statsDocRef = doc(db, `users/${userId}/app-data/stats`);
   await setDoc(statsDocRef, stats, { merge: true });
 };

@@ -1,19 +1,18 @@
 
-
 "use client";
 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { User, addUserDB, getNextSupervisorShortId, getUserByEmailDB } from "@/lib/data";
+import { type User } from "@/lib/data";
+import { addUserDB, getNextSupervisorShortId, getUserByEmail, auth } from "@/lib/firestore";
 import { z } from "zod";
-import { Checkbox } from "./ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox";
 import { add } from "date-fns";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { getAuthInstance } from "@/lib/db";
 
 const createSupervisorSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -49,10 +48,9 @@ export function CreateSupervisorForm({ onSupervisorAdded }: { onSupervisorAdded:
     }
 
     const { name, email, password, isTrial } = validatedFields.data;
-    const auth = getAuthInstance();
 
      try {
-        const existingUser = await getUserByEmailDB(email);
+        const existingUser = await getUserByEmail(email);
         if (existingUser) {
             toast({ title: "Error", description: "This email is already associated with an account.", variant: "destructive" });
             setIsPending(false);

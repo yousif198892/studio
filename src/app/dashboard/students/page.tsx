@@ -8,11 +8,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { User, Word, getWordsForStudent, getStudentsBySupervisorId, getUserById, updateUserDB } from "@/lib/data";
+import { type User, type Word } from "@/lib/data";
+import { getUserById, getStudentsBySupervisorId, updateUserDB, getWordsBySupervisor, getStudentProgress } from "@/lib/firestore";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Trash2, BarChart, CalendarCheck, CheckCircle, Clock, Star, Trophy, XCircle, MessageSquare } from "lucide-react";
 import {
@@ -31,7 +32,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { format, subDays } from "date-fns";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
-import { LearningStats, getStatsForUser } from "@/lib/stats";
+import { type LearningStats, getStatsForUser } from "@/lib/stats";
+import type { WordProgress } from "@/lib/storage";
 
 type StudentWithStats = User & {
     stats: LearningStats;
@@ -53,6 +55,26 @@ const getLast7Days = () => {
 
 const allTests = ["Present Simple", "Past Simple", "Present Continuous", "Comprehensive"];
 
+async function getWordsForStudent(studentId: string): Promise<(Word & WordProgress)[]> {
+    const student = await getUserById(studentId);
+    if (!student?.supervisorId) return [];
+
+    const supervisorWords = await getWordsBySupervisor(student.supervisorId);
+    const studentProgress = await getStudentProgress(studentId);
+    const studentProgressMap = new Map(studentProgress.map(p => [p.id, p]));
+
+    const mergedWords = supervisorWords.map(supervisorWord => {
+        const progress = studentProgressMap.get(supervisorWord.id);
+        return {
+            ...supervisorWord,
+            strength: progress?.strength ?? 0,
+            nextReview: progress ? new Date(progress.nextReview) : new Date(),
+            studentId: studentId
+        };
+    });
+
+    return mergedWords;
+}
 
 export default function StudentsPage() {
   const searchParams = useSearchParams();
@@ -64,11 +86,11 @@ export default function StudentsPage() {
   const last7Days = getLast7Days();
   const userId = searchParams.get('userId');
   
-  useEffect(() => {
-    const fetchData = async () => {
-        if (userId) {
-            const currentUser = await getUserById(userId);
-            setUser(currentUser || null);
+  const fetchData = useCallback(async () => {
+    if (userId) {
+        const currentUser = await getUserById(userId);
+        setUser(currentUser || null);
+        if (currentUser) {
             const studentList = await getStudentsBySupervisorId(userId);
 
             const studentsWithStatsPromises = studentList.map(async (student) => {
@@ -87,9 +109,12 @@ export default function StudentsPage() {
             const studentsWithStats = await Promise.all(studentsWithStatsPromises);
             setStudents(studentsWithStats);
         }
-    };
+    }
+  }, [userId]);
+  
+  useEffect(() => {
     fetchData();
-  }, [userId])
+  }, [fetchData])
 
   const handleDelete = async (studentId: string) => {
     try {
@@ -101,9 +126,6 @@ export default function StudentsPage() {
         studentToUpdate.supervisorId = undefined;
         await updateUserDB(studentToUpdate);
          
-        // In a real app with Firestore, you might also want to delete the user's progress subcollection.
-        // For simplicity here, we'll just detach them.
-        
         toast({
             title: "Success!",
             description: "Student has been removed from your list.",
@@ -119,22 +141,7 @@ export default function StudentsPage() {
         variant: "destructive",
       });
       // Re-fetch data to revert UI change on error
-      if (userId) {
-         const studentList = await getStudentsBySupervisorId(userId);
-         const studentsWithStatsPromises = studentList.map(async (s) => {
-             const stats = await getStatsForUser(s.id);
-             const words = await getWordsForStudent(s.id);
-             const mastered = words.filter(w => w.strength === -1).length;
-             const learning = words.length - mastered;
-             return {
-                 ...s,
-                 stats,
-                 wordsLearningCount: learning,
-                 wordsMasteredCount: mastered
-             };
-         });
-         setStudents(await Promise.all(studentsWithStatsPromises));
-      }
+      fetchData();
     }
   }
 

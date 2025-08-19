@@ -3,11 +3,12 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { User, getUserById, getStudentsBySupervisorId } from "@/lib/data";
+import { type User } from "@/lib/data";
+import { getUserById, getStudentsBySupervisorId } from "@/lib/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Trophy } from "lucide-react";
-import { LearningStats, getStatsForUser } from "@/lib/stats";
+import { type LearningStats, getStatsForUser } from "@/lib/stats";
 import { cn } from "@/lib/utils";
 import { endOfWeek, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";

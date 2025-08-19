@@ -1,8 +1,7 @@
 
 'use client';
 
-import type { Word } from './data';
-import { saveStudentProgressDB } from './db';
+import { saveStudentProgress } from './firestore';
 
 // This interface represents only the data that changes per student.
 export interface WordProgress {
@@ -31,7 +30,7 @@ export const updateStudentProgressInStorage = async (studentId: string, wordId: 
   try {
     // Save the single progress record to Firestore.
     // The db function handles putting this in a subcollection for the user.
-    await saveStudentProgressDB(studentId, [progressRecord]);
+    await saveStudentProgress(studentId, [progressRecord]);
   } catch (e) {
     console.error("Failed to update student progress in Firestore", e);
   }

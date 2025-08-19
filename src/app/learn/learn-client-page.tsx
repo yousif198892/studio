@@ -3,7 +3,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { getWordForReview, Word } from "@/lib/data";
+import { getWordForReview } from "@/lib/firestore";
+import { type Word } from "@/lib/data";
 import { QuizCard } from "@/components/quiz-card";
 import { Button } from "@/components/ui/button";
 import { updateStudentProgressInStorage } from "@/lib/storage";

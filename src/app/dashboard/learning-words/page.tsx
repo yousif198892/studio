@@ -3,7 +3,8 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { getWordsForStudent, Word } from "@/lib/data";
+import { getWordsForStudent } from "@/lib/firestore";
+import { type Word } from "@/lib/data";
 import {
   Card,
   CardContent,

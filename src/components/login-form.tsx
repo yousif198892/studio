@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -20,11 +19,10 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
-import { redirectToDashboard } from "@/lib/actions";
-import { getUserById, updateUserDB, User, getNextSupervisorShortId, addUserDB } from "@/lib/data";
+import { type User } from "@/lib/data";
+import { getUserById, updateUserDB, getNextSupervisorShortId, addUserDB, getUserByEmail, auth } from "@/lib/firestore";
 import { isPast } from "date-fns";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
-import { getAuthInstance } from "@/lib/db";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
@@ -70,9 +68,7 @@ export function LoginForm() {
             return;
         }
         
-        // The redirect will happen here, so we don't set isPending to false.
-        // The component will unmount on successful redirect.
-        await redirectToDashboard(user.id);
+        router.push(`/dashboard?userId=${user.id}`);
     }
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -97,7 +93,6 @@ export function LoginForm() {
         }
 
         const { email, password } = validatedFields.data;
-        const auth = getAuthInstance();
         
         let userIdToLogin: string | null = null;
 

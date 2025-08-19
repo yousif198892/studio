@@ -23,7 +23,7 @@ import { Upload } from "@/components/ui/upload";
 import { useLanguage } from "@/hooks/use-language";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { User, Word, getAllUsers, getUserById, updateUserDB, deleteUserDB, getWordsBySupervisorDB, deleteWordDB } from "@/lib/data";
+import { type User } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import {
   AlertDialog,
@@ -36,11 +36,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { setHeroImage } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { useTheme } from "@/hooks/use-theme";
 import { Switch } from "@/components/ui/switch";
-
+import { signOut } from "firebase/auth";
+import { getUserById, updateUserDB, deleteUserDB, getWordsBySupervisor, deleteWordDB, setHeroImage, auth } from "@/lib/firestore";
 
 export default function ProfilePage() {
   const { t, language, setLanguage } = useLanguage();
@@ -250,11 +250,13 @@ export default function ProfilePage() {
         await deleteUserDB(user.id);
         
         if (user.role === 'supervisor') {
-            const supervisorWords = await getWordsBySupervisorDB(user.id);
+            const supervisorWords = await getWordsBySupervisor(user.id);
             for (const word of supervisorWords) {
                 await deleteWordDB(word.id);
             }
         }
+        
+        await signOut(auth);
 
         toast({
             title: "Account Deleted",

@@ -10,7 +10,8 @@ import { useLanguage } from "@/hooks/use-language";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
-import { getHeroImage } from "@/lib/db";
+import { getHeroImage } from "@/lib/firestore";
+
 
 export function LandingPage() {
   const { t, language, setLanguage } = useLanguage();
@@ -19,9 +20,14 @@ export function LandingPage() {
   useEffect(() => {
     // This effect runs only on the client side
     const fetchImage = async () => {
-      const storedImage = await getHeroImage();
-      if (storedImage) {
-        setHeroImage(storedImage);
+      try {
+        const storedImage = await getHeroImage();
+        if (storedImage) {
+          setHeroImage(storedImage);
+        }
+      } catch (error) {
+        // This can happen during build, and it's fine.
+        console.log("Could not fetch hero image, likely due to server-side rendering.");
       }
     }
     fetchImage();
