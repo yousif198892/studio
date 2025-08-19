@@ -1,12 +1,40 @@
 
-import { LoginForm } from "@/components/login-form";
-import { ClientOnly } from "@/components/client-only";
+"use client";
+
+import dynamic from 'next/dynamic'
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
+const LoginForm = dynamic(
+  () => import('@/components/login-form').then((mod) => mod.LoginForm),
+  { 
+    ssr: false,
+    loading: () => (
+      <Card className="mx-auto max-w-sm w-full">
+        <CardHeader className="text-center">
+          <Skeleton className="h-20 w-20 mx-auto mb-4" />
+          <Skeleton className="h-8 w-3/4 mx-auto" />
+          <Skeleton className="h-4 w-full mx-auto mt-1" />
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid gap-2">
+            <Skeleton className="h-5 w-1/4" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <div className="grid gap-2">
+            <Skeleton className="h-5 w-1/4" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+          <Skeleton className="h-10 w-full" />
+          <div className="mt-4 text-center text-sm">
+            <Skeleton className="h-4 w-3/4 mx-auto" />
+          </div>
+        </CardContent>
+      </Card>
+    ),
+  }
+);
 
 export default function LoginPage() {
-  return (
-    <ClientOnly>
-      <LoginForm />
-    </ClientOnly>
-  );
+  return <LoginForm />;
 }
-

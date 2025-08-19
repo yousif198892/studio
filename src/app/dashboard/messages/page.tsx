@@ -1,14 +1,13 @@
 
+
 "use client";
 
 import { useEffect, useState } from "react";
 import {
-  Message,
-  User,
-  getMessages,
-  getUserById,
-  deleteMessageDB,
+  type Message,
+  type User,
 } from "@/lib/data";
+import { getMessages, getUserById, deleteMessageDB } from "@/lib/firestore";
 import {
   Card,
   CardContent,

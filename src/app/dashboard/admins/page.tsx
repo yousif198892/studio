@@ -41,7 +41,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useToast } from "@/hooks/use-toast";
-import { User, getAllUsers, updateUserDB, deleteUserDB } from "@/lib/data";
+import type { User } from "@/lib/data";
+import { getAllUsers, updateUserDB, deleteUserDB } from "@/lib/firestore";
 import { CreateSupervisorForm } from "@/components/create-supervisor-form";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
