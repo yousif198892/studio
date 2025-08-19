@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
@@ -24,10 +24,12 @@ import { getUserById, updateUserDB, getNextSupervisorShortId, addUserDB, getUser
 import { isPast } from "date-fns";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address."),
   password: z.string().min(1, "Password is required."),
+  rememberMe: z.boolean().optional(),
 });
 
 
@@ -35,10 +37,26 @@ export function LoginForm() {
     const { toast } = useToast();
     const { t } = useLanguage();
     const router = useRouter();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const mainAdminEmail = "warriorwithinyousif@gmail.com";
     const defaultPassword = "password123";
+
+    useEffect(() => {
+        const rememberedUser = localStorage.getItem('rememberedUser');
+        if (rememberedUser) {
+            const { email, password } = JSON.parse(rememberedUser);
+            setEmail(email);
+            setPassword(password);
+            // We can also check the checkbox by default if credentials are found
+            const rememberMeCheckbox = document.getElementById('remember-me') as HTMLInputElement;
+            if (rememberMeCheckbox) {
+                rememberMeCheckbox.checked = true;
+            }
+        }
+    }, []);
 
     const handleLogin = async (userId: string) => {
         let user = await getUserById(userId);
@@ -48,7 +66,6 @@ export function LoginForm() {
              return;
         }
         
-        // Check for trial expiration
         if (user.role === 'supervisor' && user.trialExpiresAt && isPast(new Date(user.trialExpiresAt))) {
             if (!user.isSuspended) {
                 user.isSuspended = true;
@@ -80,6 +97,7 @@ export function LoginForm() {
         const validatedFields = loginSchema.safeParse({
             email: formData.get("email"),
             password: formData.get("password"),
+            rememberMe: formData.get("remember-me") === "on",
         });
 
         if (!validatedFields.success) {
@@ -93,13 +111,20 @@ export function LoginForm() {
             return;
         }
 
-        const { email, password } = validatedFields.data;
+        const { email, password, rememberMe } = validatedFields.data;
         
         let userIdToLogin: string | null = null;
         
         try {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             userIdToLogin = userCredential.user.uid;
+
+            if (rememberMe) {
+                localStorage.setItem('rememberedUser', JSON.stringify({ email, password }));
+            } else {
+                localStorage.removeItem('rememberedUser');
+            }
+
         } catch (error: any) {
              if ((error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') && email === mainAdminEmail && password === defaultPassword) {
                 try {
@@ -160,20 +185,23 @@ export function LoginForm() {
               name="email"
               placeholder="m@example.com"
               required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="grid gap-2">
             <div className="flex items-center">
               <Label htmlFor="password">{t('login.passwordLabel')}</Label>
-              <Link
-                href="#"
-                className="ms-auto inline-block text-sm underline"
-              >
-                {t('login.forgotPassword')}
-              </Link>
             </div>
             <div className="relative">
-              <Input id="password" name="password" type={showPassword ? "text" : "password"} required />
+              <Input 
+                id="password" 
+                name="password" 
+                type={showPassword ? "text" : "password"} 
+                required 
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
@@ -183,6 +211,18 @@ export function LoginForm() {
                 {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+                <Checkbox id="remember-me" name="remember-me" />
+                <Label htmlFor="remember-me" className="text-sm font-medium leading-none">Remember me</Label>
+            </div>
+            <Link
+                href="#"
+                className="ms-auto inline-block text-sm underline"
+              >
+                {t('login.forgotPassword')}
+            </Link>
           </div>
            <Button type="submit" disabled={isPending} className="w-full">
             {isPending ? (
