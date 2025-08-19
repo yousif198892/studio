@@ -109,9 +109,9 @@ export default function LearnClientPage() {
     await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     await handleUpdateStats(1, 0); // Only update review count, not time
     
-    await updateXp(userId, xpEvent);
+    const { amount } = await updateXp(userId, xpEvent);
     toast({
-      description: <XpToast event={xpEvent} amount={XP_AMOUNTS[xpEvent]} />,
+      description: <XpToast event={xpEvent} amount={amount} />,
       duration: 3000,
     });
     
@@ -128,9 +128,9 @@ export default function LearnClientPage() {
     await updateStudentProgressInStorage(userId, word.id, { strength: newStrength, nextReview });
     await handleUpdateStats(1, 0); // Only update review count, not time
     
-    await updateXp(userId, 'review_word');
+    const { amount } = await updateXp(userId, 'review_word');
     toast({
-      description: <XpToast event="review_word" amount={XP_AMOUNTS["review_word"]} />,
+      description: <XpToast event="review_word" amount={amount} />,
       duration: 3000,
     });
     

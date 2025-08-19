@@ -115,10 +115,12 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
       setFeedback("correct");
       const newStrength = (currentWord.strength || 0) + 1;
       const nextReview = currentWord.nextReview ? new Date(currentWord.nextReview) : new Date();
-      updateStudentProgressInStorage(userId, currentWord.id, {
-         strength: newStrength,
-         nextReview: nextReview,
-      });
+      if(currentWord.id && userId) {
+        updateStudentProgressInStorage(userId, currentWord.id, {
+            strength: newStrength,
+            nextReview: nextReview,
+        });
+      }
       
       await updateXp(userId, 'spell_correct');
       toast({
@@ -131,10 +133,12 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
       setFeedback("incorrect");
        const newStrength = Math.max(0, (currentWord.strength || 1) - 1);
        const nextReview = currentWord.nextReview ? new Date(currentWord.nextReview) : new Date();
-       updateStudentProgressInStorage(userId, currentWord.id, {
-         strength: newStrength,
-         nextReview: nextReview,
-       });
+       if(currentWord.id && userId) {
+        updateStudentProgressInStorage(userId, currentWord.id, {
+            strength: newStrength,
+            nextReview: nextReview,
+        });
+       }
        toast({
         title: "Incorrect",
         description: `The correct spelling is "${currentWord.word}". We'll keep practicing.`,
@@ -278,5 +282,3 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
     </Card>
   );
 }
-
-    

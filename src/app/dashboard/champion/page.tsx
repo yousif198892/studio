@@ -36,7 +36,9 @@ export default function ChampionPage() {
                     
                     const userMap = new Map<string, User>();
                     allStudents.forEach(student => userMap.set(student.id, student));
-                    userMap.set(currentUser.id, currentUser);
+                    if(currentUser) {
+                        userMap.set(currentUser.id, currentUser);
+                    }
 
                     const leaderboardDataPromises = Array.from(userMap.values()).map(async (student) => {
                          const stats = await getStatsForUser(student.id);

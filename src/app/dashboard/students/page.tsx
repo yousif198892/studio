@@ -8,8 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { type User, type Word } from "@/lib/data";
-import { getUserById, getStudentsBySupervisorId, updateUserDB, getWordsBySupervisor, getStudentProgress } from "@/lib/firestore";
+import { type User } from "@/lib/data";
+import { getUserById, getStudentsBySupervisorId, updateUserDB, getWordsForStudent } from "@/lib/firestore";
 import Image from "next/image";
 import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
@@ -33,7 +33,6 @@ import { format, subDays } from "date-fns";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
 import { type LearningStats, getStatsForUser } from "@/lib/stats.tsx";
-import type { WordProgress } from "@/lib/storage";
 
 type StudentWithStats = User & {
     stats: LearningStats;
@@ -55,26 +54,6 @@ const getLast7Days = () => {
 
 const allTests = ["Present Simple", "Past Simple", "Present Continuous", "Comprehensive"];
 
-async function getWordsForStudent(studentId: string): Promise<(Word & WordProgress)[]> {
-    const student = await getUserById(studentId);
-    if (!student?.supervisorId) return [];
-
-    const supervisorWords = await getWordsBySupervisor(student.supervisorId);
-    const studentProgress = await getStudentProgress(studentId);
-    const studentProgressMap = new Map(studentProgress.map(p => [p.id, p]));
-
-    const mergedWords = supervisorWords.map(supervisorWord => {
-        const progress = studentProgressMap.get(supervisorWord.id);
-        return {
-            ...supervisorWord,
-            strength: progress?.strength ?? 0,
-            nextReview: progress ? new Date(progress.nextReview) : new Date(),
-            studentId: studentId
-        };
-    });
-
-    return mergedWords;
-}
 
 export default function StudentsPage() {
   const searchParams = useSearchParams();
