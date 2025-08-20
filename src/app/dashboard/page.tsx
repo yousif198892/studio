@@ -38,7 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SpellingPracticeCard } from "@/components/spelling-practice-card";
-import { type LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats";
+import { type LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats.tsx";
 import { useToast } from "@/hooks/use-toast";
 import { XpToast } from "@/components/xp-toast";
 import { WordProgress } from "@/lib/storage";
@@ -115,7 +115,7 @@ export default function Dashboard() {
       }
     }
     setLoading(false);
-  }, [userId, toast]);
+  }, [userId]);
 
   useEffect(() => {
     fetchData();

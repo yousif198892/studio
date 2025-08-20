@@ -375,6 +375,8 @@ export async function getHeroImage(): Promise<string | undefined> {
     return undefined;
 }
 
+
+// --- Functions to be restored ---
 export async function getWordsForStudent(studentId: string): Promise<(Word & WordProgress)[]> {
     const student = await getUserById(studentId);
     if (!student?.supervisorId) return [];
@@ -443,3 +445,4 @@ export async function getWordForReview(studentId: string, unit?: string | null, 
 
   return dueWords[0];
 };
+
