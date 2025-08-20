@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -391,6 +392,7 @@ export async function getWordsForStudent(studentId: string): Promise<(Word & Wor
                 nextReview: new Date(progress.nextReview),
             };
         } else {
+            // This is a new word for the student
             return {
                 ...supervisorWord,
                 id: supervisorWord.id,
@@ -401,7 +403,7 @@ export async function getWordsForStudent(studentId: string): Promise<(Word & Wor
         }
     });
 
-    // Check if there are any new words to add to the student's progress
+    // Check if there are any new words to add to the student's progress subcollection
     const newProgressToSave = mergedWords.filter(w => !studentProgressMap.has(w.id)).map(w => ({
         id: w.id,
         strength: w.strength,
@@ -436,9 +438,9 @@ export async function getWordForReview(studentId: string, unit?: string | null, 
 
   if (dueWords.length === 0) return null;
 
+  // Sort by nextReview date to review the oldest due word first
   dueWords.sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
 
   return dueWords[0];
 };
 
-    
