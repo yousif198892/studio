@@ -16,7 +16,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useRef } from "react";
-import { Message, addMessageDB } from "@/lib/data";
+import { type Message } from "@/lib/data";
+import { addMessageDB } from "@/lib/firestore";
 
 export default function ContactAdminPage() {
     const { toast } = useToast();

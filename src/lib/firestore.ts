@@ -292,6 +292,72 @@ export async function deletePeerMessage(message: PeerMessage): Promise<void> {
     await deleteDoc(doc(db, collId, message.id));
 }
 
+export async function getConversations(userId: string): Promise<{ supervisor: Record<string, SupervisorMessage[]>, peer: Record<string, PeerMessage[]> }> {
+    const currentUser = await getUserById(userId);
+    if (!currentUser) return { supervisor: {}, peer: {} };
+
+    const supervisorConversations: Record<string, SupervisorMessage[]> = {};
+    const peerConversations: Record<string, PeerMessage[]> = {};
+    
+    if (currentUser.role === 'student') {
+        if (currentUser.supervisorId) {
+            const messages = await getSupervisorMessages(userId, currentUser.supervisorId);
+            supervisorConversations[currentUser.supervisorId] = messages
+                .filter(m => !(m.deletedFor?.includes(userId)));
+        }
+        if (currentUser.supervisorId) {
+            const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId);
+            for (const student of allStudents) {
+                if (student.id === userId) continue;
+                const conversationId = [userId, student.id].sort().join('-');
+                const messages = await getPeerMessages(conversationId);
+                peerConversations[student.id] = messages
+                    .filter(m => !(m.deletedFor?.includes(userId)));
+            }
+        }
+    }
+
+    if (currentUser.role === 'supervisor') {
+        const students = await getStudentsBySupervisorId(userId);
+        for (const student of students) {
+            const messages = await getSupervisorMessages(student.id, userId);
+            supervisorConversations[student.id] = messages
+                .filter(m => !(m.deletedFor?.includes(userId)));
+        }
+    }
+
+    return { supervisor: supervisorConversations, peer: peerConversations };
+};
+
+export async function markSupervisorMessagesAsRead(currentUserId: string, otherUserId: string) {
+    const currentUser = await getUserById(currentUserId);
+    if (!currentUser) return;
+    
+    let studentId: string, supervisorId: string;
+    if (currentUser.role === 'student') {
+        studentId = currentUserId;
+        supervisorId = otherUserId;
+    } else {
+        studentId = otherUserId;
+        supervisorId = currentUserId;
+    }
+
+    const messages = await getSupervisorMessages(studentId, supervisorId);
+    const messagesToUpdate = messages.map(m => (m.senderId !== currentUserId ? { ...m, read: true } : m));
+    if (messagesToUpdate.length > 0) {
+      await updateSupervisorMessages(studentId, supervisorId, messagesToUpdate);
+    }
+};
+
+export async function markPeerMessagesAsRead(currentUserId: string, peerId: string) {
+    const conversationId = [currentUserId, peerId].sort().join('-');
+    const messages = await getPeerMessages(conversationId);
+    const messagesToUpdate = messages.map(m => m.senderId === peerId ? { ...m, read: true } : m);
+    if (messagesToUpdate.length > 0) {
+      await updatePeerMessages(conversationId, messagesToUpdate);
+    }
+};
+
 
 // --- Landing Page Hero Image ---
 export async function setHeroImage(image: string): Promise<void> {

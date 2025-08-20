@@ -3,20 +3,22 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
-  SupervisorMessage,
-  User,
-  getConversationsForStudent,
-  saveSupervisorMessage,
-  savePeerMessage,
-  getStudentsBySupervisorId,
-  getUserById,
-  markSupervisorMessagesAsRead,
-  markPeerMessagesAsRead,
-  PeerMessage,
-  deletePeerMessage,
-  deleteSupervisorMessage,
-  updateUserDB
+  type SupervisorMessage,
+  type User,
+  type PeerMessage,
 } from "@/lib/data";
+import { 
+    getUserById, 
+    getStudentsBySupervisorId,
+    saveSupervisorMessage,
+    savePeerMessage,
+    deleteSupervisorMessage,
+    deletePeerMessage,
+    updateUserDB,
+    getConversations,
+    markSupervisorMessagesAsRead,
+    markPeerMessagesAsRead,
+ } from "@/lib/firestore";
 import {
   Card,
   CardContent,
@@ -85,7 +87,7 @@ export default function ChatPage() {
       setSelectedContact(null);
     }
     
-    const convos = await getConversationsForStudent(userId);
+    const convos = await getConversations(userId);
     setAllConversations(convos);
 
     const partners: ConversationPartner[] = [];
