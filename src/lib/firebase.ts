@@ -23,13 +23,16 @@ const db = getFirestore(app);
 // Enable persistence on the client.
 if (typeof window !== 'undefined') {
     try {
-        enableIndexedDbPersistence(db);
-    } catch (err: any) {
-        if (err.code === 'failed-precondition') {
-            console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
-        } else if (err.code === 'unimplemented') {
-            console.warn('Firebase persistence is not available in this browser.');
-        }
+        enableIndexedDbPersistence(db)
+          .catch((err) => {
+            if (err.code === 'failed-precondition') {
+                console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
+            } else if (err.code === 'unimplemented') {
+                console.warn('Firebase persistence is not available in this browser.');
+            }
+        });
+    } catch (err) {
+        console.error("Error enabling Firestore persistence:", err);
     }
 }
 
