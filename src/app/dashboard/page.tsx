@@ -114,7 +114,7 @@ export default function Dashboard() {
       }
     }
     setLoading(false);
-  }, [userId, toast]);
+  }, [userId]);
 
   useEffect(() => {
     fetchData();
@@ -419,3 +419,5 @@ export default function Dashboard() {
 
    return <div>{t('dashboard.loading')}</div>
  }
+
+    
