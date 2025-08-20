@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
-import { Word } from "@/lib/data";
+import { type Word } from "@/lib/data";
 import {
   Card,
   CardContent,
@@ -17,7 +17,7 @@ import { RefreshCw, CheckCircle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { updateStudentProgressInStorage } from "@/lib/storage";
-import { WordProgress } from "@/lib/storage";
+import { type WordProgress } from "@/lib/storage";
 import { updateLearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { XpToast } from "./xp-toast";
@@ -122,9 +122,9 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
         });
       }
       
-      await updateXp(userId, 'spell_correct');
+      const { amount } = await updateXp(userId, 'spell_correct');
       toast({
-        description: <XpToast event="spell_correct" amount={XP_AMOUNTS.spell_correct} />,
+        description: <XpToast event="spell_correct" amount={amount} />,
         duration: 3000,
       });
       

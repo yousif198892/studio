@@ -11,7 +11,8 @@ import { useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Word, getWordsBySupervisor, addWordDB } from "@/lib/data";
+import { type Word } from "@/lib/data";
+import { getWordsBySupervisor, addWordDB } from "@/lib/firestore";
 import { useLanguage } from "@/hooks/use-language";
 
 const toBase64 = (file: File): Promise<string> =>
@@ -89,7 +90,7 @@ export function AddWordForm() {
                 supervisorId: userId,
             };
 
-            // Save to IndexedDB
+            // Save to Firestore
             await addWordDB(newWord);
             
             toast({
@@ -167,4 +168,3 @@ export function AddWordForm() {
     </form>
   );
 }
-

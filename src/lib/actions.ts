@@ -4,8 +4,6 @@
 import { generateWordOptions } from "@/ai/flows/generate-word-options";
 import { z } from "zod";
 import { redirect } from "next/navigation";
-import { addUserDB, getAllUsers, getUserByEmailDB, getUserById } from "./data";
-import { User } from "./data";
 
 // --- WORD ACTIONS ---
 

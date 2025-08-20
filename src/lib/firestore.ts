@@ -282,14 +282,14 @@ export async function updatePeerMessages(conversationId: string, messages: PeerM
     await batch.commit();
 }
 
-export async function deleteSupervisorMessage(studentId: string, supervisorId: string, id: string): Promise<void> {
-    const collId = getSupervisorChatCollectionId(studentId, supervisorId);
-    await deleteDoc(doc(db, collId, id));
+export async function deleteSupervisorMessage(message: SupervisorMessage): Promise<void> {
+    const collId = getSupervisorChatCollectionId(message.studentId, message.supervisorId);
+    await deleteDoc(doc(db, collId, message.id));
 }
 
-export async function deletePeerMessage(conversationId: string, id: string): Promise<void> {
-    const collId = getPeerChatCollectionId(conversationId);
-    await deleteDoc(doc(db, collId, id));
+export async function deletePeerMessage(message: PeerMessage): Promise<void> {
+    const collId = getPeerChatCollectionId(message.conversationId);
+    await deleteDoc(doc(db, collId, message.id));
 }
 
 
