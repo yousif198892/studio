@@ -1,9 +1,10 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
-import { User, getConversationsForStudent, Word, getWordsForStudent, getUserById, getStudentsBySupervisorId } from "@/lib/data";
+import { type User } from "@/lib/data";
+import { getWordsForStudent, getUserById, getStudentsBySupervisorId, getPeerMessages } from "@/lib/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -22,45 +23,46 @@ export default function ClassmatesPage() {
     const [classmates, setClassmates] = useState<ClassmateWithStats[]>([]);
     const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (userId) {
-                const currentUser = await getUserById(userId);
-                if (currentUser && currentUser.supervisorId) {
-                    const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId);
-                    
-                    const foundClassmatesPromises = allStudents
-                        .filter(student => student.id !== userId)
-                        .map(async (student) => {
-                             const words = await getWordsForStudent(student.id);
-                             const mastered = words.filter(w => w.strength === -1).length;
-                             const learning = words.length - mastered;
-                             return {
-                                 ...student,
-                                 learningCount: learning,
-                                 masteredCount: mastered
-                             }
-                        });
+    const fetchData = useCallback(async () => {
+        if (userId) {
+            const currentUser = await getUserById(userId);
+            if (currentUser && currentUser.supervisorId) {
+                const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId);
+                
+                const foundClassmatesPromises = allStudents
+                    .filter(student => student.id !== userId)
+                    .map(async (student) => {
+                         const words = await getWordsForStudent(student.id);
+                         const mastered = words.filter(w => w.strength === -1).length;
+                         const learning = words.length - mastered;
+                         return {
+                             ...student,
+                             learningCount: learning,
+                             masteredCount: mastered
+                         }
+                    });
 
-                    const foundClassmates = await Promise.all(foundClassmatesPromises);
-                    setClassmates(foundClassmates);
+                const foundClassmates = await Promise.all(foundClassmatesPromises);
+                setClassmates(foundClassmates);
 
-                    const { peer: peerConversations } = await getConversationsForStudent(userId);
-                    const counts: Record<string, number> = {};
-                    for (const classmate of foundClassmates) {
-                        const conversation = peerConversations[classmate.id] || [];
-                        const unreadCount = conversation.filter(m => !m.read && m.senderId === classmate.id).length;
-                        if (unreadCount > 0) {
-                            counts[classmate.id] = unreadCount;
-                        }
+                const counts: Record<string, number> = {};
+                for (const classmate of foundClassmates) {
+                    const conversationId = [userId, classmate.id].sort().join('-');
+                    const conversation = await getPeerMessages(conversationId);
+                    const unreadCount = conversation.filter(m => !m.read && m.senderId === classmate.id).length;
+                    if (unreadCount > 0) {
+                        counts[classmate.id] = unreadCount;
                     }
-                    setUnreadCounts(counts);
                 }
+                setUnreadCounts(counts);
             }
-        };
+        }
+    }, [userId]);
+
+    useEffect(() => {
         fetchData();
         
-    }, [userId]);
+    }, [fetchData]);
     
     return (
         <div className="space-y-6">

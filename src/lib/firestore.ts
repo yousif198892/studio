@@ -365,6 +365,15 @@ export async function setHeroImage(image: string): Promise<void> {
     await setDoc(docRef, { heroImage: image });
 }
 
+export async function getHeroImage(): Promise<string | undefined> {
+    const docRef = doc(db, 'app-config', 'landingPage');
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+        return docSnap.data().heroImage;
+    }
+    return undefined;
+}
+
 export async function getWordsForStudent(studentId: string): Promise<(Word & WordProgress)[]> {
     const student = await getUserById(studentId);
     if (!student?.supervisorId) return [];
