@@ -2,17 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { doc, getDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
-
-async function getHeroImage(): Promise<string | undefined> {
-    const docRef = doc(db, 'app-config', 'landingPage');
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-        return docSnap.data().heroImage;
-    }
-    return undefined;
-}
+import { getHeroImage } from '@/lib/firestore';
 
 export function useHeroImage(defaultImage: string) {
     const [heroImage, setHeroImage] = useState(defaultImage);

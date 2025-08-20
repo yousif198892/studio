@@ -9,12 +9,28 @@ import { Logo } from "@/components/logo";
 import { useLanguage } from "@/hooks/use-language";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useHeroImage } from "@/hooks/use-hero-image";
+import { useEffect, useState } from "react";
+import { getHeroImage } from "@/lib/firestore";
+import { Skeleton } from "./ui/skeleton";
 
 
 export function LandingPage() {
   const { t, language, setLanguage } = useLanguage();
-  const heroImage = useHeroImage("https://placehold.co/500x625.png");
+  const [heroImage, setHeroImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // This effect runs only on the client side
+    const fetchImage = async () => {
+      try {
+        const storedImage = await getHeroImage();
+        setHeroImage(storedImage || "https://placehold.co/500x625.png");
+      } catch (error) {
+        console.error("Failed to fetch hero image, using default.", error);
+        setHeroImage("https://placehold.co/500x625.png");
+      }
+    }
+    fetchImage();
+  }, []);
 
   const handleLanguageChange = (checked: boolean) => {
     setLanguage(checked ? 'ar' : 'en');
@@ -37,6 +53,39 @@ export function LandingPage() {
       description: t('landing.features.srs.description'),
     },
   ];
+
+  if (!heroImage) {
+     return <div className="flex flex-col min-h-screen">
+      <header className="px-4 lg:px-6 h-16 flex items-center bg-background/80 backdrop-blur-sm fixed w-full top-0 z-50">
+        <Skeleton className="h-8 w-24" />
+        <div className="ms-auto flex items-center gap-4 sm:gap-6">
+           <Skeleton className="h-8 w-20" />
+           <Skeleton className="h-10 w-20" />
+           <Skeleton className="h-10 w-24" />
+        </div>
+      </header>
+      <main className="flex-1">
+        <section className="w-full pt-24 md:pt-32 lg:pt-40">
+           <div className="container px-4 md:px-6 space-y-10 xl:space-y-16">
+              <div className="grid max-w-[1300px] mx-auto gap-4 px-4 sm:px-6 md:px-10 md:grid-cols-2 md:gap-16">
+                <div className='space-y-4'>
+                  <Skeleton className="h-12 w-full" />
+                  <Skeleton className="h-12 w-3/4" />
+                  <Skeleton className="h-8 w-full mt-4" />
+                   <Skeleton className="h-8 w-full" />
+                  <div className="space-x-4 mt-6">
+                     <Skeleton className="h-12 w-48" />
+                  </div>
+                </div>
+                <div className="flex justify-center">
+                   <Skeleton className="h-[625px] w-[500px] rounded-xl" />
+                </div>
+              </div>
+            </div>
+        </section>
+      </main>
+    </div>
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
