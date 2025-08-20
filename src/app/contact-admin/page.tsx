@@ -39,5 +39,3 @@ const ContactAdminForm = dynamic(
 export default function ContactAdminPage() {
   return <ContactAdminForm />;
 }
-
-    

@@ -420,5 +420,3 @@ export default function Dashboard() {
 
    return <div>{t('dashboard.loading')}</div>
  }
-
-    
