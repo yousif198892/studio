@@ -37,7 +37,7 @@ import {
 } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { SpellingPracticeCard } from "@/components/spelling-practice-card";
-import { type LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats";
+import { type LearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats.tsx";
 import { useToast } from "@/hooks/use-toast";
 import { XpToast } from "@/components/xp-toast";
 import { WordProgress } from "@/lib/storage";
@@ -75,49 +75,50 @@ export default function Dashboard() {
   
   const last7Days = getLast7Days();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (userId) {
-        setLoading(true);
-        const foundUser = await getUserById(userId);
-        setUser(foundUser || null);
+  const fetchData = useCallback(async () => {
+    if (userId) {
+      setLoading(true);
+      const foundUser = await getUserById(userId);
+      setUser(foundUser || null);
+      
+      if (foundUser?.role === 'student') {
+        const words = await getWordsForStudent(userId);
+        setAllStudentWords(words);
+
+        const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
+        const mastered = words.filter(w => w.strength === -1).length;
+        const learning = words.length - mastered;
+
+        setWordsToReviewCount(toReview);
+        setWordsMasteredCount(mastered);
+        setWordsLearningCount(learning);
         
-        if (foundUser?.role === 'student') {
-          const words = await getWordsForStudent(userId);
-          setAllStudentWords(words);
-
-          const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
-          const mastered = words.filter(w => w.strength === -1).length;
-          const learning = words.length - mastered;
-
-          setWordsToReviewCount(toReview);
-          setWordsMasteredCount(mastered);
-          setWordsLearningCount(learning);
-          
-          let currentStats = await getStatsForUser(userId);
-          
-          // Daily Login XP Check
-          const { updated, amount } = await updateXp(userId, 'daily_login');
-          if (updated) {
-              toast({
-                  description: <XpToast event="daily_login" amount={amount} />,
-                  duration: 3000,
-              });
-              // Refetch stats to include the new XP from daily login
-              currentStats = await getStatsForUser(userId);
-          }
-          
-          setStats(currentStats);
-
-        } else if (foundUser?.role === 'supervisor') {
-            const studentList = await getStudentsBySupervisorId(userId);
-            setStudents(studentList);
+        let currentStats = await getStatsForUser(userId);
+        
+        // Daily Login XP Check
+        const { updated, amount } = await updateXp(userId, 'daily_login');
+        if (updated) {
+            toast({
+                description: <XpToast event="daily_login" amount={amount} />,
+                duration: 3000,
+            });
+            // Refetch stats to include the new XP from daily login
+            currentStats = await getStatsForUser(userId);
         }
+        
+        setStats(currentStats);
+
+      } else if (foundUser?.role === 'supervisor') {
+          const studentList = await getStudentsBySupervisorId(userId);
+          setStudents(studentList);
       }
-      setLoading(false);
-    };
-    fetchData();
+    }
+    setLoading(false);
   }, [userId, toast]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const availableUnits = useMemo(() => {
     return Array.from(new Set(allStudentWords.map(w => w.unit).filter(Boolean)));

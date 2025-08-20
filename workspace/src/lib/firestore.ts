@@ -1,13 +1,13 @@
 
 'use client';
 
-import { 
-    collection, 
-    doc, 
-    getDoc, 
-    getDocs, 
-    setDoc, 
-    deleteDoc, 
+import {
+    collection,
+    doc,
+    getDoc,
+    getDocs,
+    setDoc,
+    deleteDoc,
     writeBatch,
     query,
     where,
@@ -97,20 +97,20 @@ export async function getStudentsBySupervisorId(supervisorId: string): Promise<U
 export async function addUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
-    
+
     if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
     } else if (!userData.trialExpiresAt) {
         delete userData.trialExpiresAt;
     }
-    
+
     await setDoc(userDocRef, userData);
 }
 
 export async function updateUserDB(user: User): Promise<void> {
     const userDocRef = doc(db, 'users', user.id);
     const userData: { [key: string]: any } = { ...user };
-    
+
     if (userData.trialExpiresAt && typeof userData.trialExpiresAt === 'string') {
         userData.trialExpiresAt = Timestamp.fromDate(new Date(userData.trialExpiresAt));
     } else if (userData.trialExpiresAt === undefined) {
@@ -204,16 +204,8 @@ export async function deleteMessageDB(id: string): Promise<void> {
 }
 
 // --- Chat Message Functions ---
-function getSupervisorChatCollectionId(studentId: string, supervisorId: string): string {
-    return `supervisor-chats/${studentId}-${supervisorId}/messages`;
-}
-
-function getPeerChatCollectionId(conversationId: string): string {
-    return `peer-chats/${conversationId}/messages`;
-}
-
 export async function getSupervisorMessages(studentId: string, supervisorId: string): Promise<SupervisorMessage[]> {
-    const collId = getSupervisorChatCollectionId(studentId, supervisorId);
+    const collId = `supervisor-chats/${studentId}-${supervisorId}/messages`;
     const q = query(collection(db, collId), orderBy("createdAt", "asc"));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => {
@@ -227,7 +219,7 @@ export async function getSupervisorMessages(studentId: string, supervisorId: str
 }
 
 export async function getPeerMessages(conversationId: string): Promise<PeerMessage[]> {
-    const collId = getPeerChatCollectionId(conversationId);
+    const collId = `peer-chats/${conversationId}/messages`;
     const q = query(collection(db, collId), orderBy("createdAt", "asc"));
     const snapshot = await getDocs(q);
     return snapshot.docs.map(doc => {
@@ -241,7 +233,7 @@ export async function getPeerMessages(conversationId: string): Promise<PeerMessa
 }
 
 export async function saveSupervisorMessage(message: SupervisorMessage): Promise<void> {
-    const collId = getSupervisorChatCollectionId(message.studentId, message.supervisorId);
+    const collId = `supervisor-chats/${message.studentId}-${message.supervisorId}/messages`;
     const docRef = doc(db, collId, message.id);
     const messageData = {
         ...message,
@@ -251,7 +243,7 @@ export async function saveSupervisorMessage(message: SupervisorMessage): Promise
 }
 
 export async function savePeerMessage(message: PeerMessage): Promise<void> {
-    const collId = getPeerChatCollectionId(message.conversationId);
+    const collId = `peer-chats/${message.conversationId}/messages`;
     const docRef = doc(db, collId, message.id);
     const messageData = {
         ...message,
@@ -262,7 +254,7 @@ export async function savePeerMessage(message: PeerMessage): Promise<void> {
 
 export async function updateSupervisorMessages(studentId: string, supervisorId: string, messages: SupervisorMessage[]): Promise<void> {
     const batch = writeBatch(db);
-    const collId = getSupervisorChatCollectionId(studentId, supervisorId);
+    const collId = `supervisor-chats/${studentId}-${supervisorId}/messages`;
     messages.forEach(msg => {
         const docRef = doc(db, collId, msg.id);
         const messageData = { ...msg, createdAt: Timestamp.fromDate(msg.createdAt) };
@@ -273,7 +265,7 @@ export async function updateSupervisorMessages(studentId: string, supervisorId: 
 
 export async function updatePeerMessages(conversationId: string, messages: PeerMessage[]): Promise<void> {
     const batch = writeBatch(db);
-    const collId = getPeerChatCollectionId(conversationId);
+    const collId = `peer-chats/${conversationId}/messages`;
     messages.forEach(msg => {
         const docRef = doc(db, collId, msg.id);
         const messageData = { ...msg, createdAt: Timestamp.fromDate(msg.createdAt) };
@@ -282,16 +274,15 @@ export async function updatePeerMessages(conversationId: string, messages: PeerM
     await batch.commit();
 }
 
-export async function deleteSupervisorMessage(studentId: string, supervisorId: string, id: string): Promise<void> {
-    const collId = getSupervisorChatCollectionId(studentId, supervisorId);
-    await deleteDoc(doc(db, collId, id));
+export async function deleteSupervisorMessage(message: SupervisorMessage): Promise<void> {
+    const collId = `supervisor-chats/${message.studentId}-${message.supervisorId}/messages`;
+    await deleteDoc(doc(db, collId, message.id));
 }
 
-export async function deletePeerMessage(conversationId: string, id: string): Promise<void> {
-    const collId = getPeerChatCollectionId(conversationId);
-    await deleteDoc(doc(db, collId, id));
+export async function deletePeerMessage(message: PeerMessage): Promise<void> {
+    const collId = `peer-chats/${message.conversationId}/messages`;
+    await deleteDoc(doc(db, collId, message.id));
 }
-
 
 // --- Landing Page Hero Image ---
 export async function setHeroImage(image: string): Promise<void> {
@@ -307,3 +298,74 @@ export async function getHeroImage(): Promise<string | undefined> {
     }
     return undefined;
 }
+
+
+// --- Functions to be restored ---
+export async function getWordsForStudent(studentId: string): Promise<(Word & WordProgress)[]> {
+    const student = await getUserById(studentId);
+    if (!student?.supervisorId) return [];
+
+    const supervisorWords = await getWordsBySupervisor(student.supervisorId);
+    const studentProgress = await getStudentProgress(studentId);
+    const studentProgressMap = new Map(studentProgress.map(p => [p.id, p]));
+
+    const mergedWords = supervisorWords.map(supervisorWord => {
+        const progress = studentProgressMap.get(supervisorWord.id);
+        if (progress) {
+            return {
+                ...supervisorWord,
+                ...progress,
+                nextReview: new Date(progress.nextReview),
+            };
+        } else {
+            // This is a new word for the student
+            return {
+                ...supervisorWord,
+                id: supervisorWord.id,
+                strength: 0,
+                nextReview: new Date(),
+                studentId: studentId
+            };
+        }
+    });
+
+    // Check if there are any new words to add to the student's progress subcollection
+    const newProgressToSave = mergedWords.filter(w => !studentProgressMap.has(w.id)).map(w => ({
+        id: w.id,
+        strength: w.strength,
+        nextReview: w.nextReview,
+        studentId: studentId
+    }));
+
+    if (newProgressToSave.length > 0) {
+        await saveStudentProgress(studentId, newProgressToSave);
+    }
+
+    return mergedWords;
+}
+
+
+export async function getWordForReview(studentId: string, unit?: string | null, lesson?: string | null): Promise<(Word & WordProgress) | null> {
+  let allWords = await getWordsForStudent(studentId);
+
+  let filteredWords = allWords;
+
+  if (unit) {
+      filteredWords = filteredWords.filter(word => word.unit === unit);
+  }
+
+  if (lesson) {
+      filteredWords = filteredWords.filter(word => word.lesson === lesson);
+  }
+
+  const dueWords = filteredWords.filter(word => {
+    return new Date(word.nextReview) <= new Date() && word.strength >= 0;
+  });
+
+  if (dueWords.length === 0) return null;
+
+  // Sort by nextReview date to review the oldest due word first
+  dueWords.sort((a, b) => new Date(a.nextReview).getTime() - new Date(b.nextReview).getTime());
+
+  return dueWords[0];
+};
