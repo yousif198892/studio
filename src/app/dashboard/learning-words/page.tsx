@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -243,5 +244,3 @@ export default function LearningWordsPage() {
     </div>
   );
 }
-
-    
