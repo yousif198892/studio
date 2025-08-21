@@ -33,7 +33,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { format, subDays } from "date-fns";
 import Link from "next/link";
 import { Checkbox } from "@/components/ui/checkbox";
-import { type LearningStats, getStatsForUser } from "@/lib/stats";
+import { type LearningStats, getStatsForUser } from "@/lib/stats.tsx";
 
 type StudentWithStats = User & {
     stats: LearningStats;

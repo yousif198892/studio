@@ -1,4 +1,5 @@
 
+
 "use client";
 import { EditWordForm } from "@/components/edit-word-form";
 import {
@@ -8,7 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { getWordsBySupervisor, Word } from "@/lib/data";
+import { getWordsBySupervisor } from "@/lib/firestore";
+import { Word } from "@/lib/data";
 import { useParams, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/hooks/use-language";

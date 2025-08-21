@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import {
@@ -376,7 +375,7 @@ export async function getHeroImage(): Promise<string | undefined> {
 }
 
 
-// --- Functions to be restored ---
+// --- Functions that were missing ---
 export async function getWordsForStudent(studentId: string): Promise<(Word & WordProgress)[]> {
     const student = await getUserById(studentId);
     if (!student?.supervisorId) return [];
@@ -445,4 +444,3 @@ export async function getWordForReview(studentId: string, unit?: string | null, 
 
   return dueWords[0];
 };
-

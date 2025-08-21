@@ -115,7 +115,7 @@ export default function Dashboard() {
       }
     }
     setLoading(false);
-  }, [userId]);
+  }, [userId, toast]);
 
   useEffect(() => {
     fetchData();
