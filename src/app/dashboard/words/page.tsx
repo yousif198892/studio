@@ -5,7 +5,8 @@ import { useLanguage } from "@/hooks/use-language";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { getWordsBySupervisor, Word, deleteWordDB } from "@/lib/data";
+import { type Word } from "@/lib/data";
+import { getWordsBySupervisor, deleteWordDB } from "@/lib/firestore";
 import {
   Table,
   TableBody,
