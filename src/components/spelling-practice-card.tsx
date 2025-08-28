@@ -22,6 +22,7 @@ import { type WordProgress } from "@/lib/storage";
 import { updateLearningStats, updateXp, XP_AMOUNTS, getStatsForUser } from "@/lib/stats.tsx";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { XpToast } from "./xp-toast";
+import { useLanguage } from "@/hooks/use-language";
 
 
 interface SpellingPracticeCardProps {
@@ -29,7 +30,7 @@ interface SpellingPracticeCardProps {
   userId: string;
 }
 
-type FeedbackState = "idle" | "correct" | "incorrect";
+type FeedbackState = "idle" | "correct" | "incorrect" | "processing";
 
 export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardProps) {
   const [practiceWords, setPracticeWords] = useState<(Word & Partial<WordProgress>)[]>([]);
@@ -37,6 +38,7 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
   const [answer, setAnswer] = useState("");
   const [feedback, setFeedback] = useState<FeedbackState>("idle");
   const { toast } = useToast();
+  const { t, translateContent } = useLanguage();
   
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
   const [selectedLesson, setSelectedLesson] = useState<string | null>(null);
@@ -178,15 +180,13 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Spelling Practice</CardTitle>
-                <CardDescription>
-                Type the word that matches the definition and image below.
-                </CardDescription>
+                <CardTitle>{t('spellingPractice.title')}</CardTitle>
+                <CardDescription>{t('spellingPractice.description')}</CardDescription>
             </CardHeader>
             <CardContent>
                  <div className="text-center text-muted-foreground py-8">
-                    <p>You have no reviewed words to practice spelling for yet.</p>
-                    <p>Complete a review session to get started!</p>
+                    <p>{t('spellingPractice.noWordsYet')}</p>
+                    <p>{t('spellingPractice.noWordsYetHint')}</p>
                 </div>
             </CardContent>
         </Card>
@@ -197,55 +197,55 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
-          <span>Spelling Practice</span>
+          <span>{t('spellingPractice.title')}</span>
            <div className="flex items-center gap-2">
             <span className="text-sm font-normal text-muted-foreground">
-              {spelledToday} / {DAILY_LIMIT} today
+              {t('spellingPractice.todayCounter', spelledToday, DAILY_LIMIT)}
             </span>
             <Button variant="ghost" size="icon" onClick={selectNewWord} disabled={spelledToday >= DAILY_LIMIT}>
               <RefreshCw className="h-4 w-4" />
-              <span className="sr-only">New Word</span>
+              <span className="sr-only">{t('spellingPractice.newWord')}</span>
             </Button>
           </div>
         </CardTitle>
         <CardDescription>
-          Type the word that matches the definition and image below.
+          {t('spellingPractice.description')}
         </CardDescription>
         <div className="flex items-center space-x-2 pt-4">
             <Select onValueChange={handleUnitChange} value={selectedUnit || "all"}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Unit" />
+                <SelectValue placeholder={t('spellingPractice.filterByUnit')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Units</SelectItem>
+                <SelectItem value="all">{t('spellingPractice.allUnits')}</SelectItem>
                 {uniqueUnits.map((unit) => (
                   <SelectItem key={unit} value={unit}>
-                    {unit}
+                    {translateContent(unit)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select onValueChange={handleLessonChange} value={selectedLesson || "all"} disabled={!selectedUnit}>
               <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Filter by Lesson" />
+                <SelectValue placeholder={t('spellingPractice.filterByLesson')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Lessons</SelectItem>
+                <SelectItem value="all">{t('spellingPractice.allLessons')}</SelectItem>
                 {lessonsForSelectedUnit.map((lesson) => (
                   <SelectItem key={lesson} value={lesson}>
-                    {lesson}
+                    {translateContent(lesson)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-             {(selectedUnit || selectedLesson) && <Button variant="ghost" onClick={clearFilters}>Clear</Button>}
+             {(selectedUnit || selectedLesson) && <Button variant="ghost" onClick={clearFilters}>{t('spellingPractice.clearFilters')}</Button>}
           </div>
       </CardHeader>
       <CardContent className="space-y-4">
         {spelledToday >= DAILY_LIMIT ? (
             <div className="text-center text-muted-foreground py-8">
-                <p>Great job! You've reached your spelling limit for today.</p>
-                <p>Come back tomorrow for more practice.</p>
+                <p>{t('spellingPractice.limitReached')}</p>
+                <p>{t('spellingPractice.comeBack')}</p>
             </div>
         ) : currentWord ? (
           <>
@@ -263,7 +263,7 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
               <div className="relative w-full">
                 <Input
                   type="text"
-                  placeholder="Type the word..."
+                  placeholder={t('spellingPractice.placeholder')}
                   value={answer}
                   onChange={(e) => setAnswer(e.target.value)}
                   className={cn("pr-8", getInputColor())}
@@ -272,12 +272,12 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
                 {feedback === "correct" && <CheckCircle className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-green-500"/>}
                 {feedback === "incorrect" && <XCircle className="absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 text-destructive"/>}
               </div>
-              <Button type="submit" disabled={feedback !== 'idle'}>Check</Button>
+              <Button type="submit" disabled={feedback !== 'idle'}>{t('spellingPractice.check')}</Button>
             </form>
           </>
         ) : (
           <div className="text-center text-muted-foreground py-8">
-            <p>{filteredPracticeWords.length > 0 ? "Loading new word..." : "No words match the selected filters."}</p>
+            <p>{filteredPracticeWords.length > 0 ? t('spellingPractice.loading') : t('spellingPractice.noWordsForFilters')}</p>
           </div>
         )}
       </CardContent>

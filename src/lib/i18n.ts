@@ -1,4 +1,5 @@
 
+
 export const translations = {
   en: {
     sidebar: {
@@ -18,6 +19,25 @@ export const translations = {
       admins: 'Admins',
       about: 'About',
       spelling: 'Spelling',
+    },
+    spellingPractice: {
+        title: "Spelling Practice",
+        description: "Type the word that matches the definition and image below.",
+        todayCounter: "{0} / {1} today",
+        noWordsForFilters: "No words match the selected filters.",
+        limitReached: "Great job! You've reached your spelling limit for today.",
+        comeBack: "Come back tomorrow for more practice.",
+        check: "Check",
+        newWord: "New Word",
+        clearFilters: "Clear",
+        allUnits: "All Units",
+        allLessons: "All Lessons",
+        filterByUnit: "Filter by Unit",
+        filterByLesson: "Filter by Lesson",
+        loading: "Loading new word...",
+        noWordsYet: "You have no reviewed words to practice spelling for yet.",
+        noWordsYetHint: "Complete a review session to get started!",
+        placeholder: "Type the word...",
     },
     chatPage: {
         supervisorTitle: "Student Chats",
@@ -134,6 +154,7 @@ export const translations = {
         loginWithGoogle: "Login with Google",
         noAccount: "Don't have an account?",
         signUp: "Sign up",
+        rememberMe: "Remember me",
     },
     register: {
         title: "Join LinguaLeap",
@@ -429,6 +450,25 @@ export const translations = {
       about: 'حول',
       spelling: 'الإملاء',
     },
+    spellingPractice: {
+        title: "تدريب إملائي",
+        description: "اكتب الكلمة التي تطابق التعريف والصورة أدناه.",
+        todayCounter: "{0} / {1} اليوم",
+        noWordsForFilters: "لا توجد كلمات تطابق الفلاتر المحددة.",
+        limitReached: "عمل رائع! لقد وصلت إلى الحد الأقصى للإملاء لهذا اليوم.",
+        comeBack: "عد غدًا لمزيد من التدريب.",
+        check: "تحقق",
+        newWord: "كلمة جديدة",
+        clearFilters: "مسح",
+        allUnits: "كل الوحدات",
+        allLessons: "كل الدروس",
+        filterByUnit: "تصفية حسب الوحدة",
+        filterByLesson: "تصفية حسب الدرس",
+        loading: "جارٍ تحميل كلمة جديدة...",
+        noWordsYet: "ليس لديك كلمات تمت مراجعتها للتدريب على إملائها بعد.",
+        noWordsYetHint: "أكمل جلسة مراجعة للبدء!",
+        placeholder: "اكتب الكلمة...",
+    },
     chatPage: {
         supervisorTitle: "محادثات الطلاب",
         studentTitle: "محادثة",
@@ -544,6 +584,7 @@ export const translations = {
         loginWithGoogle: "تسجيل الدخول باستخدام جوجل",
         noAccount: "ليس لديك حساب؟",
         signUp: "التسجيل",
+        rememberMe: "تذكرني",
     },
     register: {
         title: "انضم إلى LinguaLeap",
@@ -825,6 +866,8 @@ export const translations = {
 export type TranslationKey = 
     | 'sidebar.dashboard' | 'sidebar.myWords' | 'sidebar.addWord' | 'sidebar.myStudents' | 'sidebar.profile' | 'sidebar.learn'
     | 'sidebar.learningWords' | 'sidebar.masteredWords' | 'sidebar.champion' | 'sidebar.chat' | 'sidebar.classmates' | 'sidebar.grammar' | 'sidebar.requests' | 'sidebar.admins' | 'sidebar.about' | 'sidebar.spelling'
+    | 'spellingPractice.title' | 'spellingPractice.description' | 'spellingPractice.todayCounter' | 'spellingPractice.noWordsForFilters' | 'spellingPractice.limitReached' | 'spellingPractice.comeBack' | 'spellingPractice.check' | 'spellingPractice.newWord' | 'spellingPractice.clearFilters'
+    | 'spellingPractice.allUnits' | 'spellingPractice.allLessons' | 'spellingPractice.filterByUnit' | 'spellingPractice.filterByLesson' | 'spellingPractice.loading' | 'spellingPractice.noWordsYet' | 'spellingPractice.noWordsYetHint' | 'spellingPractice.placeholder'
     | 'chatPage.supervisorTitle' | 'chatPage.studentTitle' | 'chatPage.supervisorDescription' | 'chatPage.studentDescription' | 'chatPage.conversations' | 'chatPage.noMessages' | 'chatPage.noConversations' | 'chatPage.selectConversation' | 'chatPage.typeMessage' | 'chatPage.send' | 'chatPage.loading' | 'chatPage.contactType.supervisor' | 'chatPage.contactType.peer'
     | 'chatPage.edited' | 'chatPage.messageActions.edit' | 'chatPage.messageActions.delete' | 'chatPage.messageActions.block'
     | 'chatPage.deleteDialog.title' | 'chatPage.deleteDialog.descriptionForMe' | 'chatPage.deleteDialog.descriptionForEveryone' | 'chatPage.deleteDialog.deleteForMe' | 'chatPage.deleteDialog.deleteForEveryone' | 'chatPage.deleteDialog.cancel'
@@ -838,7 +881,7 @@ export type TranslationKey =
     | 'profile.landingPage.title' | 'profile.landingPage.description' | 'profile.landingPage.uploadButton'
     | 'profile.preferences.title' | 'profile.preferences.description' | 'profile.preferences.language' | 'profile.preferences.selectLanguage' | 'profile.preferences.timezone' | 'profile.preferences.selectTimezone' | 'profile.preferences.save' | 'profile.preferences.currentTime' | 'profile.preferences.darkMode'
     | 'profile.account.title' | 'profile.account.description' | 'profile.account.resetPassword.title' | 'profile.account.resetPassword.description' | 'profile.account.resetPassword.button' | 'profile.account.deleteAccount.title' | 'profile.account.deleteAccount.description' | 'profile.account.deleteAccount.button'
-    | 'login.welcome' | 'login.description' | 'login.emailLabel' | 'login.passwordLabel' | 'login.forgotPassword' | 'login.loginButton' | 'login.loginWithGoogle' | 'login.noAccount' | 'login.signUp'
+    | 'login.welcome' | 'login.description' | 'login.emailLabel' | 'login.passwordLabel' | 'login.forgotPassword' | 'login.loginButton' | 'login.loginWithGoogle' | 'login.noAccount' | 'login.signUp' | 'login.rememberMe'
     | 'register.title' | 'register.description' | 'register.studentTab' | 'register.supervisorTab' | 'register.fullNameLabel' | 'register.fullNamePlaceholder' | 'register.emailLabel' | 'register.emailPlaceholder' | 'register.passwordLabel' | 'register.supervisorIdLabel' | 'register.supervisorIdPlaceholder' | 'register.createAccountButton' | 'register.createSupervisorAccountButton' | 'register.orContinueWith' | 'register.registerWithGoogle' | 'register.haveAccount' | 'register.login'
     | 'landing.title' | 'landing.description' | 'landing.getStarted' | 'landing.login'
     | 'landing.features.title' | 'landing.features.description'
