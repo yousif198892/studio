@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -53,7 +52,8 @@ export default function LearningWordsPage() {
   const fetchWords = useCallback(async () => {
     if (userId) {
       const allWords = await getWordsForStudent(userId);
-      const learning = allWords.filter((w) => w.strength >= 0);
+      // Filter for words that are in learning (strength >= 0) AND are not due for review yet.
+      const learning = allWords.filter((w) => w.strength >= 0 && !isPast(new Date(w.nextReview)));
       setAllLearningWords(learning || []);
       setLoading(false);
     }
@@ -106,6 +106,7 @@ export default function LearningWordsPage() {
   const formatTimeLeft = (date: Date) => {
     const locale = language === 'ar' ? { locale: ar } : {};
     if (isPast(date)) {
+        // This case should no longer happen based on the new filter, but kept as a fallback.
         return <span className="text-destructive font-semibold">{t('learningWordsPage.dueNow')}</span>;
     }
     const totalHours = differenceInHours(date, new Date());
