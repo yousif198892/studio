@@ -13,7 +13,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Logo } from "@/components/logo";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useLanguage } from "@/hooks/use-language";
@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation";
 import { type User } from "@/lib/data";
 import { getUserById, updateUserDB, getNextSupervisorShortId, addUserDB, getUserByEmail } from "@/lib/firestore";
 import { isPast } from "date-fns";
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -37,26 +37,10 @@ export function LoginForm() {
     const { toast } = useToast();
     const { t } = useLanguage();
     const router = useRouter();
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [isPending, setIsPending] = useState(false);
     const mainAdminEmail = "warriorwithinyousif@gmail.com";
     const defaultPassword = "password123";
-
-    useEffect(() => {
-        const rememberedUser = localStorage.getItem('rememberedUser');
-        if (rememberedUser) {
-            const { email, password } = JSON.parse(rememberedUser);
-            setEmail(email);
-            setPassword(password);
-            // We can also check the checkbox by default if credentials are found
-            const rememberMeCheckbox = document.getElementById('remember-me') as HTMLInputElement;
-            if (rememberMeCheckbox) {
-                rememberMeCheckbox.checked = true;
-            }
-        }
-    }, []);
 
     const handleLogin = async (userId: string) => {
         let user = await getUserById(userId);
@@ -116,14 +100,11 @@ export function LoginForm() {
         let userIdToLogin: string | null = null;
         
         try {
+            // Set session persistence based on the "Remember Me" checkbox
+            await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
+            
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             userIdToLogin = userCredential.user.uid;
-
-            if (rememberMe) {
-                localStorage.setItem('rememberedUser', JSON.stringify({ email, password }));
-            } else {
-                localStorage.removeItem('rememberedUser');
-            }
 
         } catch (error: any) {
              if ((error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') && email === mainAdminEmail && password === defaultPassword) {
@@ -185,8 +166,6 @@ export function LoginForm() {
               name="email"
               placeholder="m@example.com"
               required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div className="grid gap-2">
@@ -199,8 +178,6 @@ export function LoginForm() {
                 name="password" 
                 type={showPassword ? "text" : "password"} 
                 required 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
               />
               <button
                 type="button"
