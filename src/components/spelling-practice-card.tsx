@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -106,6 +107,7 @@ export function SpellingPracticeCard({ allWords, userId }: SpellingPracticeCardP
     e.preventDefault();
     if (!currentWord || !answer.trim() || feedback !== 'idle' || spelledToday >= DAILY_LIMIT) return;
 
+    setFeedback('processing'); // Disable button immediately
     const correct = answer.trim().toLowerCase() === currentWord.word.toLowerCase();
     
     await updateLearningStats({ userId, spelledCount: 1 });

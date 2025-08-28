@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { Word } from "@/lib/data";
@@ -17,7 +18,7 @@ import { Button } from "./ui/button";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { CheckCircle, XCircle, Star, Calendar } from "lucide-react";
-import type { ScheduleOption } from "@/app/learn/page";
+import type { ScheduleOption } from "@/app/learn/learn-client-page";
 import { useLanguage } from "@/hooks/use-language";
 import { WordProgress } from "@/lib/storage";
 
@@ -35,6 +36,7 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
   const [isCorrect, setIsCorrect] = useState(false);
   const [shuffledOptions, setShuffledOptions] = useState<string[]>([]);
   const { t } = useLanguage();
+  const [isScheduling, setIsScheduling] = useState(false);
   
   const isNewWord = word.strength === 0;
 
@@ -46,6 +48,7 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
     setSelectedOption(null);
     setViewState('question');
     setIsCorrect(false);
+    setIsScheduling(false);
   }, [word]);
 
 
@@ -84,6 +87,8 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
   }
 
   const handleScheduleSelect = (option: ScheduleOption) => {
+    if (isScheduling) return;
+    setIsScheduling(true);
     onCorrect(option);
   }
 
@@ -153,7 +158,7 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
         <h3 className="text-xl font-semibold">{t('quizCard.schedule.title')}</h3>
         <p className="text-muted-foreground">{t('quizCard.schedule.description')}</p>
         <div className="w-full space-y-2">
-           <Button onClick={() => handleScheduleSelect('tomorrow')} variant="outline" className="w-full justify-start">
+           <Button onClick={() => handleScheduleSelect('tomorrow')} variant="outline" className="w-full justify-start" disabled={isScheduling}>
                <Calendar className="mr-2 h-4 w-4" />
                {t('quizCard.schedule.tomorrow')}
            </Button>
@@ -161,6 +166,7 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
                 onClick={() => handleScheduleSelect('twoDays')} 
                 variant={isNewWord ? 'default' : 'outline'} 
                 className="w-full justify-start relative"
+                disabled={isScheduling}
             >
                <Calendar className="mr-2 h-4 w-4" />
                {t('quizCard.schedule.inTwoDays')}
@@ -170,20 +176,21 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
                 onClick={() => handleScheduleSelect('week')} 
                 variant={!isNewWord ? 'default' : 'outline'}
                 className="w-full justify-start relative"
+                disabled={isScheduling}
             >
                <Calendar className="mr-2 h-4 w-4" />
                 {t('quizCard.schedule.inAWeek')}
                 {!isNewWord && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
            </Button>
-           <Button onClick={() => handleScheduleSelect('twoWeeks')} variant="outline" className="w-full justify-start">
+           <Button onClick={() => handleScheduleSelect('twoWeeks')} variant="outline" className="w-full justify-start" disabled={isScheduling}>
                <Calendar className="mr-2 h-4 w-4" />
                {t('quizCard.schedule.inTwoWeeks')}
            </Button>
-           <Button onClick={() => handleScheduleSelect('month')} variant="outline" className="w-full justify-start">
+           <Button onClick={() => handleScheduleSelect('month')} variant="outline" className="w-full justify-start" disabled={isScheduling}>
                <Calendar className="mr-2 h-4 w-4" />
                 {t('quizCard.schedule.inAMonth')}
            </Button>
-            <Button onClick={() => handleScheduleSelect('mastered')} variant="secondary" className="w-full justify-start">
+            <Button onClick={() => handleScheduleSelect('mastered')} variant="secondary" className="w-full justify-start" disabled={isScheduling}>
                <Star className="mr-2 h-4 w-4" />
                 {t('quizCard.schedule.mastered')}
            </Button>
