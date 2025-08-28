@@ -2,7 +2,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Globe } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useLanguage } from "@/hooks/use-language";
@@ -53,6 +53,23 @@ export default function GrammarPage() {
                         <Link href={`/dashboard/grammar/comprehensive-quiz?userId=${userId}`}>
                             <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
                                 <span className="font-medium">{t('grammar.hub.comprehensiveTest.button')}</span>
+                                <ChevronRight className="h-5 w-5 text-muted-foreground"/>
+                            </div>
+                        </Link>
+                    </CardContent>
+                </Card>
+                <Card className="md:col-span-2">
+                    <CardHeader>
+                        <CardTitle>Specific Skills</CardTitle>
+                        <CardDescription>Practice specific grammar points like prepositions.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Link href={`/dashboard/grammar/prepositions-of-place/quiz?userId=${userId}`}>
+                             <div className="flex items-center justify-between p-4 rounded-lg border hover:bg-muted/50 transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <Globe className="h-5 w-5 text-primary"/>
+                                    <span className="font-medium">Prepositions of Place (in, on, at)</span>
+                                </div>
                                 <ChevronRight className="h-5 w-5 text-muted-foreground"/>
                             </div>
                         </Link>
