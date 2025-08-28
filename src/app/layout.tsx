@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { PT_Sans, Belleza } from "next/font/google";
@@ -45,6 +44,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
+        <head>
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        </head>
         <ThemeProvider>
             <LanguageProvider>
                 <LanguageSetter />
