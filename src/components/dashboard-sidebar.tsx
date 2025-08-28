@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Home,
+  LayoutDashboard,
   BookOpen,
   PlusCircle,
   Settings,
@@ -19,7 +19,6 @@ import {
   Target,
   SpellCheck,
   Info,
-  LayoutDashboard,
 } from "lucide-react";
 
 import {
