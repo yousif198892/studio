@@ -170,7 +170,12 @@ export default function StudentsPage() {
                                     </Button>
                                </AccordionTrigger>
                                <AccordionContent className="p-4 space-y-4">
-                                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                      <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
+                                          <Star className="h-8 w-8 text-primary mb-2"/>
+                                          <p className="text-2xl font-bold">{student.stats.xp}</p>
+                                          <p className="text-sm text-muted-foreground">{t('championPage.xp')}</p>
+                                      </div>
                                       <div className="flex flex-col items-center justify-center p-4 rounded-lg bg-secondary">
                                           <Clock className="h-8 w-8 text-primary mb-2"/>
                                           <p className="text-2xl font-bold">{formatTime(student.stats.reviewedToday.timeSpentSeconds)}</p>
