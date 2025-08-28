@@ -27,6 +27,7 @@ const specificInstructions = `
 - For "restaurant", the correct preposition must be "in".
 - For "oil refinery", the correct preposition must be "in".
 - For "farm", the correct preposition must be "on".
+- For "hospital", the correct preposition must be "in".
 `;
 
 // Define the prompt with specific instructions for the AI
