@@ -21,10 +21,18 @@ const places = [
     "restaurant", "hospital", "oil refinery", "farm", "mall"
 ];
 
+const specificInstructions = `
+- For "office", the correct preposition must be "in".
+- For "building site", the correct preposition must be "on".
+- For "restaurant", the correct preposition must be "in".
+- For "oil refinery", the correct preposition must be "in".
+- For "farm", the correct preposition must be "on".
+`;
+
 // Define the prompt with specific instructions for the AI
 const prompt = ai.definePrompt({
   name: 'generatePrepositionsQuizPrompt',
-  input: { schema: z.object({ places: z.array(z.string()) }) },
+  input: { schema: z.object({ places: z.array(z.string()), instructions: z.string() }) },
   output: { schema: GeneratePrepositionsQuizOutputSchema },
   prompt: `You are an expert English teacher creating a grammar quiz about prepositions of place.
 Your task is to generate exactly 10 multiple-choice questions to test a student's ability to use "in", "on", and "at".
@@ -37,6 +45,8 @@ For each question:
 2. The blank must be correctly filled by one of "in", "on", or "at".
 3. The options for every question must be exactly ["in", "on", "at"].
 4. Ensure you provide the single correct option for each sentence.
+5. Adhere to these specific rules for certain places:
+{{{instructions}}}
 
 The final output must be a JSON object containing a 'questions' array with exactly 10 question objects.
 `,
@@ -51,7 +61,7 @@ const generatePrepositionsQuizFlow = ai.defineFlow(
     outputSchema: GeneratePrepositionsQuizOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt({ places });
+    const { output } = await prompt({ places, instructions: specificInstructions });
     if (!output) {
       throw new Error('AI failed to generate prepositions quiz questions.');
     }
