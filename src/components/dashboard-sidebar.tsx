@@ -19,6 +19,7 @@ import {
   Target,
   SpellCheck,
   Info,
+  LayoutDashboard,
 } from "lucide-react";
 
 import {
@@ -113,7 +114,7 @@ export function DashboardSidebar({
     {
       href: `/dashboard?userId=${user.id}`,
       label: t('sidebar.dashboard'),
-      icon: <Home />,
+      icon: <LayoutDashboard />,
       roles: ["student", "supervisor"],
     },
     {
