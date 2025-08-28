@@ -14,6 +14,7 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { updateLearningStats } from '@/lib/stats.tsx';
 import { useToast } from '@/hooks/use-toast';
+import { useLanguage } from '@/hooks/use-language';
 
 const TEST_NAME = "Prepositions of Place";
 
@@ -27,6 +28,7 @@ export default function PrepositionsQuizPage() {
     const [submitted, setSubmitted] = useState(false);
     const startTimeRef = useRef<number | null>(null);
     const { toast } = useToast();
+    const { t } = useLanguage();
 
     const handleUpdateStats = useCallback(async (durationSeconds: number, testName?: string) => {
         if (userId) {
@@ -108,7 +110,7 @@ export default function PrepositionsQuizPage() {
         return (
             <div className="flex items-center justify-center h-full min-h-[400px]">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <p className="ml-4 text-muted-foreground">Generating your quiz on prepositions...</p>
+                <p className="ml-4 text-muted-foreground">{t('grammar.prepositionsQuiz.loading')}</p>
             </div>
         );
     }
@@ -124,9 +126,9 @@ export default function PrepositionsQuizPage() {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-3xl font-bold font-headline">{TEST_NAME} Test</h1>
+            <h1 className="text-3xl font-bold font-headline">{t('grammar.prepositionsQuiz.title')}</h1>
             <p className="text-muted-foreground">
-                Test your knowledge of using "in", "on", and "at" for places.
+                {t('grammar.prepositionsQuiz.description')}
             </p>
 
             <div className="space-y-8">
@@ -170,15 +172,15 @@ export default function PrepositionsQuizPage() {
             <div className="mt-8 flex justify-center gap-4">
                 {!submitted ? (
                      <Button onClick={handleSubmit} disabled={Object.keys(answers).length !== quiz?.length}>
-                        Submit Answers
+                        {t('grammar.prepositionsQuiz.submit')}
                     </Button>
                 ) : (
                     <Card className="p-6 text-center">
-                        <CardTitle>Test Complete!</CardTitle>
-                        <CardDescription className="mt-2">You scored {getScore()} out of {quiz?.length}.</CardDescription>
+                        <CardTitle>{t('grammar.prepositionsQuiz.complete')}</CardTitle>
+                        <CardDescription className="mt-2">{t('grammar.prepositionsQuiz.score', getScore(), quiz?.length)}</CardDescription>
                         <Button onClick={fetchQuiz} className="mt-4">
                             <RefreshCw className="mr-2 h-4 w-4" />
-                            Take a New Test
+                            {t('grammar.prepositionsQuiz.newTest')}
                         </Button>
                     </Card>
                 )}
@@ -186,3 +188,5 @@ export default function PrepositionsQuizPage() {
         </div>
     );
 }
+
+    

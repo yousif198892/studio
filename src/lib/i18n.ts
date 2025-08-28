@@ -1,5 +1,4 @@
 
-
 export const translations = {
   en: {
     sidebar: {
@@ -339,6 +338,11 @@ export const translations = {
                 description: "A mixed quiz covering all available tenses.",
                 button: "Start Comprehensive Test",
             },
+             specificSkills: {
+                title: "Specific Skills",
+                description: "Practice specific grammar points like prepositions.",
+                prepositions: "Prepositions of Place (in, on, at)",
+            }
         },
         studentTest: {
             title: "Student Test",
@@ -349,7 +353,16 @@ export const translations = {
             presentSimple: "Present Simple",
             pastSimple: "Past Simple",
             presentContinuous: "Present Continuous",
-        }
+        },
+        prepositionsQuiz: {
+            title: "Prepositions of Place Test",
+            description: "Test your knowledge of using \"in\", \"on\", and \"at\" for places.",
+            loading: "Generating your quiz on prepositions...",
+            submit: "Submit Answers",
+            complete: "Test Complete!",
+            score: "You scored {0} out of {1}.",
+            newTest: "Take a New Test",
+        },
     },
      championPage: {
         title: "Champion Leaderboard",
@@ -769,6 +782,11 @@ export const translations = {
                 description: "اختبار مختلط يغطي جميع الأزمنة المتاحة.",
                 button: "بدء الاختبار الشامل",
             },
+            specificSkills: {
+                title: "مهارات محددة",
+                description: "تدرب على نقاط قواعد محددة مثل حروف الجر.",
+                prepositions: "حروف الجر المكانية (in, on, at)",
+            }
         },
         studentTest: {
             title: "اختبار الطالب",
@@ -779,7 +797,16 @@ export const translations = {
             presentSimple: "المضارع البسيط",
             pastSimple: "الماضي البسيط",
             presentContinuous: "المضارع المستمر",
-        }
+        },
+        prepositionsQuiz: {
+            title: "اختبار حروف الجر المكانية",
+            description: "اختبر معلوماتك في استخدام \"in\" و \"on\" و \"at\" للأماكن.",
+            loading: "جارٍ إنشاء اختبار حروف الجر...",
+            submit: "إرسال الإجابات",
+            complete: "اكتمل الاختبار!",
+            score: "لقد حصلت على {0} من {1}.",
+            newTest: "إجراء اختبار جديد",
+        },
     },
      championPage: {
         title: "لوحة المتصدرين للأبطال",
@@ -906,10 +933,14 @@ export type TranslationKey =
     | 'studentsPage.title' | 'studentsPage.description'
     | 'studentsPage.allStudents.title' | 'studentsPage.allStudents.description'
     | 'grammar.hub.title' | 'grammar.hub.description' | 'grammar.hub.individualTenses.title' | 'grammar.hub.individualTenses.description' | 'grammar.hub.comprehensiveTest.title' | 'grammar.hub.comprehensiveTest.description' | 'grammar.hub.comprehensiveTest.button'
+    | 'grammar.hub.specificSkills.title' | 'grammar.hub.specificSkills.description' | 'grammar.hub.specificSkills.prepositions'
     | 'grammar.studentTest.title' | 'grammar.studentTest.description' | 'grammar.studentTest.button'
     | 'grammar.tenses.presentSimple' | 'grammar.tenses.pastSimple' | 'grammar.tenses.presentContinuous'
+    | 'grammar.prepositionsQuiz.title' | 'grammar.prepositionsQuiz.description' | 'grammar.prepositionsQuiz.loading' | 'grammar.prepositionsQuiz.submit' | 'grammar.prepositionsQuiz.complete' | 'grammar.prepositionsQuiz.score' | 'grammar.prepositionsQuiz.newTest'
     | 'championPage.title' | 'championPage.description' | 'championPage.weeklyRankings' | 'championPage.leaderboardDescription' | 'championPage.you' | 'championPage.xp' | 'championPage.loading' | 'championPage.noClassmates'
     | 'learningWordsPage.title' | 'learningWordsPage.description' | 'learningWordsPage.cardTitle' | 'learningWordsPage.cardDescription' | 'learningWordsPage.filterUnit' | 'learningWordsPage.filterLesson' | 'learningWordsPage.allUnits' | 'learningWordsPage.allLessons' | 'learningWordsPage.clearFilters' | 'learningWordsPage.tableImage' | 'learningWordsPage.tableWord' | 'learningWordsPage.tableUnit' | 'learningWordsPage.tableNextReview' | 'learningWordsPage.tableActions' | 'learningWordsPage.dueNow' | 'learningWordsPage.timeLeft' | 'learningWordsPage.days' | 'learningWordsPage.hours' | 'learningWordsPage.loading' | 'learningWordsPage.noWords'
     | 'masteredWordsPage.title' | 'masteredWordsPage.description' | 'masteredWordsPage.cardTitle' | 'masteredWordsPage.cardDescription' | 'masteredWordsPage.filterUnit' | 'masteredWordsPage.filterLesson' | 'masteredWordsPage.allUnits' | 'masteredWordsPage.allLessons' | 'masteredWordsPage.clearFilters' | 'masteredWordsPage.tableImage' | 'masteredWordsPage.tableWord' | 'masteredWordsPage.tableUnit' | 'masteredWordsPage.noWords' | 'masteredWordsPage.loading'
     | `xpEvents.${'review_word' | 'spell_correct' | 'daily_login' | 'master_word' | 'grammar_test'}`
     | 'toasts.error' | 'toasts.success' | 'toasts.addWordSuccess' | 'toasts.updateWordSuccess' | 'toasts.deleteWordSuccess' | 'toasts.resetWordSuccess' | 'toasts.restoreWordSuccess' | 'toasts.rescheduleSuccess' | 'toasts.wontForgetText' | 'toasts.validationFailed' | 'toasts.aiError' | 'toasts.registerSuccess' | 'toasts.loginError' | 'toasts.supervisorIdRequired' | 'toasts.invalidSupervisorId' | 'toasts.userExists' | 'toasts.passwordLength' | 'toasts.nameRequired' | 'toasts.invalidEmail' | 'toasts.definitionRequired' | 'toasts.wordRequired' | 'toasts.imageRequired';
+
+    
