@@ -8,11 +8,12 @@ import { getUserById, getStudentsBySupervisorId } from "@/lib/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { Trophy } from "lucide-react";
-import { type LearningStats, getStatsForUser } from "@/lib/stats.tsx";
+import { type LearningStats, getStatsForUser, type LastWeekWinner, updateLearningStats } from "@/lib/stats.tsx";
 import { cn } from "@/lib/utils";
-import { endOfWeek, formatDistanceToNow } from "date-fns";
+import { endOfWeek, formatDistanceToNow } from "date-ns";
 import { ar } from "date-fns/locale";
 import { useLanguage } from "@/hooks/use-language";
+import { WinnersCircle } from "@/components/winners-circle";
 
 type ClassmateWithXp = User & {
     xp: number;
@@ -25,12 +26,21 @@ export default function ChampionPage() {
     const [loading, setLoading] = useState(true);
     const [weekEndsIn, setWeekEndsIn] = useState("");
     const { t, language } = useLanguage();
+    const [lastWeekResults, setLastWeekResults] = useState<LastWeekWinner[] | null>(null);
+    const [showWinners, setShowWinners] = useState(false);
 
 
     useEffect(() => {
         const fetchData = async () => {
             if (userId) {
                 const currentUser = await getUserById(userId);
+                 const stats = await getStatsForUser(userId);
+
+                if (!stats.hasSeenLastWeekResults && stats.lastWeek?.winners) {
+                    setLastWeekResults(stats.lastWeek.winners);
+                    setShowWinners(true);
+                }
+
                 if (currentUser && currentUser.supervisorId) {
                     const allStudents = await getStudentsBySupervisorId(currentUser.supervisorId);
                     
@@ -41,10 +51,10 @@ export default function ChampionPage() {
                     }
 
                     const leaderboardDataPromises = Array.from(userMap.values()).map(async (student) => {
-                         const stats = await getStatsForUser(student.id);
+                         const studentStats = await getStatsForUser(student.id);
                          return {
                              ...student,
-                             xp: stats.xp || 0
+                             xp: studentStats.xp || 0
                          }
                     });
 
@@ -69,6 +79,14 @@ export default function ChampionPage() {
         return () => clearInterval(timer);
         
     }, [userId, language]);
+    
+    const handleCloseWinnersCircle = () => {
+        setShowWinners(false);
+        if (userId) {
+            updateLearningStats({ userId, markAsSeen: true });
+        }
+    }
+
 
     const getRankContent = (rank: number) => {
         if (rank === 0) return <Trophy className="w-6 h-6 text-yellow-500 fill-yellow-400" />;
@@ -83,6 +101,14 @@ export default function ChampionPage() {
 
     return (
         <div className="space-y-6">
+            {lastWeekResults && userId && (
+                 <WinnersCircle 
+                    isOpen={showWinners}
+                    onClose={handleCloseWinnersCircle}
+                    winners={lastWeekResults}
+                    currentUserId={userId}
+                />
+            )}
             <h1 className="text-3xl font-bold font-headline">{t('championPage.title')}</h1>
             <p className="text-muted-foreground">
                 {t('championPage.description')}
