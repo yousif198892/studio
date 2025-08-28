@@ -10,7 +10,7 @@ import Image from "next/image";
 import { Trophy } from "lucide-react";
 import { type LearningStats, getStatsForUser, type LastWeekWinner, updateLearningStats } from "@/lib/stats.tsx";
 import { cn } from "@/lib/utils";
-import { endOfWeek, formatDistanceToNow } from "date-ns";
+import { endOfWeek, formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { useLanguage } from "@/hooks/use-language";
 import { WinnersCircle } from "@/components/winners-circle";
