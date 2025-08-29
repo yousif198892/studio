@@ -26,7 +26,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import Link from "next/link";
-import { format, subDays, formatDistanceToNowStrict, isPast } from "date-fns";
+import { format, subDays, formatDistanceToNowStrict, isPast, isToday } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -67,6 +67,7 @@ export default function Dashboard() {
   const [students, setStudents] = useState<User[]>([]);
   const [stats, setStats] = useState<LearningStats | null>(null);
   const [wordsToReviewCount, setWordsToReviewCount] = useState(0);
+  const [todaysReviewCount, setTodaysReviewCount] = useState(0);
   const [wordsLearningCount, setWordsLearningCount] = useState(0);
   const [wordsMasteredCount, setWordsMasteredCount] = useState(0);
   
@@ -88,10 +89,12 @@ export default function Dashboard() {
 
         // CORRECTED LOGIC: Sync these counts with the respective page logic
         const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
+        const todayCount = words.filter(w => isToday(new Date(w.nextReview)) && w.strength >= 0).length;
         const mastered = words.filter(w => w.strength === -1).length;
         const learning = words.filter(w => w.strength >= 0 && new Date(w.nextReview) > new Date()).length;
 
         setWordsToReviewCount(toReview);
+        setTodaysReviewCount(todayCount);
         setWordsMasteredCount(mastered);
         setWordsLearningCount(learning);
         
@@ -162,6 +165,15 @@ export default function Dashboard() {
         <h1 className="text-3xl font-bold font-headline">{t('dashboard.student.welcome', user.name)}</h1>
         <p className="text-muted-foreground">{t('dashboard.student.description')}</p>
         
+        {todaysReviewCount > 0 && (
+          <Button asChild size="lg" className="w-full">
+            <Link href={`/learn?userId=${user.id}&review_type=today`}>
+              Today's Reviews
+              <Badge variant="secondary" className="ml-2">{todaysReviewCount}</Badge>
+            </Link>
+          </Button>
+        )}
+
          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
              <Card>
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

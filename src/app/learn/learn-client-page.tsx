@@ -35,16 +35,17 @@ export default function LearnClientPage() {
   const userId = searchParams.get("userId");
   const unitFilter = searchParams.get("unit");
   const lessonFilter = searchParams.get("lesson");
+  const reviewType = searchParams.get("review_type");
 
   const loadNextWord = useCallback(async () => {
     if (userId) {
-      const nextWord = await getWordForReview(userId, unitFilter, lessonFilter);
+      const nextWord = await getWordForReview(userId, unitFilter, lessonFilter, reviewType);
       setWord(nextWord);
       if (!nextWord) {
         setSessionFinished(true);
       }
     }
-  }, [userId, unitFilter, lessonFilter]);
+  }, [userId, unitFilter, lessonFilter, reviewType]);
 
   const handleUpdateStats = useCallback(async (reviewedCount: number, durationSeconds: number) => {
     if (userId) {

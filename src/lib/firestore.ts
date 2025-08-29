@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import {
@@ -18,6 +19,7 @@ import {
 import { db } from './firebase'; // Import the initialized db instance
 import type { User, Word, Message, SupervisorMessage, PeerMessage } from './data';
 import type { WordProgress } from './storage';
+import { isToday } from 'date-fns';
 
 // --- User Functions ---
 export async function getNextSupervisorShortId(): Promise<string> {
@@ -422,22 +424,32 @@ export async function getWordsForStudent(studentId: string): Promise<(Word & Wor
 }
 
 
-export async function getWordForReview(studentId: string, unit?: string | null, lesson?: string | null): Promise<(Word & WordProgress) | null> {
+export async function getWordForReview(
+    studentId: string, 
+    unit?: string | null, 
+    lesson?: string | null,
+    reviewType?: string | null
+): Promise<(Word & WordProgress) | null> {
   let allWords = await getWordsForStudent(studentId);
 
   let filteredWords = allWords;
 
+  // Filter by unit/lesson first if provided
   if (unit) {
       filteredWords = filteredWords.filter(word => word.unit === unit);
   }
-
   if (lesson) {
       filteredWords = filteredWords.filter(word => word.lesson === lesson);
   }
-
-  const dueWords = filteredWords.filter(word => {
-    return new Date(word.nextReview) <= new Date() && word.strength >= 0;
-  });
+  
+  let dueWords;
+  if (reviewType === 'today') {
+    // Filter for words scheduled for today
+    dueWords = filteredWords.filter(word => isToday(new Date(word.nextReview)) && word.strength >= 0);
+  } else {
+    // Default behavior: get all words that are due (today or in the past)
+    dueWords = filteredWords.filter(word => new Date(word.nextReview) <= new Date() && word.strength >= 0);
+  }
 
   if (dueWords.length === 0) return null;
 
