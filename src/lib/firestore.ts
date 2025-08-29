@@ -393,12 +393,14 @@ export async function getWordsForStudent(studentId: string): Promise<(Word & Wor
                 nextReview: new Date(progress.nextReview),
             };
         } else {
-            // This is a new word for the student
+            // This is a new word for the student, make it due immediately.
+            const now = new Date();
+            now.setHours(0, 0, 0, 0); // Set to beginning of today
             return {
                 ...supervisorWord,
                 id: supervisorWord.id,
                 strength: 0,
-                nextReview: new Date(),
+                nextReview: now,
                 studentId: studentId
             };
         }

@@ -52,7 +52,8 @@ export default function LearningWordsPage() {
   const fetchWords = useCallback(async () => {
     if (userId) {
       const allWords = await getWordsForStudent(userId);
-      // Filter for words that are in learning (strength >= 0) AND are not due for review yet.
+      // CORRECTED LOGIC:
+      // Filter for words that are in learning (strength >= 0) AND are not due for review yet (nextReview is in the future).
       const learning = allWords.filter((w) => w.strength >= 0 && !isPast(new Date(w.nextReview)));
       setAllLearningWords(learning || []);
       setLoading(false);

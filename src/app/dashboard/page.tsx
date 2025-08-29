@@ -86,9 +86,10 @@ export default function Dashboard() {
         const words = await getWordsForStudent(userId);
         setAllStudentWords(words);
 
+        // CORRECTED LOGIC: Sync these counts with the respective page logic
         const toReview = words.filter(w => new Date(w.nextReview) <= new Date() && w.strength >= 0).length;
         const mastered = words.filter(w => w.strength === -1).length;
-        const learning = words.length - mastered;
+        const learning = words.filter(w => w.strength >= 0 && new Date(w.nextReview) > new Date()).length;
 
         setWordsToReviewCount(toReview);
         setWordsMasteredCount(mastered);
