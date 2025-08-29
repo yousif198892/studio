@@ -38,8 +38,6 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
   const { t } = useLanguage();
   const [isScheduling, setIsScheduling] = useState(false);
   
-  const isNewWord = word.strength === 0;
-
   useEffect(() => {
     // Shuffle options only when the word changes
     const shuffled = [...word.options].sort(() => Math.random() - 0.5);
@@ -50,7 +48,6 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
     setIsCorrect(false);
     setIsScheduling(false);
   }, [word]);
-
 
   const handleSubmit = () => {
     if (!selectedOption) return;
@@ -90,6 +87,14 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
     if (isScheduling) return;
     setIsScheduling(true);
     onCorrect(option);
+  }
+  
+  const getRecommendedOption = (): ScheduleOption => {
+      const strength = word.strength || 0;
+      if (strength === 0) return 'twoDays';
+      if (strength === 1) return 'week';
+      if (strength === 2) return 'twoWeeks';
+      return 'month';
   }
 
   const renderQuestionView = () => (
@@ -144,7 +149,17 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
     </>
   );
 
-  const renderScheduleView = () => (
+  const renderScheduleView = () => {
+    const recommendedOption = getRecommendedOption();
+    const scheduleOptions: { key: ScheduleOption, label: string }[] = [
+        { key: 'tomorrow', label: t('quizCard.schedule.tomorrow') },
+        { key: 'twoDays', label: t('quizCard.schedule.inTwoDays') },
+        { key: 'week', label: t('quizCard.schedule.inAWeek') },
+        { key: 'twoWeeks', label: t('quizCard.schedule.inTwoWeeks') },
+        { key: 'month', label: t('quizCard.schedule.inAMonth') },
+    ];
+
+    return (
       <CardContent className="flex flex-col items-center justify-center space-y-4 pt-6">
         <div className="flex justify-center mb-4">
             <Image
@@ -158,45 +173,30 @@ export function QuizCard({ word, onCorrect, onIncorrect }: QuizCardProps) {
         <h3 className="text-xl font-semibold">{t('quizCard.schedule.title')}</h3>
         <p className="text-muted-foreground">{t('quizCard.schedule.description')}</p>
         <div className="w-full space-y-2">
-           <Button onClick={() => handleScheduleSelect('tomorrow')} variant="outline" className="w-full justify-start" disabled={isScheduling}>
-               <Calendar className="mr-2 h-4 w-4" />
-               {t('quizCard.schedule.tomorrow')}
-           </Button>
-            <Button 
-                onClick={() => handleScheduleSelect('twoDays')} 
-                variant={isNewWord ? 'default' : 'outline'} 
-                className="w-full justify-start relative"
-                disabled={isScheduling}
-            >
-               <Calendar className="mr-2 h-4 w-4" />
-               {t('quizCard.schedule.inTwoDays')}
-               {isNewWord && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
-           </Button>
-           <Button 
-                onClick={() => handleScheduleSelect('week')} 
-                variant={!isNewWord ? 'default' : 'outline'}
-                className="w-full justify-start relative"
-                disabled={isScheduling}
-            >
-               <Calendar className="mr-2 h-4 w-4" />
-                {t('quizCard.schedule.inAWeek')}
-                {!isNewWord && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
-           </Button>
-           <Button onClick={() => handleScheduleSelect('twoWeeks')} variant="outline" className="w-full justify-start" disabled={isScheduling}>
-               <Calendar className="mr-2 h-4 w-4" />
-               {t('quizCard.schedule.inTwoWeeks')}
-           </Button>
-           <Button onClick={() => handleScheduleSelect('month')} variant="outline" className="w-full justify-start" disabled={isScheduling}>
-               <Calendar className="mr-2 h-4 w-4" />
-                {t('quizCard.schedule.inAMonth')}
-           </Button>
+           {scheduleOptions.map(({ key, label }) => {
+              const isRecommended = key === recommendedOption;
+              return (
+                 <Button 
+                    key={key}
+                    onClick={() => handleScheduleSelect(key)} 
+                    variant={isRecommended ? 'default' : 'outline'} 
+                    className="w-full justify-start relative"
+                    disabled={isScheduling}
+                >
+                   <Calendar className="mr-2 h-4 w-4" />
+                   {label}
+                   {isRecommended && <span className="absolute right-2 text-xs bg-primary-foreground/20 text-white py-0.5 px-1.5 rounded-full">{t('quizCard.schedule.recommended')}</span>}
+               </Button>
+              )
+           })}
             <Button onClick={() => handleScheduleSelect('mastered')} variant="secondary" className="w-full justify-start" disabled={isScheduling}>
                <Star className="mr-2 h-4 w-4" />
                 {t('quizCard.schedule.mastered')}
            </Button>
         </div>
       </CardContent>
-  );
+    );
+  }
 
   return (
     <Card className="w-full">
