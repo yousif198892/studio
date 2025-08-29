@@ -19,11 +19,10 @@ const firebaseConfig = {
 const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Initialize Firestore with persistence
+// Initialize Firestore with a stable persistence setting.
+// This configuration enables offline capabilities without the experimental multi-tab feature.
 const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager: 'browser'
-  })
+  localCache: persistentLocalCache(/* settings */)
 });
 
 export { app, auth, db };
