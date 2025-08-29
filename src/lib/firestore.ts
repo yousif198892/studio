@@ -434,12 +434,14 @@ export async function getWordForReview(
 
   let filteredWords = allWords;
 
-  // Filter by unit/lesson first if provided
-  if (unit) {
-      filteredWords = filteredWords.filter(word => word.unit === unit);
-  }
-  if (lesson) {
-      filteredWords = filteredWords.filter(word => word.lesson === lesson);
+  // Filter by unit/lesson first if provided for general review sessions
+  if (reviewType !== 'today') {
+    if (unit) {
+        filteredWords = filteredWords.filter(word => word.unit === unit);
+    }
+    if (lesson) {
+        filteredWords = filteredWords.filter(word => word.lesson === lesson);
+    }
   }
   
   let dueWords;
