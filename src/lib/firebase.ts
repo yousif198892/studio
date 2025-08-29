@@ -3,7 +3,7 @@
 
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -18,23 +18,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app: FirebaseApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getFirestore(app);
 
-// Enable persistence on the client.
-if (typeof window !== 'undefined') {
-    try {
-        enableIndexedDbPersistence(db)
-          .catch((err) => {
-            if (err.code === 'failed-precondition') {
-                console.warn('Firebase persistence failed. This could be due to multiple tabs open.');
-            } else if (err.code === 'unimplemented') {
-                console.warn('Firebase persistence is not available in this browser.');
-            }
-        });
-    } catch (err) {
-        console.error("Error enabling Firestore persistence:", err);
-    }
-}
-
+// Initialize Firestore with persistence
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({
+    tabManager: 'browser'
+  })
+});
 
 export { app, auth, db };
