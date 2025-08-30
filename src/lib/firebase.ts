@@ -8,7 +8,7 @@ import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
 const firebaseApiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 
 if (!firebaseApiKey) {
-  throw new Error("Missing Firebase API Key. Please add NEXT_PUBLIC_FIREBASE_API_KEY to your .env.local file.");
+  throw new Error("CRITICAL: Firebase API Key is missing. Please add the NEXT_PUBLIC_FIREBASE_API_KEY from your Firebase project settings to the .env file.");
 }
 
 const firebaseConfig = {
