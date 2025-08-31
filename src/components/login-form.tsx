@@ -102,41 +102,41 @@ export function LoginForm() {
         try {
             await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
             
-            const userCredential = await signInWithEmailAndPassword(auth, email, password)
-                .catch(async (error) => {
-                    if (error.code === 'auth/user-not-found' && email === mainAdminEmail && password === defaultPassword) {
-                        // If the main admin is trying to log in but doesn't exist, create the account.
-                        const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
-                        const shortId = await getNextSupervisorShortId();
-                        const mainAdminData: User = {
-                            id: newUserCredential.user.uid,
-                            name: "Yousif",
-                            email: mainAdminEmail,
-                            role: "supervisor",
-                            avatar: "https://placehold.co/100x100.png?text=Y",
-                            timezone: "Asia/Baghdad",
-                            isMainAdmin: true,
-                            isSuspended: false,
-                            shortId: shortId,
-                        };
-                        await addUserDB(mainAdminData);
-                        return newUserCredential;
-                    }
-                    // For any other error, re-throw it to be caught by the outer catch block.
-                    throw error;
-                });
-                
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
             userIdToLogin = userCredential.user.uid;
 
         } catch (error: any) {
-            console.error("Firebase Auth Error: ", error);
-            let errorMessage = "An unexpected error occurred. Please try again.";
-            if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-                errorMessage = "Invalid email or password. Please check your credentials or sign up if you don't have an account.";
-            } else if (error.code === 'auth/too-many-requests') {
-                errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later."
+            // Special case: If the main admin is trying to log in for the first time, create the account.
+            if (error.code === 'auth/user-not-found' && email === mainAdminEmail && password === defaultPassword) {
+                try {
+                    const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const shortId = await getNextSupervisorShortId();
+                    const mainAdminData: User = {
+                        id: newUserCredential.user.uid,
+                        name: "Yousif",
+                        email: mainAdminEmail,
+                        role: "supervisor",
+                        avatar: "https://placehold.co/100x100.png?text=Y",
+                        timezone: "Asia/Baghdad",
+                        isMainAdmin: true,
+                        isSuspended: false,
+                        shortId: shortId,
+                    };
+                    await addUserDB(mainAdminData);
+                    userIdToLogin = newUserCredential.user.uid; // Set the user ID to proceed with login
+                } catch (creationError: any) {
+                    toast({ title: "Admin Creation Error", description: `Failed to auto-create admin account: ${creationError.message}`, variant: "destructive" });
+                }
+            } else {
+                console.error("Firebase Auth Error: ", error);
+                let errorMessage = "An unexpected error occurred. Please try again.";
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+                    errorMessage = "Invalid email or password. Please check your credentials or sign up if you don't have an account.";
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later."
+                }
+                toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
             }
-            toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
         }
 
         if (userIdToLogin) {
