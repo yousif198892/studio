@@ -20,7 +20,7 @@ import { useLanguage } from "@/hooks/use-language";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { type User } from "@/lib/data";
-import { getUserById, updateUserDB, getNextSupervisorShortId, addUserDB, getUserByEmail } from "@/lib/firestore";
+import { getUserById, updateUserDB, getNextSupervisorShortId, addUserDB } from "@/lib/firestore";
 import { isPast } from "date-fns";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, setPersistence, browserLocalPersistence, browserSessionPersistence } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -97,17 +97,15 @@ export function LoginForm() {
 
         const { email, password, rememberMe } = validatedFields.data;
         
-        let userIdToLogin: string | null = null;
-        
         try {
             await setPersistence(auth, rememberMe ? browserLocalPersistence : browserSessionPersistence);
             
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            userIdToLogin = userCredential.user.uid;
+            await handleLogin(userCredential.user.uid);
 
         } catch (error: any) {
-            // Special case: If the main admin is trying to log in for the first time, create the account.
-            if (error.code === 'auth/user-not-found' && email === mainAdminEmail && password === defaultPassword) {
+            // Case 1: User does not exist, but matches main admin credentials.
+            if ((error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') && email === mainAdminEmail && password === defaultPassword) {
                 try {
                     const newUserCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const shortId = await getNextSupervisorShortId();
@@ -123,11 +121,13 @@ export function LoginForm() {
                         shortId: shortId,
                     };
                     await addUserDB(mainAdminData);
-                    userIdToLogin = newUserCredential.user.uid; // Set the user ID to proceed with login
+                    await handleLogin(newUserCredential.user.uid);
                 } catch (creationError: any) {
                     toast({ title: "Admin Creation Error", description: `Failed to auto-create admin account: ${creationError.message}`, variant: "destructive" });
+                    setIsPending(false);
                 }
             } else {
+                // Case 2: Any other login error (wrong password, user disabled, etc.)
                 console.error("Firebase Auth Error: ", error);
                 let errorMessage = "An unexpected error occurred. Please try again.";
                 if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
@@ -136,13 +136,8 @@ export function LoginForm() {
                     errorMessage = "Access to this account has been temporarily disabled due to many failed login attempts. You can immediately restore it by resetting your password or you can try again later."
                 }
                 toast({ title: t('toasts.error'), description: errorMessage, variant: "destructive" });
+                setIsPending(false);
             }
-        }
-
-        if (userIdToLogin) {
-            await handleLogin(userIdToLogin);
-        } else {
-            setIsPending(false);
         }
     }
 
